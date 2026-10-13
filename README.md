@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pashove
 
-## Getting Started
+Plateforme e-commerce SaaS multi-tenant — **pashove.com**
 
-First, run the development server:
+Créer une boutique, vendre des produits **physiques**, **numériques** et des **services**,
+encaisser par mobile money et carte, retirer ses revenus, offrir en cadeau, et distribuer
+via un réseau de partenaires.
+
+## Stack
+
+Next.js 16 (App Router) · TypeScript · Tailwind CSS v4 · shadcn/ui
+Supabase (Postgres + Auth + RLS) · Vercel · Cloudflare (DNS · R2 · Stream · Turnstile)
+Resend (e-mails) · Upstash (Redis) · Termii (SMS) · Smile Identity (KYC)
+
+## Démarrage
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # puis remplir les valeurs
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Documentation du programme
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Tout le plan de construction est dans `docs/` :
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Fichier | Contenu |
+|---|---|
+| [00 — Programme maître](docs/00-PROGRAMME-MAITRE.md) | Vue d'ensemble, décisions D1→D14, stack, phases |
+| [01 — Comptes et API](docs/01-COMPTES-ET-APIS.md) | Tous les comptes à créer, API, coûts, documents |
+| [02 — Catalogue des pages](docs/02-CATALOGUE-PAGES.md) | Toutes les pages + routes |
+| [03 — Feuille de route](docs/03-ROADMAP.md) | Construction phase par phase |
+| [04 — Décisions](docs/04-DECISIONS.md) | Décisions verrouillées + points à trancher |
+| [05 — Setup e-mail](docs/05-SETUP-CLOUDFLARE-EMAIL.md) | E-mails pro + redirection Gmail |
+| [06 — Checklist lancement](docs/06-CHECKLIST-LANCEMENT.md) | À cocher avant ouverture publique |
 
-## Learn More
+## État actuel
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [x] Projet initialisé (Next.js 16 + TS + Tailwind 4)
+- [ ] Comptes créés — voir `docs/01`
+- [ ] E-mails pro configurés — voir `docs/05`
+- [ ] Phase 1 — Fondations (auth, multi-boutiques, RLS)
