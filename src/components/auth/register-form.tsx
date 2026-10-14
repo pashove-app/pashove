@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useActionState } from "react";
 import {
   Checkbox,
   FormNotice,
@@ -11,9 +11,10 @@ import {
 } from "@/components/ui/field";
 import { buttonClass, Icon, icons } from "@/components/ui/primitives";
 import { path, type SectionProps } from "@/components/ui/types";
+import { signUpAction } from "@/lib/auth/actions";
+import { INITIAL_AUTH_STATE } from "@/lib/auth/types";
 import { LAUNCH_COUNTRIES, NEXT_COUNTRIES } from "@/lib/site-content";
 import type { Dictionary } from "@/i18n/get-dictionary";
-import { registerSchema, toFieldErrors } from "@/lib/validation";
 
 const COUNTRY_CODES = [
   ...LAUNCH_COUNTRIES.map((country) => country.code),
@@ -21,36 +22,44 @@ const COUNTRY_CODES = [
 ];
 
 export function RegisterForm({ t, locale }: SectionProps) {
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [notice, setNotice] = useState(false);
+  const [state, formAction, pending] = useActionState(signUpAction, INITIAL_AUTH_STATE);
 
-  const messageFor = (key?: string) =>
-    key ? ((t.auth.errors as Record<string, string>)[key] ?? key) : undefined;
+  const dictionaryErrors = t.auth.errors as Record<string, string>;
+  const fieldError = (name: string) => {
+    const key = state.fieldErrors?.[name];
+    return key ? dictionaryErrors[key] : undefined;
+  };
+  const formMessage = state.messageKey ? dictionaryErrors[state.messageKey] : undefined;
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
+  // Confirmation d'e-mail active : le compte existe, mais la session ne
+  // s'ouvrira qu'après le clic sur le lien reçu.
+  if (state.status === "check-email") {
+    return (
+      <div className="text-center">
+        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-400/30 bg-emerald-400/10 text-emerald-600 dark:text-emerald-300">
+          <Icon path={icons.mail} className="h-6 w-6" />
+        </span>
 
-    const parsed = registerSchema.safeParse({
-      fullName: data.get("fullName") ?? "",
-      storeName: data.get("storeName") ?? "",
-      email: data.get("email") ?? "",
-      password: data.get("password") ?? "",
-      phone: data.get("phone") ?? "",
-      country: data.get("country") ?? "",
-      referral: data.get("referral") ?? "",
-      consent: data.get("consent") === "on",
-    });
+        <h1 className="mt-6 text-[1.6rem] font-medium tracking-[-0.03em] text-fg">
+          {t.auth.checkEmailTitle}
+        </h1>
 
-    if (!parsed.success) {
-      setErrors(toFieldErrors(parsed.error));
-      setNotice(false);
-      return;
-    }
+        <p className="mt-3 text-[0.9375rem] leading-relaxed text-muted">
+          {t.auth.checkEmailText.replace("{email}", state.email ?? "")}
+        </p>
 
-    setErrors({});
-    // Même principe que pour la connexion : on annonce l'état réel.
-    setNotice(true);
+        <p className="mt-2 text-[0.8125rem] leading-relaxed text-subtle">
+          {t.auth.checkEmailHint}
+        </p>
+
+        <Link
+          href={path(locale, "/auth/login")}
+          className={buttonClass({ variant: "outline", size: "lg", className: "mt-8 w-full" })}
+        >
+          {t.auth.switchToLogin}
+        </Link>
+      </div>
+    );
   }
 
   return (
@@ -60,14 +69,16 @@ export function RegisterForm({ t, locale }: SectionProps) {
       </h1>
       <p className="mt-2 text-[0.9375rem] text-muted">{t.auth.registerSubtitle}</p>
 
-      <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
+      <form action={formAction} noValidate className="mt-8 space-y-5">
+        <input type="hidden" name="locale" value={locale} />
+
         <TextField
           name="fullName"
           label={t.auth.fullName}
           hint={t.auth.fullNameHint}
           icon="user"
           autoComplete="name"
-          error={messageFor(errors.fullName)}
+          error={fieldError("fullName")}
         />
 
         <TextField
@@ -77,7 +88,7 @@ export function RegisterForm({ t, locale }: SectionProps) {
           help={t.auth.storeNameHelp}
           icon="store"
           autoComplete="organization"
-          error={messageFor(errors.storeName)}
+          error={fieldError("storeName")}
         />
 
         <TextField
@@ -88,7 +99,7 @@ export function RegisterForm({ t, locale }: SectionProps) {
           icon="mail"
           autoComplete="email"
           inputMode="email"
-          error={messageFor(errors.email)}
+          error={fieldError("email")}
         />
 
         <PasswordField
@@ -99,7 +110,7 @@ export function RegisterForm({ t, locale }: SectionProps) {
           autoComplete="new-password"
           revealLabel={t.auth.showPassword}
           concealLabel={t.auth.hidePassword}
-          error={messageFor(errors.password)}
+          error={fieldError("password")}
         />
 
         <TextField
@@ -110,7 +121,7 @@ export function RegisterForm({ t, locale }: SectionProps) {
           icon="phone"
           autoComplete="tel"
           inputMode="tel"
-          error={messageFor(errors.phone)}
+          error={fieldError("phone")}
         />
 
         <SelectField
@@ -118,7 +129,7 @@ export function RegisterForm({ t, locale }: SectionProps) {
           label={t.auth.country}
           icon="globe"
           defaultValue=""
-          error={messageFor(errors.country)}
+          error={fieldError("country")}
         >
           <option value="" disabled>
             —
@@ -136,13 +147,13 @@ export function RegisterForm({ t, locale }: SectionProps) {
           hint={t.auth.referralHint}
           help={t.auth.referralHelp}
           icon="tag"
-          error={messageFor(errors.referral)}
+          error={fieldError("referral")}
         />
 
         <div className="rounded-2xl border border-brand-500/25 bg-brand-500/[0.06] p-4">
           <Checkbox
             name="consent"
-            error={messageFor(errors.consent)}
+            error={fieldError("consent")}
             label={
               <>
                 {t.auth.termsBefore}{" "}
@@ -167,11 +178,28 @@ export function RegisterForm({ t, locale }: SectionProps) {
           />
         </div>
 
-        {notice ? <FormNotice>{t.auth.notConfigured}</FormNotice> : null}
+        {state.status === "unconfigured" ? (
+          <FormNotice>{t.auth.notConfigured}</FormNotice>
+        ) : null}
 
-        <button type="submit" className={buttonClass({ size: "lg", className: "w-full" })}>
-          <Icon path={icons.user} className="h-4 w-4" />
-          {t.auth.registerCta}
+        {formMessage ? <FormNotice tone="error">{formMessage}</FormNotice> : null}
+
+        <button
+          type="submit"
+          disabled={pending}
+          className={buttonClass({ size: "lg", className: "w-full" })}
+        >
+          {pending ? (
+            <>
+              <Spinner />
+              {t.auth.pending}
+            </>
+          ) : (
+            <>
+              <Icon path={icons.user} className="h-4 w-4" />
+              {t.auth.registerCta}
+            </>
+          )}
         </button>
       </form>
 
@@ -185,5 +213,22 @@ export function RegisterForm({ t, locale }: SectionProps) {
         </Link>
       </p>
     </div>
+  );
+}
+
+function Spinner() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-4 w-4 animate-spin" aria-hidden="true">
+      <circle
+        cx="8"
+        cy="8"
+        r="6.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeDasharray="24 12"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }

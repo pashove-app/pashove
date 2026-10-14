@@ -888,9 +888,23 @@ const en: Dictionary = {
       phoneRequired: "Enter your phone number.",
       countryRequired: "Choose your country of business.",
       consentRequired: "Accept the terms to continue.",
+      invalidCredentials: "Wrong email or password.",
+      emailTaken: "An account already exists with this address.",
+      rateLimited: "Too many attempts. Try again in a few minutes.",
+      weakPassword: "That password is too weak.",
+      serverError: "Something went wrong. Try again in a moment.",
     },
     notConfigured:
       "Authentication is not connected in this environment yet.",
+    checkEmailTitle: "Check your inbox",
+    checkEmailText: "A confirmation link has just been sent to {email}.",
+    checkEmailHint:
+      "Click the link to activate your account, then come back and sign in.",
+    workspaceTitle: "Your session is live",
+    workspaceText:
+      "Sign-in works. The full merchant workspace ships in a later batch.",
+    workspaceSignedInAs: "Signed in as",
+    workspaceSignOut: "Sign out",
     pending: "One moment…",
   },
 

@@ -894,9 +894,23 @@ const ln: Dictionary = {
       phoneRequired: "Koma nimero ya telefɔni na yo.",
       countryRequired: "Pɔní ekólo ya mosálá na yo.",
       consentRequired: "Ndima mibeko mpo na kokoba.",
+      invalidCredentials: "Imɛlɛ tǒ kódi ya sekré ezali malamu te.",
+      emailTaken: "Kɔnti ezali deja na adrɛsi oyo.",
+      rateLimited: "Babandi ebele. Meká lisusu na ba minuti moke.",
+      weakPassword: "Kódi ya sekré oyo ezali na ngufu te.",
+      serverError: "Likambo moko esalemi. Meká lisusu.",
     },
     notConfigured:
       "Kokɔta ekangami na esika oyo te.",
+    checkEmailTitle: "Talá bozí ya imɛlɛ na yo",
+    checkEmailText: "Lianɛ ya kondima etindami kaka na {email}.",
+    checkEmailHint:
+      "Finá lianɛ mpo na kofungola kɔnti na yo, sima zóngá mpo na kokɔta.",
+    workspaceTitle: "Session na yo ezali kosala",
+    workspaceText:
+      "Kokɔta ezali kosala. Esika ya mosálá mobimba ekoya na eteni ya sima.",
+    workspaceSignedInAs: "Kɔtá lokola",
+    workspaceSignOut: "Kobima",
     pending: "Kozela moke…",
   },
 

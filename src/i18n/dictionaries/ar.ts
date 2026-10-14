@@ -893,9 +893,23 @@ const ar: Dictionary = {
       phoneRequired: "أدخل رقم هاتفك.",
       countryRequired: "اختر بلد نشاطك.",
       consentRequired: "اقبل الشروط للمتابعة.",
+      invalidCredentials: "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+      emailTaken: "يوجد حساب بهذا البريد بالفعل.",
+      rateLimited: "محاولات كثيرة. أعد المحاولة بعد دقائق.",
+      weakPassword: "كلمة المرور هذه ضعيفة جدًا.",
+      serverError: "حدث خطأ. أعد المحاولة بعد لحظات.",
     },
     notConfigured:
       "تسجيل الدخول غير مربوط في هذه البيئة بعد.",
+    checkEmailTitle: "تفقّد بريدك الإلكتروني",
+    checkEmailText: "أُرسل رابط التأكيد الآن إلى {email}.",
+    checkEmailHint:
+      "اضغط على الرابط لتفعيل حسابك، ثم عد لتسجيل الدخول.",
+    workspaceTitle: "جلستك نشطة",
+    workspaceText:
+      "تسجيل الدخول يعمل. مساحة العمل الكاملة تصدر في مرحلة لاحقة.",
+    workspaceSignedInAs: "مسجّل الدخول باسم",
+    workspaceSignOut: "تسجيل الخروج",
     pending: "لحظة…",
   },
 

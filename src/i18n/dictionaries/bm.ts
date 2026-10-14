@@ -894,9 +894,23 @@ const bm: Dictionary = {
       phoneRequired: "I telefɔni nɔmɔrɔ sɛbɛn.",
       countryRequired: "I baara jamana sugandi.",
       consentRequired: "I ka sɔn sariyaw ma ka taa ɲɛ.",
+      invalidCredentials: "Imɛli walima dogolen kɔdi man ɲi.",
+      emailTaken: "Konti bɛ yen ni nin adrɛsi ye.",
+      rateLimited: "Mekameko ka ca kojugu. Kɛlɛ miniti dɔw kɔnɔ.",
+      weakPassword: "Nin dogolen kɔdi man fanga.",
+      serverError: "Fɔɲɔgɔ kɛra. Kɛlɛ tugun.",
     },
     notConfigured:
       "Kɔnti kɔli ma labɛn yan fɔlɔ.",
+    checkEmailTitle: "I imɛli bozi ye",
+    checkEmailText: "Lakali kɔdi ciilen {email} ma.",
+    checkEmailHint:
+      "Kɔdi kan ka i konti yele, o kɔ segi ka kɔta.",
+    workspaceTitle: "I session bɛ baara la",
+    workspaceText:
+      "Kɔli bɛ baara la. Butiki baara yɔrɔ bɛɛ bɛ na a kɔ.",
+    workspaceSignedInAs: "Kɔlilen ni",
+    workspaceSignOut: "Ka bɔ",
     pending: "A bɛ kɛ…",
   },
 

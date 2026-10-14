@@ -1,39 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useActionState } from "react";
 import { FormNotice, PasswordField, TextField } from "@/components/ui/field";
 import { buttonClass, Icon, icons } from "@/components/ui/primitives";
 import { path, type SectionProps } from "@/components/ui/types";
-import { loginSchema, toFieldErrors } from "@/lib/validation";
+import { signInAction } from "@/lib/auth/actions";
+import { INITIAL_AUTH_STATE } from "@/lib/auth/types";
 
 export function LoginForm({ t, locale }: SectionProps) {
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [notice, setNotice] = useState(false);
+  const [state, formAction, pending] = useActionState(signInAction, INITIAL_AUTH_STATE);
 
-  const messageFor = (key?: string) =>
-    key ? ((t.auth.errors as Record<string, string>)[key] ?? key) : undefined;
-
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-
-    const parsed = loginSchema.safeParse({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
-
-    if (!parsed.success) {
-      setErrors(toFieldErrors(parsed.error));
-      setNotice(false);
-      return;
-    }
-
-    setErrors({});
-    // Le branchement sur Supabase Auth arrive au lot suivant. Tant qu'il n'est
-    // pas là, on le dit clairement plutôt que de simuler une connexion réussie.
-    setNotice(true);
-  }
+  const dictionaryErrors = t.auth.errors as Record<string, string>;
+  const fieldError = (name: string) => {
+    const key = state.fieldErrors?.[name];
+    return key ? dictionaryErrors[key] : undefined;
+  };
+  const formMessage = state.messageKey ? dictionaryErrors[state.messageKey] : undefined;
 
   return (
     <div>
@@ -42,7 +25,10 @@ export function LoginForm({ t, locale }: SectionProps) {
       </h1>
       <p className="mt-2 text-[0.9375rem] text-muted">{t.auth.loginSubtitle}</p>
 
-      <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
+      {/* `noValidate` : on garde la main sur les messages, dans la bonne langue */}
+      <form action={formAction} noValidate className="mt-8 space-y-5">
+        <input type="hidden" name="locale" value={locale} />
+
         <TextField
           name="email"
           type="email"
@@ -51,7 +37,7 @@ export function LoginForm({ t, locale }: SectionProps) {
           icon="mail"
           autoComplete="email"
           inputMode="email"
-          error={messageFor(errors.email)}
+          error={fieldError("email")}
         />
 
         <div>
@@ -62,7 +48,7 @@ export function LoginForm({ t, locale }: SectionProps) {
             autoComplete="current-password"
             revealLabel={t.auth.showPassword}
             concealLabel={t.auth.hidePassword}
-            error={messageFor(errors.password)}
+            error={fieldError("password")}
           />
           <div className="mt-2 text-end">
             <Link
@@ -75,11 +61,28 @@ export function LoginForm({ t, locale }: SectionProps) {
           </div>
         </div>
 
-        {notice ? <FormNotice>{t.auth.notConfigured}</FormNotice> : null}
+        {state.status === "unconfigured" ? (
+          <FormNotice>{t.auth.notConfigured}</FormNotice>
+        ) : null}
 
-        <button type="submit" className={buttonClass({ size: "lg", className: "w-full" })}>
-          <Icon path={icons.arrowRight} className="h-4 w-4 rtl:rotate-180" />
-          {t.auth.loginCta}
+        {formMessage ? <FormNotice tone="error">{formMessage}</FormNotice> : null}
+
+        <button
+          type="submit"
+          disabled={pending}
+          className={buttonClass({ size: "lg", className: "w-full" })}
+        >
+          {pending ? (
+            <>
+              <Spinner />
+              {t.auth.pending}
+            </>
+          ) : (
+            <>
+              <Icon path={icons.arrowRight} className="h-4 w-4 rtl:rotate-180" />
+              {t.auth.loginCta}
+            </>
+          )}
         </button>
       </form>
 
@@ -93,5 +96,22 @@ export function LoginForm({ t, locale }: SectionProps) {
         </Link>
       </p>
     </div>
+  );
+}
+
+function Spinner() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-4 w-4 animate-spin" aria-hidden="true">
+      <circle
+        cx="8"
+        cy="8"
+        r="6.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeDasharray="24 12"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }

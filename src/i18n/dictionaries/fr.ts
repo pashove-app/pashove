@@ -929,9 +929,23 @@ const fr = {
       phoneRequired: "Indique ton numéro de téléphone.",
       countryRequired: "Choisis ton pays d'activité.",
       consentRequired: "Accepte les conditions pour continuer.",
+      invalidCredentials: "Email ou mot de passe incorrect.",
+      emailTaken: "Un compte existe déjà avec cette adresse.",
+      rateLimited: "Trop de tentatives. Réessaie dans quelques minutes.",
+      weakPassword: "Ce mot de passe est trop faible.",
+      serverError: "Une erreur est survenue. Réessaie dans un instant.",
     },
     notConfigured:
       "L'authentification n'est pas encore branchée sur cet environnement.",
+    checkEmailTitle: "Vérifie ta boîte mail",
+    checkEmailText: "Un lien de confirmation vient d'être envoyé à {email}.",
+    checkEmailHint:
+      "Clique sur le lien pour activer ton compte, puis reviens te connecter.",
+    workspaceTitle: "Ta session est active",
+    workspaceText:
+      "La connexion fonctionne. L'espace marchand complet arrive dans un prochain lot.",
+    workspaceSignedInAs: "Connecté en tant que",
+    workspaceSignOut: "Se déconnecter",
     pending: "Un instant…",
   },
 

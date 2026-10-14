@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "@/i18n/config";
+import { refreshSession } from "@/lib/supabase/session";
 
 /** Fichiers servis tels quels (images, polices, robots.txt…). */
 const HAS_EXTENSION = /\.[^/]+$/;
@@ -19,7 +20,7 @@ function negotiate(request: NextRequest): Locale {
   return DEFAULT_LOCALE;
 }
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (
@@ -32,7 +33,8 @@ export function proxy(request: NextRequest) {
 
   const first = pathname.split("/")[1] ?? "";
 
-  // Route déjà préfixée par une langue : on l'annonce au layout racine.
+  // Route déjà préfixée par une langue : on l'annonce au layout racine, et on
+  // laisse Supabase renouveler la session dans la foulée.
   if (isLocale(first)) {
     const headers = new Headers(request.headers);
     headers.set("x-pashove-locale", first);
@@ -43,7 +45,11 @@ export function proxy(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 365,
       sameSite: "lax",
     });
-    return response;
+
+    // Seul endroit d'où l'on peut réécrire les cookies de session : un Server
+    // Component en est incapable. Sans ce passage, la session expire sans se
+    // renouveler.
+    return refreshSession(request, response);
   }
 
   // Sinon on redirige vers la langue négociée.
