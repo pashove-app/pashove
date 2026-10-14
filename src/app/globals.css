@@ -1,26 +1,591 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ------------------------------------------------------------------ *
+ *  PASHOVE — Jetons de design
+ *  Thème sombre par défaut, thème clair via [data-theme="light"].
+ *  Les jetons sémantiques (bg, fg, border…) changent ; la palette
+ *  brute (brand, ink) reste stable et sert aux aplats colorés.
+ * ------------------------------------------------------------------ */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@theme {
+  /* --- Bleu de marque : identique dans les deux thèmes -------------- */
+  --color-brand-50: #eef3ff;
+  --color-brand-100: #dbe6ff;
+  --color-brand-200: #bed1ff;
+  --color-brand-300: #91b1ff;
+  --color-brand-400: #5c85ff;
+  --color-brand-500: #2f5cff;
+  --color-brand-600: #1b3fe4;
+  --color-brand-700: #1531b8;
+  --color-brand-800: #162d92;
+  --color-brand-900: #172b73;
+  --color-brand-950: #0f1a45;
+  --color-on-accent: #ffffff;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* --- Noirs bruts : réservés aux surfaces toujours sombres --------- */
+  /* (maquette du téléphone, aplats noirs volontaires)                  */
+  --color-ink-950: #04060d;
+  --color-ink-900: #070a13;
+  --color-ink-850: #0a0e1a;
+  --color-ink-800: #0e1320;
+  --color-ink-700: #151b2a;
+  --color-ink-600: #1d2434;
+  --color-ink-500: #283144;
+  --color-ink-400: #3a455c;
+  --color-ink-300: #5b6780;
+
+  /* --- Jetons sémantiques : thème sombre ---------------------------- */
+  --color-bg: #04060d;
+  --color-bg-soft: #070a13;
+  --color-surface: #0b101b;
+  --color-surface-2: #111827;
+  --color-surface-3: #1a2130;
+  --color-inset: rgb(4 6 13 / 0.55);
+
+  --color-border: #1a2131;
+  --color-border-soft: rgb(255 255 255 / 0.1);
+  --color-border-strong: rgb(255 255 255 / 0.2);
+
+  --color-fg: #ffffff;
+  --color-body: rgb(255 255 255 / 0.82);
+  --color-muted: rgb(255 255 255 / 0.58);
+  --color-subtle: rgb(255 255 255 / 0.44);
+  --color-faint: rgb(255 255 255 / 0.28);
+
+  --color-hairline: rgb(255 255 255 / 0.045);
+  --color-hairline-strong: rgb(255 255 255 / 0.08);
+  --color-fill: rgb(255 255 255 / 0.12);
+  --color-fill-strong: rgb(255 255 255 / 0.24);
+
+  --color-accent: #5c85ff;
+  --color-accent-soft: #91b1ff;
+  --color-accent-strong: #bed1ff;
+  --color-grad-1: #91b1ff;
+  --color-grad-2: #2f5cff;
+  --color-grad-3: #1531b8;
+
+  /* Grands panneaux « cinématiques » (héritage Shopify, transposé au bleu) */
+  --color-panel-from: #0d1a3d;
+  --color-panel-mid: #071026;
+  --color-panel-to: #04070f;
+  --color-panel-line: rgb(120 160 255 / 0.18);
+  /* Aplat de recouvrement sur les médias, pour que le texte tienne dessus */
+  --color-scrim: rgb(2 4 10 / 0.62);
+  --color-scrim-strong: rgb(2 4 10 / 0.86);
+
+  --font-sans: var(--font-geist-sans), var(--font-arabic), ui-sans-serif,
+    system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+
+  /* --- Animations --------------------------------------------------- */
+  --animate-marquee: marquee 38s linear infinite;
+  --animate-marquee-slow: marquee 64s linear infinite;
+  --animate-marquee-reverse: marquee-reverse 52s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-float-slow: float 9s ease-in-out infinite;
+  --animate-pulse-ring: pulse-ring 2.6s ease-out infinite;
+  --animate-dash: dash 1s linear infinite;
+  --animate-rise: rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-pop: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-drift: drift 16s ease-in-out infinite;
+  --animate-orbit: orbit 46s linear infinite;
+  --animate-orbit-slow: orbit 90s linear infinite;
+  --animate-sheen: sheen 3.4s ease-in-out infinite;
+  --animate-bar: bar 2.6s ease-in-out infinite;
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes marquee-reverse {
+    from {
+      transform: translateX(-50%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(0.75);
+      opacity: 0.55;
+    }
+    80%,
+    100% {
+      transform: scale(1.7);
+      opacity: 0;
+    }
+  }
+  @keyframes dash {
+    to {
+      stroke-dashoffset: -20;
+    }
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes drift {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(0, -2.5%, 0) scale(1.04);
+    }
+  }
+  @keyframes orbit {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes sheen {
+    0%,
+    100% {
+      opacity: 0.35;
+    }
+    50% {
+      opacity: 0.85;
+    }
+  }
+  @keyframes bar {
+    0%,
+    100% {
+      transform: scaleY(0.55);
+    }
+    50% {
+      transform: scaleY(1);
+    }
   }
 }
 
+/* ------------------------------------------------------------------ *
+ *  Thème clair — surcharge des seuls jetons sémantiques
+ * ------------------------------------------------------------------ */
+
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --color-bg: #ffffff;
+  --color-bg-soft: #f6f8fc;
+  --color-surface: #ffffff;
+  --color-surface-2: #f4f6fa;
+  --color-surface-3: #e8ecf4;
+  --color-inset: rgb(5 7 15 / 0.035);
+
+  --color-border: #e2e6ef;
+  --color-border-soft: rgb(5 7 15 / 0.1);
+  --color-border-strong: rgb(5 7 15 / 0.2);
+
+  --color-fg: #05070f;
+  --color-body: #232936;
+  --color-muted: #4c5567;
+  --color-subtle: #69718a;
+  --color-faint: #949cb0;
+
+  --color-hairline: rgb(5 7 15 / 0.04);
+  --color-hairline-strong: rgb(5 7 15 / 0.07);
+  --color-fill: rgb(5 7 15 / 0.1);
+  --color-fill-strong: rgb(5 7 15 / 0.2);
+
+  --color-accent: #1b3fe4;
+  --color-accent-soft: #1531b8;
+  --color-accent-strong: #172b73;
+  --color-grad-1: #2f5cff;
+  --color-grad-2: #1b3fe4;
+  --color-grad-3: #172b73;
+
+  /* Le panneau « cinématique » reste sombre dans les deux thèmes : c'est une
+     scène de démonstration, posée comme une fenêtre sur la page claire.
+     Ses `--color-panel-*` ne sont donc pas surchargés ici. */
+  --color-scrim: rgb(255 255 255 / 0.72);
+  --color-scrim-strong: rgb(255 255 255 / 0.92);
+}
+
+:root {
+  color-scheme: dark;
+}
+
+/* ------------------------------------------------------------------ *
+ *  Base
+ * ------------------------------------------------------------------ */
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5.5rem;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background-color: color-mix(in oklab, var(--color-brand-500) 40%, transparent);
+  color: var(--color-on-accent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ------------------------------------------------------------------ *
+ *  Décor (bâti sur les jetons, donc bi-thème)
+ * ------------------------------------------------------------------ */
+
+.bg-grid {
+  background-image:
+    linear-gradient(to right, var(--color-hairline) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-hairline) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+.glow {
+  background: radial-gradient(
+    closest-side,
+    color-mix(in oklab, var(--color-brand-500) 55%, transparent),
+    transparent 100%
+  );
+  filter: blur(40px);
+}
+
+.mask-fade-x {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 12%,
+    #000 88%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 12%,
+    #000 88%,
+    transparent
+  );
+}
+
+.mask-fade-b {
+  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent);
+  mask-image: linear-gradient(to bottom, #000 55%, transparent);
+}
+
+.ring-gradient {
+  position: relative;
+}
+.ring-gradient::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    160deg,
+    var(--color-border-strong),
+    var(--color-hairline) 40%,
+    transparent 70%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.text-gradient {
+  background: linear-gradient(
+    100deg,
+    var(--color-grad-1),
+    var(--color-grad-2) 45%,
+    var(--color-grad-3)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Les fragments de code et les chiffres restent en lecture gauche → droite. */
+.code-block,
+.unicode-bidi-isolate {
+  unicode-bidi: isolate;
+}
+
+.code-block {
+  direction: ltr;
+  text-align: start;
+}
+
+/* Le téléphone de démonstration reste un écran blanc dans les deux thèmes */
+.phone-screen {
+  background: #ffffff;
+  color: #04060d;
+}
+
+/* Icônes du sélecteur de thème : le bon pictogramme est choisi en CSS,
+   ce qui évite tout décalage d'hydratation et tout flash. */
+.theme-icon-light,
+.theme-icon-dark {
+  display: none;
+}
+:root[data-theme="dark"] .theme-icon-dark,
+:root[data-theme="light"] .theme-icon-light {
+  display: block;
+}
+
+/* ================================================================== *
+ *  Langue visuelle « cinématique »
+ * ================================================================== */
+
+/* --- Typographie -------------------------------------------------- */
+
+/* Grands titres fins, très serrés — la signature des pages produit. */
+.text-display {
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 1.03;
+}
+
+.text-display-tight {
+  font-weight: 300;
+  letter-spacing: -0.05em;
+  line-height: 0.96;
+}
+
+/* Petit libellé capitales coloré */
+.caps-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+
+/* --- Grands panneaux ---------------------------------------------- */
+
+.panel-deep {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 2rem;
+  border: 1px solid var(--color-panel-line);
+  background:
+    radial-gradient(
+      130% 95% at 10% -10%,
+      color-mix(in oklab, var(--color-brand-600) 45%, transparent),
+      transparent 60%
+    ),
+    linear-gradient(
+      168deg,
+      var(--color-panel-from),
+      var(--color-panel-mid) 48%,
+      var(--color-panel-to)
+    );
+}
+
+/* Cercles concentriques décoratifs */
+.orbit-rings {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-radial-gradient(
+    circle at 50% 50%,
+    transparent 0 74px,
+    var(--color-panel-line) 74px 75px
+  );
+  -webkit-mask-image: radial-gradient(closest-side, #000 20%, transparent 92%);
+  mask-image: radial-gradient(closest-side, #000 20%, transparent 92%);
+}
+
+/* Grain léger, posé par-dessus les aplats pour éviter les dégradés « plastique » */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.22;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* --- Médias -------------------------------------------------------- */
+
+/* Ce fichier étant chargé APRÈS les utilitaires Tailwind, toute propriété
+   déclarée ici l'emporte sur une classe utilitaire de même spécificité.
+   On n'y met donc que ce qui doit gagner : pas de `position`, pas de
+   `border-radius` — les appelants les posent, et la variante pleine page
+   passe par `.media-frame--fill` (déclarée après, donc prioritaire). */
+.media-frame {
+  overflow: hidden;
+  background: linear-gradient(150deg, var(--color-surface-3), var(--color-surface-2));
+}
+
+/* Emplacement qui remplit son conteneur (héro, clôture). */
+.media-frame--fill {
+  position: absolute;
+  inset: 0;
+}
+
+.media-frame > video,
+.media-frame > img,
+.media-frame > .media-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Champ d'étoiles : évoque les lumières de villes vues de nuit, et donne
+   de la profondeur à un décor qui serait sinon un simple dégradé.
+   Les `@keyframes` du bloc `@theme` ne sont émis que si l'utilitaire
+   `animate-*` correspondant est utilisé — on les redéclare donc ici. */
+@keyframes sheen {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+.starfield {
+  background-image:
+    radial-gradient(1.6px 1.6px at 12% 18%, rgb(255 255 255 / 0.8), transparent),
+    radial-gradient(1.2px 1.2px at 27% 62%, rgb(255 255 255 / 0.5), transparent),
+    radial-gradient(1.8px 1.8px at 41% 26%, rgb(255 255 255 / 0.72), transparent),
+    radial-gradient(1.1px 1.1px at 55% 74%, rgb(255 255 255 / 0.45), transparent),
+    radial-gradient(1.5px 1.5px at 63% 34%, rgb(255 255 255 / 0.66), transparent),
+    radial-gradient(1.2px 1.2px at 76% 58%, rgb(255 255 255 / 0.5), transparent),
+    radial-gradient(1.9px 1.9px at 88% 21%, rgb(255 255 255 / 0.75), transparent),
+    radial-gradient(1.1px 1.1px at 94% 66%, rgb(255 255 255 / 0.42), transparent),
+    radial-gradient(1.4px 1.4px at 8% 82%, rgb(255 255 255 / 0.55), transparent),
+    radial-gradient(1.3px 1.3px at 33% 88%, rgb(255 255 255 / 0.48), transparent),
+    radial-gradient(1.7px 1.7px at 68% 86%, rgb(255 255 255 / 0.6), transparent),
+    radial-gradient(1.2px 1.2px at 84% 92%, rgb(255 255 255 / 0.4), transparent);
+  animation: sheen 5.5s ease-in-out infinite;
+}
+:root[data-theme="light"] .starfield {
+  opacity: 0.35;
+}
+
+/* Aplat de lisibilité posé sur les médias */
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    var(--color-scrim-strong) 0%,
+    var(--color-scrim) 42%,
+    transparent 78%
+  );
+}
+
+/* --- Animations au défilement -------------------------------------- */
+
+/* Ligne de texte qui se lève derrière un masque */
+.reveal-line {
+  display: block;
+  overflow: hidden;
+  padding-block: 0.06em;
+}
+.reveal-line > span {
+  display: block;
+  transform: translateY(108%);
+  transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+[data-shown="true"] .reveal-line > span {
+  transform: translateY(0);
+}
+
+/* Enfants révélés en cascade */
+.stagger > * {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+[data-shown="true"].stagger > * {
+  opacity: 1;
+  transform: none;
+}
+
+/* Trait qui se dessine (icônes, séparateurs) */
+.draw-line {
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+[dir="rtl"] .draw-line {
+  transform-origin: right;
+}
+[data-shown="true"] .draw-line {
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-line > span,
+  .stagger > *,
+  .draw-line {
+    transform: none !important;
+    opacity: 1 !important;
+    transition: none !important;
+  }
+}
+
+@media (pointer: fine) {
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-bg);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-surface-3);
+    border-radius: 999px;
+    border: 3px solid var(--color-bg);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-fill-strong);
+  }
 }
