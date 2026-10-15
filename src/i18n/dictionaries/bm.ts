@@ -913,6 +913,10 @@ const bm: Dictionary = {
         "Nin kɔdi man ɲi tugun : a banna walima a baara kɛra. Kɔdi kura ɲini.",
       confirmTokenInvalid:
         "Nin kɔdi man ɲi tugun : a banna walima a baara kɛra. Kɔdi kura ɲini.",
+      currentPasswordRequired: "I dogolen kɔdi kɔrɔ sɛbɛn.",
+      currentPasswordWrong: "Nin tɛ i dogolen kɔdi kɔrɔ ye.",
+      emailUnchanged: "Nin ye i adrɛsi kɔrɔ ye.",
+      reauthenticationNeeded: "Ka kɔta tugun ka nin falen sabati.",
       serverError: "Fɔɲɔgɔ kɛra. Kɛlɛ tugun.",
     },
     notConfigured:
@@ -999,6 +1003,26 @@ const bm: Dictionary = {
     sessionsSignOutAllHint:
       "Ni nin aparɛy fana : i bɛna kɔta tugun yan.",
     sessionsBack: "Ka segi n ka baara yɔrɔ",
+    securityTitle: "Konti lakana",
+    securitySubtitle: "Dogolen kɔdi, imɛli adrɛsi ni session minw bɛ da.",
+    securityPasswordTitle: "Dogolen kɔdi",
+    securityPasswordText:
+      "I dogolen kɔdi kɔrɔ bɛ ɲini : session min da, o ka kan ka se ka a falen.",
+    securityCurrentPassword: "Dogolen kɔdi kɔrɔ",
+    securityPasswordCta: "N dogolen kɔdi falen",
+    securityPasswordChanged:
+      "I dogolen kɔdi falenna, aparɛy wɛrɛw bɔra.",
+    securityEmailTitle: "Imɛli adrɛsi",
+    securityEmailText:
+      "Nin adrɛsi de bɛ i kɔta ani ka i lakali kɔdiw sɔrɔ.",
+    securityNewEmail: "Adrɛsi kura",
+    securityEmailCta: "Falen ɲini",
+    securityEmailSent:
+      "Kɔdi bɛ taa i adrɛsi kɔrɔ ni kura ma. Falen bɛna kɛ ni fila bɛɛ sabatilen — o waati, adrɛsi kɔrɔ bɛ to a yɔrɔ.",
+    securitySessionsText:
+      "Session min bɛ baara la, ni cogo min na i bɛ se ka dɔw datugu.",
+    securitySessionsManage: "Sessionw latɛmɛ",
+    securitySignOutTitle: "Ka bɔ",
     resendTitle: "Kɔdi ci tugun",
     resendSubtitle: "I imɛli adrɛsi sɛbɛn : an bɛ kɔdi kura ci i ma.",
     resendCta: "Kɔdi ci",

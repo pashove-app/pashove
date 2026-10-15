@@ -948,6 +948,10 @@ const fr = {
         "Ce code n'est plus valable : il a expiré, ou il a déjà servi. Demande-en un nouveau.",
       confirmTokenInvalid:
         "Ce lien n'est plus valable : il a expiré, ou il a déjà servi. Demande-en un nouveau.",
+      currentPasswordRequired: "Saisis ton mot de passe actuel.",
+      currentPasswordWrong: "Ce n'est pas ton mot de passe actuel.",
+      emailUnchanged: "C'est déjà ton adresse actuelle.",
+      reauthenticationNeeded: "Reconnecte-toi pour confirmer cette modification.",
       serverError: "Une erreur est survenue. Réessaie dans un instant.",
     },
     notConfigured:
@@ -1036,6 +1040,25 @@ const fr = {
     sessionsSignOutAllHint:
       "Y compris cet appareil : tu devras te reconnecter ici aussi.",
     sessionsBack: "Retour à mon espace",
+    securityTitle: "Sécurité du compte",
+    securitySubtitle: "Mot de passe, adresse e-mail et sessions ouvertes.",
+    securityPasswordTitle: "Mot de passe",
+    securityPasswordText:
+      "Ton mot de passe actuel est demandé : une session laissée ouverte ne doit pas suffire à en changer.",
+    securityCurrentPassword: "Mot de passe actuel",
+    securityPasswordCta: "Changer mon mot de passe",
+    securityPasswordChanged:
+      "Ton mot de passe a été changé, et les autres appareils ont été déconnectés.",
+    securityEmailTitle: "Adresse e-mail",
+    securityEmailText:
+      "C'est l'adresse qui te connecte et qui reçoit tes confirmations.",
+    securityNewEmail: "Nouvelle adresse",
+    securityEmailCta: "Demander le changement",
+    securityEmailSent:
+      "Un message part vers ton ancienne et ta nouvelle adresse. Le changement prendra effet quand les deux seront confirmées — en attendant, l'adresse actuelle reste en place.",
+    securitySessionsText: "La session en cours, et de quoi fermer les autres.",
+    securitySessionsManage: "Gérer les sessions",
+    securitySignOutTitle: "Déconnexion",
     resendTitle: "Renvoyer le code de vérification",
     resendSubtitle: "Indique ton adresse : on t'envoie un nouveau code.",
     resendCta: "Envoyer le code",

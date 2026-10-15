@@ -102,14 +102,12 @@ export default async function WorkspacePage({
           />
         </dl>
 
-        <div className="mt-6 flex flex-wrap gap-3">
-          <ButtonLink href={path(locale, "/auth/2fa/setup")} variant="outline">
+        {/* Un seul point d'entrée : la page de sécurité rassemble le mot de
+            passe, l'adresse, les sessions et la double authentification. */}
+        <div className="mt-6">
+          <ButtonLink href={path(locale, "/auth/security")} variant="outline">
             <Icon path={icons.shield} className="h-4 w-4" />
-            {t.auth.totpSetupTitle}
-          </ButtonLink>
-          <ButtonLink href={path(locale, "/auth/sessions")} variant="outline">
-            <Icon path={icons.users} className="h-4 w-4" />
-            {t.auth.sessionsTitle}
+            {t.auth.securityTitle}
           </ButtonLink>
         </div>
 

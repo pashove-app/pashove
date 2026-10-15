@@ -913,6 +913,10 @@ const ln: Dictionary = {
         "Kódi oyo ezali lisusu malamu te : esili tǒ esalelami. Senga ya sika.",
       confirmTokenInvalid:
         "Lianɛ oyo ezali lisusu malamu te : esili tǒ esalelami. Senga ya sika.",
+      currentPasswordRequired: "Koma kódi ya sekré ya kala.",
+      currentPasswordWrong: "Yango ezali kódi ya sekré ya kala na yo te.",
+      emailUnchanged: "Yango nde adrɛsi na yo ya sikoyo.",
+      reauthenticationNeeded: "Kɔta lisusu mpo na kondima mbongwana oyo.",
       serverError: "Likambo moko esalemi. Meká lisusu.",
     },
     notConfigured:
@@ -1000,6 +1004,26 @@ const ln: Dictionary = {
     sessionsSignOutAllHint:
       "Ata aparɛyɛ oyo : okokɔta lisusu awa.",
     sessionsBack: "Zonga na esika ya mosálá na ngai",
+    securityTitle: "Bokengi ya kɔnti",
+    securitySubtitle: "Kódi ya sekré, adrɛsi ya imɛlɛ mpe ba session ya polele.",
+    securityPasswordTitle: "Kódi ya sekré",
+    securityPasswordText:
+      "Kódi ya sekré ya kala esengami : session oyo etikali polele esengeli te mpo na kobongisa yango.",
+    securityCurrentPassword: "Kódi ya sekré ya kala",
+    securityPasswordCta: "Bongisa kódi ya sekré na ngai",
+    securityPasswordChanged:
+      "Kódi ya sekré na yo ebongisami, mpe ba aparɛyɛ mosusu babimisami.",
+    securityEmailTitle: "Adrɛsi ya imɛlɛ",
+    securityEmailText:
+      "Adrɛsi oyo nde ekɔtisaka yo mpe ezali kozwa ba kondima na yo.",
+    securityNewEmail: "Adrɛsi ya sika",
+    securityEmailCta: "Senga mbongwana",
+    securityEmailSent:
+      "Nsango ekotinda epai ya adrɛsi ya kala mpe ya sika. Mbongwana ekosala soki mibale endimami — kino ntango wana, adrɛsi ya kala ekotikala.",
+    securitySessionsText:
+      "Session oyo ezali kosala, mpe ndenge ya kokanga mosusu.",
+    securitySessionsManage: "Bongisa ba session",
+    securitySignOutTitle: "Kobima",
     resendTitle: "Tinda kódi ya kondima lisusu",
     resendSubtitle: "Koma adrɛsi na yo : tokotinda kódi ya sika.",
     resendCta: "Tinda kódi",

@@ -73,6 +73,23 @@ export const verifyEmailSchema = z.object({
   code: sixDigitCode("emailCodeRequired", "emailCodeInvalid"),
 });
 
+/**
+ * Changement de mot de passe depuis les paramètres de sécurité.
+ *
+ * L'ancien mot de passe est exigé : c'est ce qui distingue ce formulaire de la
+ * réinitialisation par lien, où l'utilisateur ne le connaît plus par définition.
+ */
+export const changePasswordSchema = z
+  .object({
+    current: z.string().min(1, "currentPasswordRequired"),
+    password: passwordField,
+    confirm: z.string().min(1, "passwordRequired"),
+  })
+  .refine((values) => values.password === values.confirm, {
+    message: "passwordMismatch",
+    path: ["confirm"],
+  });
+
 export type LoginValues = z.infer<typeof loginSchema>;
 export type RegisterValues = z.infer<typeof registerSchema>;
 

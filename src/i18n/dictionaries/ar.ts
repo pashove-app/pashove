@@ -912,6 +912,10 @@ const ar: Dictionary = {
         "هذا الرمز لم يعد صالحًا: انتهت صلاحيته أو استُخدم من قبل. اطلب رمزًا جديدًا.",
       confirmTokenInvalid:
         "هذا الرابط لم يعد صالحًا: انتهت صلاحيته أو استُخدم من قبل. اطلب رابطًا جديدًا.",
+      currentPasswordRequired: "أدخل كلمة مرورك الحالية.",
+      currentPasswordWrong: "هذه ليست كلمة مرورك الحالية.",
+      emailUnchanged: "هذا هو عنوانك الحالي بالفعل.",
+      reauthenticationNeeded: "سجّل الدخول من جديد لتأكيد هذا التغيير.",
       serverError: "حدث خطأ. أعد المحاولة بعد لحظات.",
     },
     notConfigured:
@@ -993,6 +997,25 @@ const ar: Dictionary = {
     sessionsSignOutAllHint:
       "بما في ذلك هذا الجهاز: ستحتاج إلى تسجيل الدخول هنا أيضًا.",
     sessionsBack: "العودة إلى مساحتي",
+    securityTitle: "أمان الحساب",
+    securitySubtitle: "كلمة المرور والبريد الإلكتروني والجلسات المفتوحة.",
+    securityPasswordTitle: "كلمة المرور",
+    securityPasswordText:
+      "نطلب كلمة مرورك الحالية: لا ينبغي أن تكفي جلسة تُركت مفتوحة لتغييرها.",
+    securityCurrentPassword: "كلمة المرور الحالية",
+    securityPasswordCta: "تغيير كلمة المرور",
+    securityPasswordChanged:
+      "تم تغيير كلمة المرور، وتم إنهاء جلسات الأجهزة الأخرى.",
+    securityEmailTitle: "البريد الإلكتروني",
+    securityEmailText:
+      "هذا هو العنوان الذي تسجّل به الدخول والذي يصلك عليه التأكيد.",
+    securityNewEmail: "العنوان الجديد",
+    securityEmailCta: "طلب التغيير",
+    securityEmailSent:
+      "أُرسلت رسالة إلى عنوانك القديم والجديد. يسري التغيير بعد تأكيد الاثنين — وإلى أن يحدث ذلك يبقى عنوانك الحالي كما هو.",
+    securitySessionsText: "الجلسة الحالية، وسبيل إغلاق الجلسات الأخرى.",
+    securitySessionsManage: "إدارة الجلسات",
+    securitySignOutTitle: "تسجيل الخروج",
     resendTitle: "إعادة إرسال رمز التحقق",
     resendSubtitle: "أدخل بريدك الإلكتروني وسنرسل لك رمزًا جديدًا.",
     resendCta: "أرسل الرمز",

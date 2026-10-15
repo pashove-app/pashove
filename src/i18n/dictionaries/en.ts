@@ -907,6 +907,10 @@ const en: Dictionary = {
         "That code is no longer valid: it has expired, or it has already been used. Request a new one.",
       confirmTokenInvalid:
         "That link is no longer valid: it has expired, or it has already been used. Request a new one.",
+      currentPasswordRequired: "Enter your current password.",
+      currentPasswordWrong: "That isn't your current password.",
+      emailUnchanged: "That's already your current address.",
+      reauthenticationNeeded: "Sign in again to confirm this change.",
       serverError: "Something went wrong. Try again in a moment.",
     },
     notConfigured:
@@ -992,6 +996,25 @@ const en: Dictionary = {
     sessionsSignOutAllHint:
       "This device included: you'll have to sign in again here too.",
     sessionsBack: "Back to my workspace",
+    securityTitle: "Account security",
+    securitySubtitle: "Password, email address and open sessions.",
+    securityPasswordTitle: "Password",
+    securityPasswordText:
+      "Your current password is required: a session left open shouldn't be enough to change it.",
+    securityCurrentPassword: "Current password",
+    securityPasswordCta: "Change my password",
+    securityPasswordChanged:
+      "Your password has been changed, and other devices have been signed out.",
+    securityEmailTitle: "Email address",
+    securityEmailText:
+      "This is the address that signs you in and receives your confirmations.",
+    securityNewEmail: "New address",
+    securityEmailCta: "Request the change",
+    securityEmailSent:
+      "A message is going to your old and your new address. The change takes effect once both are confirmed — until then, your current address stays in place.",
+    securitySessionsText: "The current session, and how to close the others.",
+    securitySessionsManage: "Manage sessions",
+    securitySignOutTitle: "Sign out",
     resendTitle: "Resend the verification code",
     resendSubtitle: "Enter your address and we'll send a new code.",
     resendCta: "Send the code",

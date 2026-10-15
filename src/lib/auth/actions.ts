@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
-import { loginSchema, registerSchema, emailOnlySchema, resetPasswordSchema, totpCodeSchema, verifyEmailSchema, toFieldErrors } from "@/lib/validation";
+import { loginSchema, registerSchema, emailOnlySchema, resetPasswordSchema, changePasswordSchema, totpCodeSchema, verifyEmailSchema, toFieldErrors } from "@/lib/validation";
 import { clearPendingEmail, rememberPendingEmail } from "@/lib/auth/pending-email";
 import type { AuthState, TotpEnrollmentState } from "@/lib/auth/types";
 
@@ -31,6 +31,8 @@ function messageKeyFor(error: {
   if (code === "session_expired" || code === "refresh_token_not_found") {
     return "sessionExpired";
   }
+  // Supabase exige une session récente pour certaines modifications sensibles.
+  if (code === "reauthentication_needed") return "reauthenticationNeeded";
   if (code === "over_request_rate_limit" || code === "over_email_send_rate_limit") {
     return "rateLimited";
   }
@@ -570,6 +572,108 @@ export async function verifyTotpChallengeAction(
 
   revalidatePath("/", "layout");
   redirect(`/${locale}/app`);
+}
+
+/* ------------------------------------------------------------------ *
+ *  Paramètres de sécurité
+ * ------------------------------------------------------------------ */
+
+/**
+ * Change le mot de passe depuis les paramètres du compte.
+ *
+ * L'ancien mot de passe est revérifié avant d'écrire : `updateUser` ne le
+ * demande pas, et une session laissée ouverte sur un appareil partagé ne doit
+ * pas suffire à s'emparer du compte. La revérification a un second effet : elle
+ * rafraîchit la session, ce que Supabase exige pour une modification sensible
+ * (`reauthentication_needed` sur une session ancienne).
+ */
+export async function changePasswordAction(
+  _previous: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const parsed = changePasswordSchema.safeParse({
+    current: field(formData, "current"),
+    password: field(formData, "password"),
+    confirm: field(formData, "confirm"),
+  });
+
+  if (!parsed.success) {
+    return { status: "invalid", fieldErrors: toFieldErrors(parsed.error) };
+  }
+
+  if (!isSupabaseConfigured()) return { status: "unconfigured" };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user?.email) return { status: "error", messageKey: "sessionExpired" };
+
+  const { error: wrongPassword } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: parsed.data.current,
+  });
+
+  if (wrongPassword) {
+    return { status: "invalid", fieldErrors: { current: "currentPasswordWrong" } };
+  }
+
+  const { error } = await supabase.auth.updateUser({
+    password: parsed.data.password,
+  });
+
+  if (error) return { status: "error", messageKey: messageKeyForRecovery(error) };
+
+  // Changer de mot de passe doit fermer les sessions ouvertes ailleurs :
+  // c'est le premier réflexe après un doute sur la sécurité du compte.
+  await supabase.auth.signOut({ scope: "others" });
+
+  revalidatePath("/", "layout");
+  return { status: "password-changed" };
+}
+
+/**
+ * Demande un changement d'adresse e-mail.
+ *
+ * Rien n'est modifié tout de suite : Supabase envoie une confirmation à
+ * l'ancienne **et** à la nouvelle adresse, et le changement ne prend effet que
+ * lorsque les deux sont confirmées. C'est ce qui empêche quelqu'un qui aurait
+ * pris la main sur une session de s'approprier le compte.
+ */
+export async function changeEmailAction(
+  _previous: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const locale = field(formData, "locale") || "fr";
+
+  const parsed = emailOnlySchema.safeParse({ email: field(formData, "email") });
+
+  if (!parsed.success) {
+    return { status: "invalid", fieldErrors: toFieldErrors(parsed.error) };
+  }
+
+  if (!isSupabaseConfigured()) return { status: "unconfigured" };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { status: "error", messageKey: "sessionExpired" };
+
+  if (parsed.data.email === user.email) {
+    return { status: "invalid", fieldErrors: { email: "emailUnchanged" } };
+  }
+
+  const { error } = await supabase.auth.updateUser(
+    { email: parsed.data.email },
+    { emailRedirectTo: `${siteUrl()}/${locale}/auth/callback` },
+  );
+
+  if (error) return { status: "error", messageKey: messageKeyForRecovery(error) };
+
+  return { status: "email-change-sent", email: parsed.data.email };
 }
 
 /* ------------------------------------------------------------------ *

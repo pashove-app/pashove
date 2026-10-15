@@ -14,6 +14,8 @@ export type AuthState = {
     | "reset-sent"
     | "code-sent"
     | "others-signed-out"
+    | "password-changed"
+    | "email-change-sent"
     | "enrolling"
     | "unconfigured";
   /** Une clé de message par champ fautif (voir `auth.errors`). */
