@@ -977,6 +977,22 @@ const ar: Dictionary = {
     confirmInvalidTitle: "رابط غير مكتمل",
     confirmInvalidText:
       "هذا الرابط لا يحتوي على ما يلزم للمتابعة. افتحه من البريد الذي وصلك.",
+    sessionsTitle: "الجلسات والأجهزة",
+    sessionsSubtitle:
+      "هذا الجهاز مسجّل الدخول. يمكنك إغلاق الجلسات المفتوحة في مكان آخر.",
+    sessionsCurrentTitle: "هذا الجهاز",
+    sessionsLastSignIn: "آخر تسجيل دخول",
+    sessionsTwoFactor: "التحقق بخطوتين",
+    sessionsTwoFactorOn: "مُفعّل",
+    sessionsTwoFactorOff: "غير مُفعّل",
+    sessionsSignOutOthers: "إنهاء جلسات الأجهزة الأخرى",
+    sessionsSignOutOthersHint:
+      "سيتعيّن على المتصفحات والهواتف الأخرى تسجيل الدخول من جديد.",
+    sessionsOthersSignedOut: "تم إنهاء جلسات الأجهزة الأخرى.",
+    sessionsSignOutAll: "تسجيل الخروج من كل مكان",
+    sessionsSignOutAllHint:
+      "بما في ذلك هذا الجهاز: ستحتاج إلى تسجيل الدخول هنا أيضًا.",
+    sessionsBack: "العودة إلى مساحتي",
     resendTitle: "إعادة إرسال رمز التحقق",
     resendSubtitle: "أدخل بريدك الإلكتروني وسنرسل لك رمزًا جديدًا.",
     resendCta: "أرسل الرمز",

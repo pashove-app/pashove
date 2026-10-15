@@ -984,6 +984,22 @@ const ln: Dictionary = {
     confirmInvalidTitle: "Lianɛ ekoki te",
     confirmInvalidText:
       "Lianɛ oyo ezali na oyo esengeli te mpo na kokoba. Fungola yango na imɛlɛ oyo ozwaki.",
+    sessionsTitle: "Session mpe ba aparɛyɛ",
+    sessionsSubtitle:
+      "Aparɛyɛ oyo ekɔti. Okoki kokanga ba session mosusu.",
+    sessionsCurrentTitle: "Aparɛyɛ oyo",
+    sessionsLastSignIn: "Kokɔta ya nsuka",
+    sessionsTwoFactor: "Bokengi ya bakódi mibale",
+    sessionsTwoFactorOn: "Ezali kosala",
+    sessionsTwoFactorOff: "Ezali kosala te",
+    sessionsSignOutOthers: "Bimisa ba aparɛyɛ mosusu",
+    sessionsSignOutOthersHint:
+      "Ba aparɛyɛ mosusu mpe ba telefɔni bakokɔta lisusu.",
+    sessionsOthersSignedOut: "Ba aparɛyɛ mosusu babimisami.",
+    sessionsSignOutAll: "Bima na bisika nyonso",
+    sessionsSignOutAllHint:
+      "Ata aparɛyɛ oyo : okokɔta lisusu awa.",
+    sessionsBack: "Zonga na esika ya mosálá na ngai",
     resendTitle: "Tinda kódi ya kondima lisusu",
     resendSubtitle: "Koma adrɛsi na yo : tokotinda kódi ya sika.",
     resendCta: "Tinda kódi",

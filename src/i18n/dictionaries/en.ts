@@ -976,6 +976,22 @@ const en: Dictionary = {
     confirmInvalidTitle: "Incomplete link",
     confirmInvalidText:
       "This link is missing what it needs to continue. Open it from the email you received.",
+    sessionsTitle: "Sessions and devices",
+    sessionsSubtitle:
+      "This device is signed in. You can close sessions open elsewhere.",
+    sessionsCurrentTitle: "This device",
+    sessionsLastSignIn: "Last sign-in",
+    sessionsTwoFactor: "Two-factor authentication",
+    sessionsTwoFactorOn: "On",
+    sessionsTwoFactorOff: "Off",
+    sessionsSignOutOthers: "Sign out other devices",
+    sessionsSignOutOthersHint:
+      "Other browsers and phones will have to sign in again.",
+    sessionsOthersSignedOut: "Other devices have been signed out.",
+    sessionsSignOutAll: "Sign out everywhere",
+    sessionsSignOutAllHint:
+      "This device included: you'll have to sign in again here too.",
+    sessionsBack: "Back to my workspace",
     resendTitle: "Resend the verification code",
     resendSubtitle: "Enter your address and we'll send a new code.",
     resendCta: "Send the code",

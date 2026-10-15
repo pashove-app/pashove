@@ -102,10 +102,14 @@ export default async function WorkspacePage({
           />
         </dl>
 
-        <div className="mt-6">
+        <div className="mt-6 flex flex-wrap gap-3">
           <ButtonLink href={path(locale, "/auth/2fa/setup")} variant="outline">
             <Icon path={icons.shield} className="h-4 w-4" />
             {t.auth.totpSetupTitle}
+          </ButtonLink>
+          <ButtonLink href={path(locale, "/auth/sessions")} variant="outline">
+            <Icon path={icons.users} className="h-4 w-4" />
+            {t.auth.sessionsTitle}
           </ButtonLink>
         </div>
 

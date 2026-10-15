@@ -1020,6 +1020,22 @@ const fr = {
     confirmInvalidTitle: "Lien incomplet",
     confirmInvalidText:
       "Ce lien ne contient pas ce qu'il faut pour continuer. Ouvre-le depuis l'e-mail que tu as reçu.",
+    sessionsTitle: "Sessions et appareils",
+    sessionsSubtitle:
+      "Cet appareil est connecté. Tu peux fermer les sessions ouvertes ailleurs.",
+    sessionsCurrentTitle: "Cet appareil",
+    sessionsLastSignIn: "Dernière connexion",
+    sessionsTwoFactor: "Double authentification",
+    sessionsTwoFactorOn: "Activée",
+    sessionsTwoFactorOff: "Désactivée",
+    sessionsSignOutOthers: "Déconnecter les autres appareils",
+    sessionsSignOutOthersHint:
+      "Les autres navigateurs et téléphones devront se reconnecter.",
+    sessionsOthersSignedOut: "Les autres appareils ont été déconnectés.",
+    sessionsSignOutAll: "Déconnecter partout",
+    sessionsSignOutAllHint:
+      "Y compris cet appareil : tu devras te reconnecter ici aussi.",
+    sessionsBack: "Retour à mon espace",
     resendTitle: "Renvoyer le code de vérification",
     resendSubtitle: "Indique ton adresse : on t'envoie un nouveau code.",
     resendCta: "Envoyer le code",

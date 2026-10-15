@@ -983,6 +983,22 @@ const bm: Dictionary = {
     confirmInvalidTitle: "Kɔdi ma kun",
     confirmInvalidText:
       "Nin kɔdi la fɛn tɛ min ka kan ka taa ɲɛ. A da imɛli min ciilen na.",
+    sessionsTitle: "Session ni aparɛy",
+    sessionsSubtitle:
+      "Nin aparɛy kɔlilen. I bɛ se ka session wɛrɛw datugu.",
+    sessionsCurrentTitle: "Nin aparɛy",
+    sessionsLastSignIn: "Kɔta laban",
+    sessionsTwoFactor: "Lakana kɔdi fila",
+    sessionsTwoFactorOn: "A bɛ baara la",
+    sessionsTwoFactorOff: "A tɛ baara la",
+    sessionsSignOutOthers: "Aparɛy wɛrɛw bɔ",
+    sessionsSignOutOthersHint:
+      "Aparɛy wɛrɛw ni telefɔni wɛrɛw bɛna kɔta tugun.",
+    sessionsOthersSignedOut: "Aparɛy wɛrɛw bɔra.",
+    sessionsSignOutAll: "Bɔ yɔrɔ bɛɛ",
+    sessionsSignOutAllHint:
+      "Ni nin aparɛy fana : i bɛna kɔta tugun yan.",
+    sessionsBack: "Ka segi n ka baara yɔrɔ",
     resendTitle: "Kɔdi ci tugun",
     resendSubtitle: "I imɛli adrɛsi sɛbɛn : an bɛ kɔdi kura ci i ma.",
     resendCta: "Kɔdi ci",

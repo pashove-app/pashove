@@ -573,6 +573,32 @@ export async function verifyTotpChallengeAction(
 }
 
 /* ------------------------------------------------------------------ *
+ *  Sessions
+ * ------------------------------------------------------------------ */
+
+/**
+ * Ferme toutes les sessions sauf celle-ci.
+ *
+ * Supabase n'expose pas la liste des sessions d'un utilisateur sans les droits
+ * d'administration : plutôt que d'inventer une liste d'appareils, l'écran
+ * propose les deux gestes qui couvrent le besoin réel — reprendre la main
+ * ailleurs, ou partout.
+ */
+export async function signOutOthersAction(
+  _previous: AuthState,
+  _formData: FormData,
+): Promise<AuthState> {
+  if (!isSupabaseConfigured()) return { status: "unconfigured" };
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signOut({ scope: "others" });
+
+  if (error) return { status: "error", messageKey: "serverError" };
+
+  return { status: "others-signed-out" };
+}
+
+/* ------------------------------------------------------------------ *
  *  Déconnexion
  * ------------------------------------------------------------------ */
 
