@@ -907,6 +907,12 @@ const bm: Dictionary = {
       totpTooMany: "Kɔdi ka ca kojugu nin konti kan.",
       totpDisabled: "Lakana kɔdi fila tɛ baara la nin porozɛ kan.",
       totpVerifyFirst: "Fɔlɔ i sɛgɛsɛgɛli kɔdi sabati.",
+      emailCodeRequired: "Kɔdi ni wɔɔrɔ (6) sɛbɛn min ciilen imɛli la.",
+      emailCodeInvalid: "Nin kɔdi man ɲi. A lajɛ ka kɛlɛ tugun.",
+      emailCodeExpired:
+        "Nin kɔdi man ɲi tugun : a banna walima a baara kɛra. Kɔdi kura ɲini.",
+      confirmTokenInvalid:
+        "Nin kɔdi man ɲi tugun : a banna walima a baara kɛra. Kɔdi kura ɲini.",
       serverError: "Fɔɲɔgɔ kɛra. Kɛlɛ tugun.",
     },
     notConfigured:
@@ -914,7 +920,7 @@ const bm: Dictionary = {
     checkEmailTitle: "I imɛli bozi ye",
     checkEmailText: "Lakali kɔdi ciilen {email} ma.",
     checkEmailHint:
-      "Kɔdi kan ka i konti yele, o kɔ segi ka kɔta.",
+      "I konti yele ni kɔdi walima kɔdi ni wɔɔrɔ (6) min ciilen imɛli la — kelen dɔrɔn, mibale tɛ.",
     forgotTitle: "Dogolen kɔdi ɲinanna",
     forgotSubtitle:
       "I imɛli adrɛsi sɛbɛn : an bɛ kɔdi ci i ma, i ye dogolen kɔdi kura sugandi.",
@@ -942,7 +948,7 @@ const bm: Dictionary = {
       "Ni Google Authenticator, Authy, 1Password walima aplikasi wɛrɛ min bɛ kɛ cogo kelen.",
     totpSecretLabel: "Walima nin kɔdi sɛbɛn i bolo",
     totpCodeLabel: "Kɔdi ni wɔɔrɔ (6)",
-    totpCodeHint: "123456",
+    codeHint: "123456",
     totpVerifyCta: "A da",
     totpActiveTitle: "Lakana kɔdi fila bɛ baara la",
     totpActiveText:
@@ -951,6 +957,35 @@ const bm: Dictionary = {
     totpChallengeTitle: "Sira fila sɛgɛsɛgɛli",
     totpChallengeSubtitle: "Kɔdi ni wɔɔrɔ (6) sɛbɛn min bɛ jira i aplikasi kɔnɔ.",
     totpChallengeCta: "A sabati",
+    verifyEmailTitle: "I imɛli sabati",
+    verifyEmailSubtitle: "Kɔdi ni wɔɔrɔ (6) ciilen {email} ma.",
+    verifyEmailNoEmailText:
+      "Imɛli adrɛsi sɛbɛn min bɛ i konti na : an bɛ kɔdi kura ci i ma.",
+    verifyEmailSendCta: "Kɔdi sɔrɔ",
+    verifyEmailCodeLabel: "Kɔdi ni wɔɔrɔ (6)",
+    verifyEmailVerifyCta: "N imɛli sabati",
+    verifyEmailResend: "Kɔdi ci tugun",
+    verifyEmailHaveCode: "Kɔdi bɛ n bolo",
+    verifyEmailChangeEmail: "Ka imɛli wɛrɛ baara",
+    verifyEmailEitherOr:
+      "Imɛli kɔdi ni kɔdi min bɛ nin yɔrɔ : ni kelen sabatilen, dɔ tɛ baara kɛ tugun. Kelen dɔrɔn baara, mibale tɛ.",
+    verifyEmailSentTitle: "Kɔdi ciilen",
+    verifyEmailSentText:
+      "Ni konti dɔ bɛ makɔnɔ {email} ye, kɔdi kura ciilen a ma sisan.",
+    verifyEmailSentHint: "Kɔdi bɛ ban joona. A lajɛ i spam kɔnɔ fana.",
+    confirmSignupTitle: "I konti sabati",
+    confirmSignupText: "Klikɛ kelen dɔrɔn, i konti bɛ da.",
+    confirmSignupCta: "N konti sabati",
+    confirmRecoveryTitle: "Dogolen kɔdi kura sugandi",
+    confirmRecoveryText:
+      "Nin kɔdi bɛ baara kɛ si kelen dɔrɔn. Taa ɲɛ ka dogolen kɔdi kura sigi.",
+    confirmRecoveryCta: "Taa ɲɛ",
+    confirmInvalidTitle: "Kɔdi ma kun",
+    confirmInvalidText:
+      "Nin kɔdi la fɛn tɛ min ka kan ka taa ɲɛ. A da imɛli min ciilen na.",
+    resendTitle: "Kɔdi ci tugun",
+    resendSubtitle: "I imɛli adrɛsi sɛbɛn : an bɛ kɔdi kura ci i ma.",
+    resendCta: "Kɔdi ci",
     workspaceTitle: "I session bɛ baara la",
     workspaceText:
       "Kɔli bɛ baara la. Butiki baara yɔrɔ bɛɛ bɛ na a kɔ.",

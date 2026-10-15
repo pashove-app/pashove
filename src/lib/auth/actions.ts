@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
-import { loginSchema, registerSchema, forgotPasswordSchema, resetPasswordSchema, totpCodeSchema, toFieldErrors } from "@/lib/validation";
+import { loginSchema, registerSchema, emailOnlySchema, resetPasswordSchema, totpCodeSchema, verifyEmailSchema, toFieldErrors } from "@/lib/validation";
+import { clearPendingEmail, rememberPendingEmail } from "@/lib/auth/pending-email";
 import type { AuthState, TotpEnrollmentState } from "@/lib/auth/types";
 
 /* ------------------------------------------------------------------ *
@@ -122,8 +123,10 @@ export async function signUpAction(
   if (error) return { status: "error", messageKey: messageKeyFor(error) };
 
   // Confirmation d'e-mail active : aucune session n'est ouverte tant que le
-  // lien n'a pas été cliqué.
+  // code ou le lien n'a pas été validé. On retient l'adresse pour que l'écran de
+  // vérification sache quoi vérifier, et puisse renvoyer un code.
   if (!data.session) {
+    await rememberPendingEmail(parsed.data.email);
     return { status: "check-email", email: parsed.data.email };
   }
 
@@ -163,7 +166,7 @@ export async function requestPasswordResetAction(
 ): Promise<AuthState> {
   const locale = field(formData, "locale") || "fr";
 
-  const parsed = forgotPasswordSchema.safeParse({ email: field(formData, "email") });
+  const parsed = emailOnlySchema.safeParse({ email: field(formData, "email") });
 
   if (!parsed.success) {
     return { status: "invalid", fieldErrors: toFieldErrors(parsed.error) };
@@ -235,6 +238,155 @@ export async function updatePasswordAction(
   await supabase.auth.signOut({ scope: "others" });
 
   revalidatePath("/", "layout");
+  redirect(`/${locale}/app`);
+}
+
+/* ------------------------------------------------------------------ *
+ *  Confirmation d'adresse
+ * ------------------------------------------------------------------ */
+
+/**
+ * Traduit une erreur de jeton à usage unique.
+ *
+ * `expiredKey` varie selon le support : un code à recopier et un lien cliqué ne
+ * se réparent pas de la même façon, même si Supabase renvoie la même erreur.
+ */
+function otpMessageKey(
+  error: { code?: string; status?: number; message?: string },
+  expiredKey: string,
+): string {
+  switch (error.code) {
+    case "otp_expired":
+      return expiredKey;
+    case "invalid_otp":
+    case "otp_disabled":
+      return "emailCodeInvalid";
+    case "session_expired":
+    case "refresh_token_not_found":
+      return "sessionExpired";
+    default:
+      // Un jeton erroné revient en 403 sans code d'erreur exploitable.
+      return error.status === 403 ? expiredKey : "serverError";
+  }
+}
+
+/**
+ * Renvoie le code de confirmation.
+ *
+ * La réponse est la même que l'adresse corresponde à un compte en attente ou
+ * non : Supabase ne le dit pas, et l'écran ne doit pas le dire non plus. Le cas
+ * « adresse déjà confirmée » est avalé pour la même raison — le signaler
+ * reviendrait à confirmer l'existence du compte.
+ */
+export async function resendVerificationAction(
+  _previous: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const locale = field(formData, "locale") || "fr";
+
+  const parsed = emailOnlySchema.safeParse({ email: field(formData, "email") });
+
+  if (!parsed.success) {
+    return { status: "invalid", fieldErrors: toFieldErrors(parsed.error) };
+  }
+
+  if (!isSupabaseConfigured()) return { status: "unconfigured" };
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email: parsed.data.email,
+    options: { emailRedirectTo: `${siteUrl()}/${locale}/auth/callback` },
+  });
+
+  if (error && error.code !== "user_already_confirmed") {
+    // Seule la limitation de débit est signalée : elle est actionnable, et elle
+    // ne dit rien sur l'existence du compte.
+    if (messageKeyForRecovery(error) === "rateLimited") {
+      return { status: "error", messageKey: "rateLimited" };
+    }
+  }
+
+  await rememberPendingEmail(parsed.data.email);
+  return { status: "code-sent", email: parsed.data.email };
+}
+
+/** Valide le code reçu par e-mail : c'est lui qui ouvre la session. */
+export async function verifyEmailCodeAction(
+  _previous: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const locale = field(formData, "locale") || "fr";
+
+  const parsed = verifyEmailSchema.safeParse({
+    email: field(formData, "email"),
+    code: field(formData, "code"),
+  });
+
+  if (!parsed.success) {
+    return { status: "invalid", fieldErrors: toFieldErrors(parsed.error) };
+  }
+
+  if (!isSupabaseConfigured()) return { status: "unconfigured" };
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.verifyOtp({
+    email: parsed.data.email,
+    token: parsed.data.code,
+    type: "signup",
+  });
+
+  if (error) return { status: "error", messageKey: otpMessageKey(error, "emailCodeExpired") };
+
+  await clearPendingEmail();
+  revalidatePath("/", "layout");
+  redirect(`/${locale}/app`);
+}
+
+/* ------------------------------------------------------------------ *
+ *  Confirmation par lien
+ * ------------------------------------------------------------------ */
+
+/**
+ * Consomme le jeton d'un lien reçu par e-mail — **au clic, jamais au chargement**.
+ *
+ * Le lien envoyé par Supabase (`{{ .ConfirmationURL }}`) vérifie le jeton dès
+ * qu'il est ouvert. Or les messageries pré-visitent les liens pour détecter les
+ * pages malveillantes : le jeton est alors consommé par le robot, et l'adresse
+ * de l'utilisateur reste non confirmée sans qu'il ait rien fait. Les gabarits
+ * d'e-mail pointent donc vers notre page, qui n'exécute cette action que sur le
+ * bouton.
+ */
+export async function confirmEmailTokenAction(
+  _previous: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const locale = field(formData, "locale") || "fr";
+  const tokenHash = field(formData, "token_hash");
+  const requested = field(formData, "type");
+
+  // `email` et `signup` désignent la même chose selon la façon dont le gabarit
+  // a été écrit : on accepte les deux.
+  const type =
+    requested === "recovery" ? "recovery" : requested === "signup" || requested === "email" ? "signup" : null;
+
+  if (!tokenHash || !type) return { status: "error", messageKey: "confirmTokenInvalid" };
+  if (!isSupabaseConfigured()) return { status: "unconfigured" };
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
+
+  if (error) {
+    return { status: "error", messageKey: otpMessageKey(error, "confirmTokenInvalid") };
+  }
+
+  revalidatePath("/", "layout");
+
+  // Un lien de réinitialisation ouvre une session : elle sert à choisir le
+  // nouveau mot de passe, pas à entrer dans l'espace marchand.
+  if (type === "recovery") redirect(`/${locale}/auth/reset-password`);
+
+  await clearPendingEmail();
   redirect(`/${locale}/app`);
 }
 

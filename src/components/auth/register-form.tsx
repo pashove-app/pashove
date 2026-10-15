@@ -52,9 +52,19 @@ export function RegisterForm({ t, locale }: SectionProps) {
           {t.auth.checkEmailHint}
         </p>
 
+        {/* Le code à six chiffres est aussi dans l'e-mail : on donne le chemin
+            vers l'écran qui le saisit. */}
+        <Link
+          href={path(locale, "/auth/verify-email")}
+          className={buttonClass({ size: "lg", className: "mt-8 w-full" })}
+        >
+          <Icon path={icons.check} className="h-4 w-4" strokeWidth={2} />
+          {t.auth.verifyEmailHaveCode}
+        </Link>
+
         <Link
           href={path(locale, "/auth/login")}
-          className={buttonClass({ variant: "outline", size: "lg", className: "mt-8 w-full" })}
+          className={buttonClass({ variant: "outline", size: "lg", className: "mt-3 w-full" })}
         >
           {t.auth.switchToLogin}
         </Link>

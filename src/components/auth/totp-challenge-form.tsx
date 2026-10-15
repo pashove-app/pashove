@@ -37,7 +37,7 @@ export function TotpChallengeForm({ t, locale, factorId }: SectionProps & { fact
         <TextField
           name="code"
           label={t.auth.totpCodeLabel}
-          hint={t.auth.totpCodeHint}
+          hint={t.auth.codeHint}
           inputMode="numeric"
           autoComplete="one-time-code"
           maxLength={6}

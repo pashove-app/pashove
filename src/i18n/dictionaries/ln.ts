@@ -907,6 +907,12 @@ const ln: Dictionary = {
       totpTooMany: "Bakódi ebele koleka na kɔnti oyo.",
       totpDisabled: "Bokengi ya bakódi mibale ezali te na porojɛ oyo.",
       totpVerifyFirst: "Ndima liboso kódi ya bokengi na yo.",
+      emailCodeRequired: "Koma kódi ya mikɔ́lɔ́ mibale (6) oyo ozwaki na imɛlɛ.",
+      emailCodeInvalid: "Kódi oyo ezali malamu te. Talá yango mpe meká lisusu.",
+      emailCodeExpired:
+        "Kódi oyo ezali lisusu malamu te : esili tǒ esalelami. Senga ya sika.",
+      confirmTokenInvalid:
+        "Lianɛ oyo ezali lisusu malamu te : esili tǒ esalelami. Senga ya sika.",
       serverError: "Likambo moko esalemi. Meká lisusu.",
     },
     notConfigured:
@@ -914,7 +920,7 @@ const ln: Dictionary = {
     checkEmailTitle: "Talá bozí ya imɛlɛ na yo",
     checkEmailText: "Lianɛ ya kondima etindami kaka na {email}.",
     checkEmailHint:
-      "Finá lianɛ mpo na kofungola kɔnti na yo, sima zóngá mpo na kokɔta.",
+      "Fungola kɔnti na yo na lianɛ tǒ na kódi ya mikɔ́lɔ́ mibale (6) ya imɛlɛ — moko, esengeli te mibale.",
     forgotTitle: "Obosani kódi ya sekré",
     forgotSubtitle:
       "Koma adrɛsi na yo : tokotindela yo lianɛ mpo na kopɔní ya sika.",
@@ -942,7 +948,7 @@ const ln: Dictionary = {
       "Na Google Authenticator, Authy, 1Password tǒ aplikasio mosusu ya lolenge moko.",
     totpSecretLabel: "Tǒ koma kódi oyo na lobɔkɔ na yo",
     totpCodeLabel: "Kódi ya mikɔ́lɔ́ mibale (6)",
-    totpCodeHint: "123456",
+    codeHint: "123456",
     totpVerifyCta: "Fungola",
     totpActiveTitle: "Bokengi ya bakódi mibale ezali kosala",
     totpActiveText:
@@ -952,6 +958,35 @@ const ln: Dictionary = {
     totpChallengeSubtitle:
       "Koma kódi ya mikɔ́lɔ́ mibale (6) oyo emonisami na aplikasio na yo.",
     totpChallengeCta: "Ndima",
+    verifyEmailTitle: "Ndima adrɛsi na yo",
+    verifyEmailSubtitle: "Kódi ya mikɔ́lɔ́ mibale (6) etindami na {email}.",
+    verifyEmailNoEmailText:
+      "Koma adrɛsi oyo osalelaki mpo na kokomisa nkombo : tokotinda kódi ya sika.",
+    verifyEmailSendCta: "Zwa kódi",
+    verifyEmailCodeLabel: "Kódi ya mikɔ́lɔ́ mibale (6)",
+    verifyEmailVerifyCta: "Ndima adrɛsi na ngai",
+    verifyEmailResend: "Tinda kódi lisusu",
+    verifyEmailHaveCode: "Nazali na kódi",
+    verifyEmailChangeEmail: "Salela adrɛsi mosusu",
+    verifyEmailEitherOr:
+      "Lianɛ ya imɛlɛ mpe kódi oyo ezali kosala eloko moko : soki moko endimami, mosusu ekosala lisusu te. Salela moko, esengeli te mibale.",
+    verifyEmailSentTitle: "Kódi etindami",
+    verifyEmailSentText:
+      "Soki kɔnti moko ezali kozela kondima mpo na {email}, kódi ya sika etindami sikawa.",
+    verifyEmailSentHint: "Kódi esilisaka noki. Talá mpe na spam na yo.",
+    confirmSignupTitle: "Ndima kɔnti na yo",
+    confirmSignupText: "Klikɛ moko ya nsuka, mpe kɔnti na yo ekofungwama.",
+    confirmSignupCta: "Ndima kɔnti na ngai",
+    confirmRecoveryTitle: "Pɔní kódi ya sekré ya sika",
+    confirmRecoveryText:
+      "Lianɛ oyo esalelamaka sé mbala moko. Koba mpo na kopɔní kódi ya sekré ya sika.",
+    confirmRecoveryCta: "Koba",
+    confirmInvalidTitle: "Lianɛ ekoki te",
+    confirmInvalidText:
+      "Lianɛ oyo ezali na oyo esengeli te mpo na kokoba. Fungola yango na imɛlɛ oyo ozwaki.",
+    resendTitle: "Tinda kódi ya kondima lisusu",
+    resendSubtitle: "Koma adrɛsi na yo : tokotinda kódi ya sika.",
+    resendCta: "Tinda kódi",
     workspaceTitle: "Session na yo ezali kosala",
     workspaceText:
       "Kokɔta ezali kosala. Esika ya mosálá mobimba ekoya na eteni ya sima.",

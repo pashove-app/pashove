@@ -901,6 +901,12 @@ const en: Dictionary = {
       totpTooMany: "Too many factors are registered on this account.",
       totpDisabled: "Two-factor authentication isn't available on this project.",
       totpVerifyFirst: "Confirm your verification code first.",
+      emailCodeRequired: "Enter the 6-digit code you received by email.",
+      emailCodeInvalid: "That code isn't valid. Check it and try again.",
+      emailCodeExpired:
+        "That code is no longer valid: it has expired, or it has already been used. Request a new one.",
+      confirmTokenInvalid:
+        "That link is no longer valid: it has expired, or it has already been used. Request a new one.",
       serverError: "Something went wrong. Try again in a moment.",
     },
     notConfigured:
@@ -908,7 +914,7 @@ const en: Dictionary = {
     checkEmailTitle: "Check your inbox",
     checkEmailText: "A confirmation link has just been sent to {email}.",
     checkEmailHint:
-      "Click the link to activate your account, then come back and sign in.",
+      "Activate your account with the link or the 6-digit code in the email — one or the other, not both.",
     forgotTitle: "Forgot your password",
     forgotSubtitle:
       "Enter your address and we'll send you a link to choose a new one.",
@@ -936,7 +942,7 @@ const en: Dictionary = {
       "With Google Authenticator, Authy, 1Password or another app of the same kind.",
     totpSecretLabel: "Or copy this key by hand",
     totpCodeLabel: "6-digit code",
-    totpCodeHint: "123456",
+    codeHint: "123456",
     totpVerifyCta: "Turn on",
     totpActiveTitle: "Two-factor authentication is on",
     totpActiveText:
@@ -945,6 +951,34 @@ const en: Dictionary = {
     totpChallengeTitle: "Two-step verification",
     totpChallengeSubtitle: "Enter the 6-digit code shown by your authenticator app.",
     totpChallengeCta: "Confirm",
+    verifyEmailTitle: "Verify your address",
+    verifyEmailSubtitle: "A 6-digit code has been sent to {email}.",
+    verifyEmailNoEmailText:
+      "Enter the address you used to sign up and we'll send a new code.",
+    verifyEmailSendCta: "Send me a code",
+    verifyEmailCodeLabel: "6-digit code",
+    verifyEmailVerifyCta: "Verify my address",
+    verifyEmailResend: "Resend the code",
+    verifyEmailHaveCode: "I have a verification code",
+    verifyEmailChangeEmail: "Use another address",
+    verifyEmailEitherOr:
+      "The link in the email and the code below do the same thing: as soon as one is confirmed, the other stops working. Use one or the other, not both.",
+    verifyEmailSentTitle: "Code sent",
+    verifyEmailSentText:
+      "If an account is waiting for confirmation for {email}, a new code has just been sent.",
+    verifyEmailSentHint: "The code expires quickly. Remember to check your spam folder.",
+    confirmSignupTitle: "Confirm your address",
+    confirmSignupText: "One last click and your account is active.",
+    confirmSignupCta: "Confirm my address",
+    confirmRecoveryTitle: "Choose a new password",
+    confirmRecoveryText: "This link works only once. Continue to set a new password.",
+    confirmRecoveryCta: "Continue",
+    confirmInvalidTitle: "Incomplete link",
+    confirmInvalidText:
+      "This link is missing what it needs to continue. Open it from the email you received.",
+    resendTitle: "Resend the verification code",
+    resendSubtitle: "Enter your address and we'll send a new code.",
+    resendCta: "Send the code",
     workspaceTitle: "Your session is live",
     workspaceText:
       "Sign-in works. The full merchant workspace ships in a later batch.",

@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { FormNotice, TextField } from "@/components/ui/field";
-import { buttonClass, Icon, icons, Ltr, Spinner } from "@/components/ui/primitives";
+import { buttonClass, Icon, icons, Spinner } from "@/components/ui/primitives";
 import { path, type SectionProps } from "@/components/ui/types";
+import { withEmail } from "@/components/auth/with-email";
 import { requestPasswordResetAction } from "@/lib/auth/actions";
 import { INITIAL_AUTH_STATE } from "@/lib/auth/types";
 
@@ -108,23 +109,5 @@ export function ForgotPasswordForm({ t, locale }: SectionProps) {
         </Link>
       </p>
     </div>
-  );
-}
-
-/**
- * Insère l'adresse dans la phrase traduite, en l'isolant du sens de lecture :
- * en arabe, une suite latine au milieu d'une phrase se coupe autrement en deux.
- */
-function withEmail(template: string, email: string) {
-  if (!template.includes("{email}")) return template;
-
-  const [before, after = ""] = template.split("{email}");
-
-  return (
-    <>
-      {before}
-      <Ltr className="font-medium text-body">{email}</Ltr>
-      {after}
-    </>
   );
 }

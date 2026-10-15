@@ -906,6 +906,12 @@ const ar: Dictionary = {
       totpTooMany: "عدد العوامل المسجّلة على هذا الحساب كبير جدًا.",
       totpDisabled: "التحقق بخطوتين غير متاح في هذا المشروع.",
       totpVerifyFirst: "أكّد رمز التحقق أولًا.",
+      emailCodeRequired: "أدخل الرمز المكوّن من 6 أرقام الذي وصلك بالبريد.",
+      emailCodeInvalid: "هذا الرمز غير صالح. تحقّق منه وأعد المحاولة.",
+      emailCodeExpired:
+        "هذا الرمز لم يعد صالحًا: انتهت صلاحيته أو استُخدم من قبل. اطلب رمزًا جديدًا.",
+      confirmTokenInvalid:
+        "هذا الرابط لم يعد صالحًا: انتهت صلاحيته أو استُخدم من قبل. اطلب رابطًا جديدًا.",
       serverError: "حدث خطأ. أعد المحاولة بعد لحظات.",
     },
     notConfigured:
@@ -913,7 +919,7 @@ const ar: Dictionary = {
     checkEmailTitle: "تفقّد بريدك الإلكتروني",
     checkEmailText: "أُرسل رابط التأكيد الآن إلى {email}.",
     checkEmailHint:
-      "اضغط على الرابط لتفعيل حسابك، ثم عد لتسجيل الدخول.",
+      "فعّل حسابك بالرابط أو بالرمز المكوّن من 6 أرقام في البريد — أحدهما فقط، لا الاثنين.",
     forgotTitle: "نسيت كلمة المرور",
     forgotSubtitle: "أدخل بريدك الإلكتروني وسنرسل لك رابطًا لاختيار كلمة مرور جديدة.",
     forgotCta: "أرسل الرابط",
@@ -937,7 +943,7 @@ const ar: Dictionary = {
     totpScanText: "بواسطة Google Authenticator أو Authy أو 1Password أو تطبيق مشابه.",
     totpSecretLabel: "أو انسخ هذا المفتاح يدويًا",
     totpCodeLabel: "رمز من 6 أرقام",
-    totpCodeHint: "123456",
+    codeHint: "123456",
     totpVerifyCta: "تفعيل",
     totpActiveTitle: "التحقق بخطوتين مُفعّل",
     totpActiveText:
@@ -946,6 +952,34 @@ const ar: Dictionary = {
     totpChallengeTitle: "تحقّق بخطوتين",
     totpChallengeSubtitle: "أدخل الرمز المكوّن من 6 أرقام الظاهر في تطبيق المصادقة.",
     totpChallengeCta: "تأكيد",
+    verifyEmailTitle: "أكّد بريدك الإلكتروني",
+    verifyEmailSubtitle: "أُرسل رمز من 6 أرقام إلى {email}.",
+    verifyEmailNoEmailText:
+      "أدخل البريد الذي استخدمته عند التسجيل وسنرسل لك رمزًا جديدًا.",
+    verifyEmailSendCta: "أرسل لي رمزًا",
+    verifyEmailCodeLabel: "رمز من 6 أرقام",
+    verifyEmailVerifyCta: "تأكيد بريدي",
+    verifyEmailResend: "إعادة إرسال الرمز",
+    verifyEmailHaveCode: "لديّ رمز التحقق",
+    verifyEmailChangeEmail: "استخدام بريد آخر",
+    verifyEmailEitherOr:
+      "الرابط في البريد والرمز أدناه يؤديان إلى النتيجة نفسها: بمجرد تأكيد أحدهما يتوقف الآخر عن العمل. استخدم أحدهما فقط، لا الاثنين.",
+    verifyEmailSentTitle: "تم إرسال الرمز",
+    verifyEmailSentText:
+      "إن كان هناك حساب ينتظر التأكيد لـ {email}، فقد أُرسل رمز جديد الآن.",
+    verifyEmailSentHint: "تنتهي صلاحية الرمز سريعًا. تذكّر تفقّد مجلد الرسائل المزعجة.",
+    confirmSignupTitle: "أكّد حسابك",
+    confirmSignupText: "نقرة أخيرة ويصبح حسابك نشطًا.",
+    confirmSignupCta: "تأكيد حسابي",
+    confirmRecoveryTitle: "اختر كلمة مرور جديدة",
+    confirmRecoveryText: "هذا الرابط صالح لمرة واحدة. تابع لتعيين كلمة مرور جديدة.",
+    confirmRecoveryCta: "متابعة",
+    confirmInvalidTitle: "رابط غير مكتمل",
+    confirmInvalidText:
+      "هذا الرابط لا يحتوي على ما يلزم للمتابعة. افتحه من البريد الذي وصلك.",
+    resendTitle: "إعادة إرسال رمز التحقق",
+    resendSubtitle: "أدخل بريدك الإلكتروني وسنرسل لك رمزًا جديدًا.",
+    resendCta: "أرسل الرمز",
     workspaceTitle: "جلستك نشطة",
     workspaceText:
       "تسجيل الدخول يعمل. مساحة العمل الكاملة تصدر في مرحلة لاحقة.",

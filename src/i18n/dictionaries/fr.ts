@@ -942,6 +942,12 @@ const fr = {
       totpTooMany: "Trop de facteurs sont enregistrés sur ce compte.",
       totpDisabled: "La double authentification n'est pas disponible sur ce projet.",
       totpVerifyFirst: "Valide d'abord ton code de vérification.",
+      emailCodeRequired: "Saisis le code à 6 chiffres reçu par e-mail.",
+      emailCodeInvalid: "Ce code n'est pas valide. Vérifie et réessaie.",
+      emailCodeExpired:
+        "Ce code n'est plus valable : il a expiré, ou il a déjà servi. Demande-en un nouveau.",
+      confirmTokenInvalid:
+        "Ce lien n'est plus valable : il a expiré, ou il a déjà servi. Demande-en un nouveau.",
       serverError: "Une erreur est survenue. Réessaie dans un instant.",
     },
     notConfigured:
@@ -949,7 +955,7 @@ const fr = {
     checkEmailTitle: "Vérifie ta boîte mail",
     checkEmailText: "Un lien de confirmation vient d'être envoyé à {email}.",
     checkEmailHint:
-      "Clique sur le lien pour activer ton compte, puis reviens te connecter.",
+      "Active ton compte avec le lien ou le code à 6 chiffres de l'e-mail — l'un ou l'autre, pas les deux.",
     forgotTitle: "Mot de passe oublié",
     forgotSubtitle:
       "Indique ton adresse : on t'envoie un lien pour en choisir un nouveau.",
@@ -978,7 +984,7 @@ const fr = {
       "Avec Google Authenticator, Authy, 1Password ou une autre application du même genre.",
     totpSecretLabel: "Ou recopie cette clé à la main",
     totpCodeLabel: "Code à 6 chiffres",
-    totpCodeHint: "123456",
+    codeHint: "123456",
     totpVerifyCta: "Activer",
     totpActiveTitle: "Double authentification active",
     totpActiveText:
@@ -988,6 +994,35 @@ const fr = {
     totpChallengeSubtitle:
       "Saisis le code à 6 chiffres affiché par ton application d'authentification.",
     totpChallengeCta: "Valider",
+    verifyEmailTitle: "Vérifie ton adresse",
+    verifyEmailSubtitle: "Un code à 6 chiffres a été envoyé à {email}.",
+    verifyEmailNoEmailText:
+      "Indique l'adresse utilisée à l'inscription : on t'envoie un nouveau code.",
+    verifyEmailSendCta: "Recevoir un code",
+    verifyEmailCodeLabel: "Code à 6 chiffres",
+    verifyEmailVerifyCta: "Valider mon adresse",
+    verifyEmailResend: "Renvoyer le code",
+    verifyEmailHaveCode: "J'ai un code de vérification",
+    verifyEmailChangeEmail: "Utiliser une autre adresse",
+    verifyEmailEitherOr:
+      "Le lien reçu par e-mail et le code ci-dessous font la même chose : dès que l'un est validé, l'autre ne fonctionne plus. Utilise l'un ou l'autre, pas les deux.",
+    verifyEmailSentTitle: "Code envoyé",
+    verifyEmailSentText:
+      "Si un compte attend une confirmation pour {email}, un nouveau code vient d'être envoyé.",
+    verifyEmailSentHint: "Le code expire vite. Pense à regarder tes spams.",
+    confirmSignupTitle: "Confirme ton adresse",
+    confirmSignupText: "Un dernier clic, et ton compte est actif.",
+    confirmSignupCta: "Confirmer mon adresse",
+    confirmRecoveryTitle: "Choisis un nouveau mot de passe",
+    confirmRecoveryText:
+      "Ce lien ne sert qu'une fois. Continue pour définir un nouveau mot de passe.",
+    confirmRecoveryCta: "Continuer",
+    confirmInvalidTitle: "Lien incomplet",
+    confirmInvalidText:
+      "Ce lien ne contient pas ce qu'il faut pour continuer. Ouvre-le depuis l'e-mail que tu as reçu.",
+    resendTitle: "Renvoyer le code de vérification",
+    resendSubtitle: "Indique ton adresse : on t'envoie un nouveau code.",
+    resendCta: "Envoyer le code",
     workspaceTitle: "Ta session est active",
     workspaceText:
       "La connexion fonctionne. L'espace marchand complet arrive dans un prochain lot.",

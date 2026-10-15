@@ -143,6 +143,49 @@ Enfin, *Authentication → URL Configuration* : ajouter les adresses de retour
 utilisé). Une adresse absente de cette liste est **silencieusement remplacée** par la
 *Site URL* : le lien de réinitialisation atterrit alors au mauvais endroit, sans erreur.
 
+### 4.2 Faire pointer les liens vers notre page (pré-visite des messageries)
+
+Le lien par défaut de Supabase (`{{ .ConfirmationURL }}`) vérifie le jeton **dès qu'il
+est ouvert**. Or Gmail, Outlook et les antivirus ouvrent les liens d'un e-mail pour les
+analyser : le jeton est alors consommé par le robot, et l'utilisateur qui clique ensuite
+tombe sur « lien invalide ou expiré » — sans avoir rien fait. Échec silencieux, et il
+touche autant la confirmation d'inscription que la réinitialisation de mot de passe.
+
+La parade : le lien ne pointe plus vers Supabase mais vers **notre** page `/auth/confirm`,
+qui affiche un bouton. La vérification n'a lieu qu'au clic, en POST ; un pré-visite ne
+trouve qu'une page inerte.
+
+Dans *Authentication → Email Templates*, remplacer le lien par les valeurs ci-dessous —
+en gardant `{{ .Token }}` à côté si l'on veut aussi le code à recopier :
+
+**Confirm signup** (type `signup`)
+
+```html
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=signup">
+  Confirmer mon adresse
+</a>
+```
+
+**Reset password** (type `recovery`)
+
+```html
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=recovery">
+  Choisir un nouveau mot de passe
+</a>
+```
+
+> `{{ .SiteURL }}` donne l'adresse du site sans langue ; le proxy ajoute le préfixe de
+> langue au passage, en conservant la requête.
+>
+> En HTML, un `&` d'attribut s'écrit `&amp;`. La plupart des clients tolèrent le `&`
+> seul, pas tous.
+
+Avantage secondaire : `verifyOtp({ token_hash })` ne dépend pas du vérificateur PKCE,
+contrairement à l'échange d'un `code`. Un lien de réinitialisation devient donc utilisable
+depuis n'importe quel navigateur, et plus seulement depuis celui qui l'a demandé.
+
+`/auth/callback` reste en place pour les liens déjà partis avec l'ancien gabarit.
+
 ---
 
 ## ÉTAPE 5 — La boîte e-mail **dans l'admin Pashove** (plus tard)

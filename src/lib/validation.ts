@@ -27,6 +27,14 @@ const passwordField = z
   .min(8, "passwordShort")
   .max(128, "passwordShort");
 
+/** Un code à six chiffres, celui d'une application d'authentification ou d'un e-mail. */
+const sixDigitCode = (requiredKey: string, invalidKey: string) =>
+  z
+    .string()
+    .trim()
+    .min(1, requiredKey)
+    .regex(/^\d{6}$/, invalidKey);
+
 export const loginSchema = z.object({
   email: emailField,
   password: z.string().min(1, "passwordRequired"),
@@ -43,8 +51,8 @@ export const registerSchema = z.object({
   consent: z.literal(true, { message: "consentRequired" }),
 });
 
-/** Demande de réinitialisation : une adresse, rien d'autre. */
-export const forgotPasswordSchema = z.object({ email: emailField });
+/** Une adresse, rien d'autre : demande de réinitialisation, renvoi de code. */
+export const emailOnlySchema = z.object({ email: emailField });
 
 /** Deux champs, une seule règle : le second doit confirmer le premier. */
 export const resetPasswordSchema = z
@@ -56,11 +64,13 @@ export const resetPasswordSchema = z
 
 /** Code à six chiffres d'une application d'authentification (TOTP). */
 export const totpCodeSchema = z.object({
-  code: z
-    .string()
-    .trim()
-    .min(1, "totpRequired")
-    .regex(/^\d{6}$/, "totpInvalid"),
+  code: sixDigitCode("totpRequired", "totpInvalid"),
+});
+
+/** Code de confirmation d'adresse, envoyé par e-mail à l'inscription. */
+export const verifyEmailSchema = z.object({
+  email: emailField,
+  code: sixDigitCode("emailCodeRequired", "emailCodeInvalid"),
 });
 
 export type LoginValues = z.infer<typeof loginSchema>;
