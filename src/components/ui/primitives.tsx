@@ -248,10 +248,11 @@ export function FeatureIcon({
  * ------------------------------------------------------------------ */
 
 /**
- * Isole une valeur chiffrée du sens de lecture ambiant.
- * Sans cela, en arabe, « +25 000 » s'affiche « 000 25+ » et « 50+ » devient « +50 ».
+ * Isole un fragment latin du sens de lecture ambiant.
+ * Sans cela, en arabe, « +25 000 » s'affiche « 000 25+ », « 50+ » devient
+ * « +50 », et une adresse e-mail insérée dans une phrase se coupe en deux.
  */
-export function Num({
+export function Ltr({
   children,
   className,
 }: {
@@ -286,6 +287,28 @@ export function Icon({
       className={cn("h-5 w-5", className)}
     >
       {path}
+    </svg>
+  );
+}
+
+/** Roue d'attente des formulaires, à la taille du texte du bouton. */
+export function Spinner({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      className={cn("h-4 w-4 animate-spin", className)}
+      aria-hidden="true"
+    >
+      <circle
+        cx="8"
+        cy="8"
+        r="6.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeDasharray="24 12"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }

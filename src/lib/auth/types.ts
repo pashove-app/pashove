@@ -6,7 +6,13 @@
  * le composant client qui résout la clé dans le dictionnaire actif.
  */
 export type AuthState = {
-  status: "idle" | "invalid" | "error" | "check-email" | "unconfigured";
+  status:
+    | "idle"
+    | "invalid"
+    | "error"
+    | "check-email"
+    | "reset-sent"
+    | "unconfigured";
   /** Une clé de message par champ fautif (voir `auth.errors`). */
   fieldErrors?: Record<string, string>;
   /** Clé de message global, affichée dans le bandeau. */

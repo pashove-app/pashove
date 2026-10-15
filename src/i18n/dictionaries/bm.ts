@@ -898,6 +898,9 @@ const bm: Dictionary = {
       emailTaken: "Konti bɛ yen ni nin adrɛsi ye.",
       rateLimited: "Mekameko ka ca kojugu. Kɛlɛ miniti dɔw kɔnɔ.",
       weakPassword: "Nin dogolen kɔdi man fanga.",
+      passwordMismatch: "Dogolen kɔdi fila man kelen.",
+      samePassword: "Nin dogolen kɔdi ye kɔrɔ ye.",
+      sessionExpired: "I session banna. Kɔdi kura ɲini.",
       serverError: "Fɔɲɔgɔ kɛra. Kɛlɛ tugun.",
     },
     notConfigured:
@@ -906,6 +909,24 @@ const bm: Dictionary = {
     checkEmailText: "Lakali kɔdi ciilen {email} ma.",
     checkEmailHint:
       "Kɔdi kan ka i konti yele, o kɔ segi ka kɔta.",
+    forgotTitle: "Dogolen kɔdi ɲinanna",
+    forgotSubtitle:
+      "I imɛli adrɛsi sɛbɛn : an bɛ kɔdi ci i ma, i ye dogolen kɔdi kura sugandi.",
+    forgotCta: "Kɔdi ci",
+    forgotSentTitle: "I imɛli bozi ye",
+    forgotSentText:
+      "Ni konti bɛ yen {email} ye, kɔdi ciilen a ma sisan.",
+    forgotSentHint:
+      "Kɔdi in bɛ baara kɛ si kelen dɔrɔn, a bɛ ban lɛrɛ kelen kɔnɔ. A lajɛ i spam kɔnɔ fana.",
+    resetTitle: "Dogolen kɔdi kura",
+    resetSubtitle: "Dogolen kɔdi fanga sugandi : a bɛ kɔrɔ don joona.",
+    resetCta: "N dogolen kɔdi falen",
+    newPassword: "Dogolen kɔdi kura",
+    confirmPassword: "Dogolen kɔdi sɛbɛn tugun",
+    resetExpiredTitle: "Kɔdi banna walima a baara kɛra",
+    resetExpiredText:
+      "I lakana kosɔn, kɔdi in bɛ baara kɛ si kelen dɔrɔn, a bɛ ban joona. Kɔdi kura ɲini.",
+    resetExpiredCta: "Kɔdi kura ɲini",
     workspaceTitle: "I session bɛ baara la",
     workspaceText:
       "Kɔli bɛ baara la. Butiki baara yɔrɔ bɛɛ bɛ na a kɔ.",

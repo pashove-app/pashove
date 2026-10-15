@@ -892,6 +892,9 @@ const en: Dictionary = {
       emailTaken: "An account already exists with this address.",
       rateLimited: "Too many attempts. Try again in a few minutes.",
       weakPassword: "That password is too weak.",
+      passwordMismatch: "The two passwords don't match.",
+      samePassword: "That's the same password as before.",
+      sessionExpired: "Your session has expired. Request a new link.",
       serverError: "Something went wrong. Try again in a moment.",
     },
     notConfigured:
@@ -900,6 +903,24 @@ const en: Dictionary = {
     checkEmailText: "A confirmation link has just been sent to {email}.",
     checkEmailHint:
       "Click the link to activate your account, then come back and sign in.",
+    forgotTitle: "Forgot your password",
+    forgotSubtitle:
+      "Enter your address and we'll send you a link to choose a new one.",
+    forgotCta: "Send the link",
+    forgotSentTitle: "Check your inbox",
+    forgotSentText:
+      "If an account exists for {email}, a reset link has just been sent.",
+    forgotSentHint:
+      "The link works only once and expires in an hour. Remember to check your spam folder.",
+    resetTitle: "New password",
+    resetSubtitle: "Choose a strong password: it replaces the old one immediately.",
+    resetCta: "Change my password",
+    newPassword: "New password",
+    confirmPassword: "Confirm the password",
+    resetExpiredTitle: "Link expired or already used",
+    resetExpiredText:
+      "For your security, a reset link works only once and expires quickly. Request a new one.",
+    resetExpiredCta: "Request a new link",
     workspaceTitle: "Your session is live",
     workspaceText:
       "Sign-in works. The full merchant workspace ships in a later batch.",

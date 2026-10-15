@@ -933,6 +933,9 @@ const fr = {
       emailTaken: "Un compte existe déjà avec cette adresse.",
       rateLimited: "Trop de tentatives. Réessaie dans quelques minutes.",
       weakPassword: "Ce mot de passe est trop faible.",
+      passwordMismatch: "Les deux mots de passe ne correspondent pas.",
+      samePassword: "Ce mot de passe est le même que l'ancien.",
+      sessionExpired: "Ta session a expiré. Redemande un lien.",
       serverError: "Une erreur est survenue. Réessaie dans un instant.",
     },
     notConfigured:
@@ -941,6 +944,25 @@ const fr = {
     checkEmailText: "Un lien de confirmation vient d'être envoyé à {email}.",
     checkEmailHint:
       "Clique sur le lien pour activer ton compte, puis reviens te connecter.",
+    forgotTitle: "Mot de passe oublié",
+    forgotSubtitle:
+      "Indique ton adresse : on t'envoie un lien pour en choisir un nouveau.",
+    forgotCta: "Envoyer le lien",
+    forgotSentTitle: "Regarde ta boîte mail",
+    forgotSentText:
+      "Si un compte existe pour {email}, un lien de réinitialisation vient d'être envoyé.",
+    forgotSentHint:
+      "Le lien ne sert qu'une fois et expire dans une heure. Pense à regarder tes spams.",
+    resetTitle: "Nouveau mot de passe",
+    resetSubtitle:
+      "Choisis un mot de passe solide : il remplace l'ancien immédiatement.",
+    resetCta: "Changer mon mot de passe",
+    newPassword: "Nouveau mot de passe",
+    confirmPassword: "Confirme le mot de passe",
+    resetExpiredTitle: "Lien expiré ou déjà utilisé",
+    resetExpiredText:
+      "Pour ta sécurité, un lien de réinitialisation ne sert qu'une fois et expire vite. Demande-en un nouveau.",
+    resetExpiredCta: "Demander un nouveau lien",
     workspaceTitle: "Ta session est active",
     workspaceText:
       "La connexion fonctionne. L'espace marchand complet arrive dans un prochain lot.",

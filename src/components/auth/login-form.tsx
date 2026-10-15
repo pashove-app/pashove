@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { FormNotice, PasswordField, TextField } from "@/components/ui/field";
-import { buttonClass, Icon, icons } from "@/components/ui/primitives";
+import { buttonClass, Icon, icons, Spinner } from "@/components/ui/primitives";
 import { path, type SectionProps } from "@/components/ui/types";
 import { signInAction } from "@/lib/auth/actions";
 import { INITIAL_AUTH_STATE } from "@/lib/auth/types";
@@ -96,22 +96,5 @@ export function LoginForm({ t, locale }: SectionProps) {
         </Link>
       </p>
     </div>
-  );
-}
-
-function Spinner() {
-  return (
-    <svg viewBox="0 0 16 16" className="h-4 w-4 animate-spin" aria-hidden="true">
-      <circle
-        cx="8"
-        cy="8"
-        r="6.5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeDasharray="24 12"
-        strokeLinecap="round"
-      />
-    </svg>
   );
 }

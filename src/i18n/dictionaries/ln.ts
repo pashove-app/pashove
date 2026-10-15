@@ -898,6 +898,9 @@ const ln: Dictionary = {
       emailTaken: "Kɔnti ezali deja na adrɛsi oyo.",
       rateLimited: "Babandi ebele. Meká lisusu na ba minuti moke.",
       weakPassword: "Kódi ya sekré oyo ezali na ngufu te.",
+      passwordMismatch: "Ba kódi ya sekré mibale ekokani te.",
+      samePassword: "Kódi ya sekré oyo ezali kaka ya kala.",
+      sessionExpired: "Session na yo esili. Senga lianɛ ya sika.",
       serverError: "Likambo moko esalemi. Meká lisusu.",
     },
     notConfigured:
@@ -906,6 +909,24 @@ const ln: Dictionary = {
     checkEmailText: "Lianɛ ya kondima etindami kaka na {email}.",
     checkEmailHint:
       "Finá lianɛ mpo na kofungola kɔnti na yo, sima zóngá mpo na kokɔta.",
+    forgotTitle: "Obosani kódi ya sekré",
+    forgotSubtitle:
+      "Koma adrɛsi na yo : tokotindela yo lianɛ mpo na kopɔní ya sika.",
+    forgotCta: "Tinda lianɛ",
+    forgotSentTitle: "Talá bozí ya imɛlɛ na yo",
+    forgotSentText:
+      "Soki kɔnti ezali mpo na {email}, lianɛ ya kobongisa etindami sika.",
+    forgotSentHint:
+      "Lianɛ esalelamaka sé mbala moko mpe esilisaka na ngonga moko. Talá mpe na spam na yo.",
+    resetTitle: "Kódi ya sekré ya sika",
+    resetSubtitle: "Pɔní kódi ya sekré ya ngufu : ekosuka yango ya kala mbala moko.",
+    resetCta: "Bongisa kódi ya sekré na ngai",
+    newPassword: "Kódi ya sekré ya sika",
+    confirmPassword: "Ndima kódi ya sekré",
+    resetExpiredTitle: "Lianɛ esili to esalelami deja",
+    resetExpiredText:
+      "Mpo na libateli na yo, lianɛ ya kobongisa esalelamaka sé mbala moko mpe esilisaka noki. Senga lianɛ ya sika.",
+    resetExpiredCta: "Senga lianɛ ya sika",
     workspaceTitle: "Session na yo ezali kosala",
     workspaceText:
       "Kokɔta ezali kosala. Esika ya mosálá mobimba ekoya na eteni ya sima.",

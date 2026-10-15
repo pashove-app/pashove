@@ -12,31 +12,47 @@ import { z } from "zod";
 const trimmed = (min: number, max: number, key: string) =>
   z.string().trim().min(min, key).max(max, key);
 
+/** Une seule règle d'adresse pour toute la plateforme. */
+const emailField = z
+  .string()
+  .trim()
+  .min(1, "emailRequired")
+  .email("emailInvalid")
+  .max(254, "emailInvalid");
+
+/** Une seule règle de mot de passe : inscription, réinitialisation, changement. */
+const passwordField = z
+  .string()
+  .min(1, "passwordRequired")
+  .min(8, "passwordShort")
+  .max(128, "passwordShort");
+
 export const loginSchema = z.object({
-  email: z
-    .string()
-    .trim()
-    .min(1, "emailRequired")
-    .email("emailInvalid")
-    .max(254, "emailInvalid"),
+  email: emailField,
   password: z.string().min(1, "passwordRequired"),
 });
 
 export const registerSchema = z.object({
   fullName: trimmed(2, 120, "nameRequired"),
   storeName: trimmed(2, 80, "storeRequired"),
-  email: z
-    .string()
-    .trim()
-    .min(1, "emailRequired")
-    .email("emailInvalid")
-    .max(254, "emailInvalid"),
-  password: z.string().min(1, "passwordRequired").min(8, "passwordShort").max(128, "passwordShort"),
+  email: emailField,
+  password: passwordField,
   phone: z.string().trim().min(6, "phoneRequired").max(24, "phoneRequired"),
   country: z.string().trim().min(2, "countryRequired"),
   referral: z.string().trim().max(24).optional(),
   consent: z.literal(true, { message: "consentRequired" }),
 });
+
+/** Demande de réinitialisation : une adresse, rien d'autre. */
+export const forgotPasswordSchema = z.object({ email: emailField });
+
+/** Deux champs, une seule règle : le second doit confirmer le premier. */
+export const resetPasswordSchema = z
+  .object({ password: passwordField, confirm: z.string().min(1, "passwordRequired") })
+  .refine((values) => values.password === values.confirm, {
+    message: "passwordMismatch",
+    path: ["confirm"],
+  });
 
 export type LoginValues = z.infer<typeof loginSchema>;
 export type RegisterValues = z.infer<typeof registerSchema>;
