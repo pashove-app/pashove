@@ -936,6 +936,12 @@ const fr = {
       passwordMismatch: "Les deux mots de passe ne correspondent pas.",
       samePassword: "Ce mot de passe est le même que l'ancien.",
       sessionExpired: "Ta session a expiré. Redemande un lien.",
+      totpRequired: "Saisis le code à 6 chiffres.",
+      totpInvalid: "Ce code n'est pas valide. Vérifie et réessaie.",
+      totpExpired: "Ce code a expiré. Saisis celui affiché maintenant.",
+      totpTooMany: "Trop de facteurs sont enregistrés sur ce compte.",
+      totpDisabled: "La double authentification n'est pas disponible sur ce projet.",
+      totpVerifyFirst: "Valide d'abord ton code de vérification.",
       serverError: "Une erreur est survenue. Réessaie dans un instant.",
     },
     notConfigured:
@@ -963,6 +969,25 @@ const fr = {
     resetExpiredText:
       "Pour ta sécurité, un lien de réinitialisation ne sert qu'une fois et expire vite. Demande-en un nouveau.",
     resetExpiredCta: "Demander un nouveau lien",
+    totpSetupTitle: "Double authentification",
+    totpSetupSubtitle:
+      "Un code à 6 chiffres en plus de ton mot de passe. Même si quelqu'un connaît ton mot de passe, il ne pourra pas entrer.",
+    totpStartCta: "Configurer la double authentification",
+    totpScanTitle: "Scanne ce QR code",
+    totpScanText:
+      "Avec Google Authenticator, Authy, 1Password ou une autre application du même genre.",
+    totpSecretLabel: "Ou recopie cette clé à la main",
+    totpCodeLabel: "Code à 6 chiffres",
+    totpCodeHint: "123456",
+    totpVerifyCta: "Activer",
+    totpActiveTitle: "Double authentification active",
+    totpActiveText:
+      "Un code te sera demandé à chaque connexion. Si tu la désactives, ton mot de passe redeviendra ta seule protection.",
+    totpDisableCta: "Désactiver",
+    totpChallengeTitle: "Vérification en deux étapes",
+    totpChallengeSubtitle:
+      "Saisis le code à 6 chiffres affiché par ton application d'authentification.",
+    totpChallengeCta: "Valider",
     workspaceTitle: "Ta session est active",
     workspaceText:
       "La connexion fonctionne. L'espace marchand complet arrive dans un prochain lot.",

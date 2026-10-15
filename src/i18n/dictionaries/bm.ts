@@ -901,6 +901,12 @@ const bm: Dictionary = {
       passwordMismatch: "Dogolen kɔdi fila man kelen.",
       samePassword: "Nin dogolen kɔdi ye kɔrɔ ye.",
       sessionExpired: "I session banna. Kɔdi kura ɲini.",
+      totpRequired: "Kɔdi ni wɔɔrɔ (6) sɛbɛn.",
+      totpInvalid: "Nin kɔdi man ɲi. A lajɛ ka kɛlɛ tugun.",
+      totpExpired: "Nin kɔdi banna. Kɔdi min bɛ jira sisan, o sɛbɛn.",
+      totpTooMany: "Kɔdi ka ca kojugu nin konti kan.",
+      totpDisabled: "Lakana kɔdi fila tɛ baara la nin porozɛ kan.",
+      totpVerifyFirst: "Fɔlɔ i sɛgɛsɛgɛli kɔdi sabati.",
       serverError: "Fɔɲɔgɔ kɛra. Kɛlɛ tugun.",
     },
     notConfigured:
@@ -927,6 +933,24 @@ const bm: Dictionary = {
     resetExpiredText:
       "I lakana kosɔn, kɔdi in bɛ baara kɛ si kelen dɔrɔn, a bɛ ban joona. Kɔdi kura ɲini.",
     resetExpiredCta: "Kɔdi kura ɲini",
+    totpSetupTitle: "Lakana kɔdi fila",
+    totpSetupSubtitle:
+      "Kɔdi ni wɔɔrɔ (6) ka fara i dogolen kɔdi kan. Ni mɔgɔ dɔ bɛ i dogolen kɔdi dɔn, a tɛ se ka kɔta.",
+    totpStartCta: "Lakana kɔdi fila labɛn",
+    totpScanTitle: "Nin QR kɔdi jira",
+    totpScanText:
+      "Ni Google Authenticator, Authy, 1Password walima aplikasi wɛrɛ min bɛ kɛ cogo kelen.",
+    totpSecretLabel: "Walima nin kɔdi sɛbɛn i bolo",
+    totpCodeLabel: "Kɔdi ni wɔɔrɔ (6)",
+    totpCodeHint: "123456",
+    totpVerifyCta: "A da",
+    totpActiveTitle: "Lakana kɔdi fila bɛ baara la",
+    totpActiveText:
+      "Kɔta si, kɔdi bɛ ɲini i fɛ. Ni i bɛ a dagi, i dogolen kɔdi dɔrɔn bɛ to i lakana ye.",
+    totpDisableCta: "A dagi",
+    totpChallengeTitle: "Sira fila sɛgɛsɛgɛli",
+    totpChallengeSubtitle: "Kɔdi ni wɔɔrɔ (6) sɛbɛn min bɛ jira i aplikasi kɔnɔ.",
+    totpChallengeCta: "A sabati",
     workspaceTitle: "I session bɛ baara la",
     workspaceText:
       "Kɔli bɛ baara la. Butiki baara yɔrɔ bɛɛ bɛ na a kɔ.",

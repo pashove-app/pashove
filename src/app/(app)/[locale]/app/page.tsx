@@ -3,8 +3,10 @@ import { redirect } from "next/navigation";
 import { PashoveLogo } from "@/components/brand/pashove-logo";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
-import { buttonClass, Icon, icons } from "@/components/ui/primitives";
+import { buttonClass, ButtonLink, Icon, icons } from "@/components/ui/primitives";
+import { path } from "@/components/ui/types";
 import { signOutAction } from "@/lib/auth/actions";
+import { requireSecondFactor } from "@/lib/auth/mfa";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { LOCALES, resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
@@ -41,6 +43,9 @@ export default async function WorkspacePage({
   } = await supabase.auth.getUser();
 
   if (!user) redirect(`/${locale}/auth/login`);
+
+  // Un mot de passe volé ne doit pas suffire à ouvrir l'espace marchand.
+  await requireSecondFactor(locale, user);
 
   const t = await getDictionary(locale);
   const storeName =
@@ -96,6 +101,13 @@ export default async function WorkspacePage({
             }
           />
         </dl>
+
+        <div className="mt-6">
+          <ButtonLink href={path(locale, "/auth/2fa/setup")} variant="outline">
+            <Icon path={icons.shield} className="h-4 w-4" />
+            {t.auth.totpSetupTitle}
+          </ButtonLink>
+        </div>
 
         <p className="mt-8 flex items-start gap-2.5 text-[0.8125rem] text-subtle">
           <Icon path={icons.shield} className="mt-0.5 h-4 w-4 shrink-0 text-accent" />

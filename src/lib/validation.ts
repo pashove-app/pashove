@@ -54,6 +54,15 @@ export const resetPasswordSchema = z
     path: ["confirm"],
   });
 
+/** Code à six chiffres d'une application d'authentification (TOTP). */
+export const totpCodeSchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .min(1, "totpRequired")
+    .regex(/^\d{6}$/, "totpInvalid"),
+});
+
 export type LoginValues = z.infer<typeof loginSchema>;
 export type RegisterValues = z.infer<typeof registerSchema>;
 

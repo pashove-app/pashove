@@ -895,6 +895,12 @@ const en: Dictionary = {
       passwordMismatch: "The two passwords don't match.",
       samePassword: "That's the same password as before.",
       sessionExpired: "Your session has expired. Request a new link.",
+      totpRequired: "Enter the 6-digit code.",
+      totpInvalid: "That code isn't valid. Check it and try again.",
+      totpExpired: "That code has expired. Enter the one shown now.",
+      totpTooMany: "Too many factors are registered on this account.",
+      totpDisabled: "Two-factor authentication isn't available on this project.",
+      totpVerifyFirst: "Confirm your verification code first.",
       serverError: "Something went wrong. Try again in a moment.",
     },
     notConfigured:
@@ -921,6 +927,24 @@ const en: Dictionary = {
     resetExpiredText:
       "For your security, a reset link works only once and expires quickly. Request a new one.",
     resetExpiredCta: "Request a new link",
+    totpSetupTitle: "Two-factor authentication",
+    totpSetupSubtitle:
+      "A 6-digit code on top of your password. Even if someone knows your password, they still can't get in.",
+    totpStartCta: "Set up two-factor authentication",
+    totpScanTitle: "Scan this QR code",
+    totpScanText:
+      "With Google Authenticator, Authy, 1Password or another app of the same kind.",
+    totpSecretLabel: "Or copy this key by hand",
+    totpCodeLabel: "6-digit code",
+    totpCodeHint: "123456",
+    totpVerifyCta: "Turn on",
+    totpActiveTitle: "Two-factor authentication is on",
+    totpActiveText:
+      "A code will be asked at every sign-in. If you turn it off, your password becomes your only protection again.",
+    totpDisableCta: "Turn off",
+    totpChallengeTitle: "Two-step verification",
+    totpChallengeSubtitle: "Enter the 6-digit code shown by your authenticator app.",
+    totpChallengeCta: "Confirm",
     workspaceTitle: "Your session is live",
     workspaceText:
       "Sign-in works. The full merchant workspace ships in a later batch.",

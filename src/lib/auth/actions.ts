@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
-import { loginSchema, registerSchema, forgotPasswordSchema, resetPasswordSchema, toFieldErrors } from "@/lib/validation";
-import type { AuthState } from "@/lib/auth/types";
+import { loginSchema, registerSchema, forgotPasswordSchema, resetPasswordSchema, totpCodeSchema, toFieldErrors } from "@/lib/validation";
+import type { AuthState, TotpEnrollmentState } from "@/lib/auth/types";
 
 /* ------------------------------------------------------------------ *
  *  Utilitaires
@@ -233,6 +233,188 @@ export async function updatePasswordAction(
   // c'est le premier réflexe après une compromission, et le lien de
   // réinitialisation peut avoir été déclenché par quelqu'un d'autre.
   await supabase.auth.signOut({ scope: "others" });
+
+  revalidatePath("/", "layout");
+  redirect(`/${locale}/app`);
+}
+
+/* ------------------------------------------------------------------ *
+ *  Second facteur (TOTP)
+ * ------------------------------------------------------------------ */
+
+/**
+ * Traduit une erreur MFA en clé de message.
+ *
+ * Pas de repli sur `messageKeyFor` ici : un 400 y devient « identifiants
+ * invalides », ce qui n'a aucun sens sur un écran de code à six chiffres.
+ */
+function mfaMessageKey(error: {
+  code?: string;
+  status?: number;
+  message?: string;
+}): string {
+  switch (error.code) {
+    case "mfa_verification_failed":
+    case "invalid_mfa_code":
+      return "totpInvalid";
+    case "mfa_challenge_expired":
+      return "totpExpired";
+    case "too_many_enrolled_mfa_factors":
+      return "totpTooMany";
+    case "mfa_totp_enroll_not_enabled":
+    case "mfa_enroll_not_enabled":
+      return "totpDisabled";
+    case "insufficient_aal":
+      return "totpVerifyFirst";
+    case "session_expired":
+    case "refresh_token_not_found":
+      return "sessionExpired";
+    default:
+      return "serverError";
+  }
+}
+
+/**
+ * Ouvre un enrôlement TOTP et renvoie de quoi le présenter.
+ *
+ * L'enrôlement écrit en base : il ne peut donc pas se produire pendant le rendu
+ * d'une page, qu'un préchargement ou un double rendu déclencherait deux fois.
+ * Il passe par une action, déclenchée par un bouton.
+ */
+export async function startTotpEnrollmentAction(
+  _previous: TotpEnrollmentState,
+  _formData: FormData,
+): Promise<TotpEnrollmentState> {
+  if (!isSupabaseConfigured()) return { status: "unconfigured" };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { status: "error", messageKey: "sessionExpired" };
+
+  // Un enrôlement abandonné en chemin laisse un facteur non confirmé, et ils
+  // s'accumulent à chaque tentative. On fait le ménage avant d'en créer un.
+  const { data: existing } = await supabase.auth.mfa.listFactors();
+
+  for (const factor of existing?.all ?? []) {
+    if (factor.factor_type === "totp" && factor.status === "unverified") {
+      await supabase.auth.mfa.unenroll({ factorId: factor.id });
+    }
+  }
+
+  const { data, error } = await supabase.auth.mfa.enroll({
+    factorType: "totp",
+    friendlyName: "Pashove",
+  });
+
+  if (error || !data) return { status: "error", messageKey: mfaMessageKey(error ?? {}) };
+
+  return {
+    status: "enrolling",
+    factorId: data.id,
+    qrCode: data.totp.qr_code,
+    secret: data.totp.secret,
+  };
+}
+
+/** Confirme l'enrôlement : c'est ce premier code qui rend le facteur actif. */
+export async function verifyTotpEnrollmentAction(
+  _previous: TotpEnrollmentState,
+  formData: FormData,
+): Promise<TotpEnrollmentState> {
+  const locale = field(formData, "locale") || "fr";
+  const factorId = field(formData, "factorId");
+
+  const parsed = totpCodeSchema.safeParse({ code: field(formData, "code") });
+
+  if (!parsed.success) {
+    return { status: "invalid", fieldErrors: toFieldErrors(parsed.error) };
+  }
+
+  if (!factorId) return { status: "error", messageKey: "serverError" };
+  if (!isSupabaseConfigured()) return { status: "unconfigured" };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { status: "error", messageKey: "sessionExpired" };
+
+  // Défi et vérification en un seul appel : le défi expire vite, le séparer
+  // ferait échouer un formulaire resté ouvert trop longtemps.
+  const { error } = await supabase.auth.mfa.challengeAndVerify({
+    factorId,
+    code: parsed.data.code,
+  });
+
+  if (error) {
+    // `factorId` est renvoyé pour que le QR code reste affiché après un code
+    // erroné : sans lui, l'utilisateur devrait tout recommencer.
+    return { status: "error", messageKey: mfaMessageKey(error), factorId };
+  }
+
+  revalidatePath("/", "layout");
+  redirect(`/${locale}/app`);
+}
+
+/** Désactive la 2FA. Le prochain enrôlement repartira de zéro. */
+export async function disableTotpAction(
+  _previous: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const locale = field(formData, "locale") || "fr";
+  const factorId = field(formData, "factorId");
+
+  if (!factorId) return { status: "error", messageKey: "serverError" };
+  if (!isSupabaseConfigured()) return { status: "unconfigured" };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { status: "error", messageKey: "sessionExpired" };
+
+  const { error } = await supabase.auth.mfa.unenroll({ factorId });
+  if (error) return { status: "error", messageKey: mfaMessageKey(error) };
+
+  revalidatePath(`/${locale}/auth/2fa/setup`);
+  return { status: "idle" };
+}
+
+/** Deuxième étape de la connexion : la session passe de `aal1` à `aal2`. */
+export async function verifyTotpChallengeAction(
+  _previous: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const locale = field(formData, "locale") || "fr";
+  const factorId = field(formData, "factorId");
+
+  const parsed = totpCodeSchema.safeParse({ code: field(formData, "code") });
+
+  if (!parsed.success) {
+    return { status: "invalid", fieldErrors: toFieldErrors(parsed.error) };
+  }
+
+  if (!factorId) return { status: "error", messageKey: "serverError" };
+  if (!isSupabaseConfigured()) return { status: "unconfigured" };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { status: "error", messageKey: "sessionExpired" };
+
+  const { error } = await supabase.auth.mfa.challengeAndVerify({
+    factorId,
+    code: parsed.data.code,
+  });
+
+  if (error) return { status: "error", messageKey: mfaMessageKey(error) };
 
   revalidatePath("/", "layout");
   redirect(`/${locale}/app`);

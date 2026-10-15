@@ -901,6 +901,12 @@ const ln: Dictionary = {
       passwordMismatch: "Ba kódi ya sekré mibale ekokani te.",
       samePassword: "Kódi ya sekré oyo ezali kaka ya kala.",
       sessionExpired: "Session na yo esili. Senga lianɛ ya sika.",
+      totpRequired: "Koma kódi ya mikɔ́lɔ́ mibale (6).",
+      totpInvalid: "Kódi oyo ezali malamu te. Talá yango mpe meká lisusu.",
+      totpExpired: "Kódi oyo esili. Koma oyo emonisami sikawa.",
+      totpTooMany: "Bakódi ebele koleka na kɔnti oyo.",
+      totpDisabled: "Bokengi ya bakódi mibale ezali te na porojɛ oyo.",
+      totpVerifyFirst: "Ndima liboso kódi ya bokengi na yo.",
       serverError: "Likambo moko esalemi. Meká lisusu.",
     },
     notConfigured:
@@ -927,6 +933,25 @@ const ln: Dictionary = {
     resetExpiredText:
       "Mpo na libateli na yo, lianɛ ya kobongisa esalelamaka sé mbala moko mpe esilisaka noki. Senga lianɛ ya sika.",
     resetExpiredCta: "Senga lianɛ ya sika",
+    totpSetupTitle: "Bokengi ya bakódi mibale",
+    totpSetupSubtitle:
+      "Kódi ya mikɔ́lɔ́ mibale (6) likoló ya kódi ya sekré na yo. Ata moto ayebi kódi ya sekré na yo, akokoka kokɔta te.",
+    totpStartCta: "Bongisa bokengi ya bakódi mibale",
+    totpScanTitle: "Talá QR code oyo",
+    totpScanText:
+      "Na Google Authenticator, Authy, 1Password tǒ aplikasio mosusu ya lolenge moko.",
+    totpSecretLabel: "Tǒ koma kódi oyo na lobɔkɔ na yo",
+    totpCodeLabel: "Kódi ya mikɔ́lɔ́ mibale (6)",
+    totpCodeHint: "123456",
+    totpVerifyCta: "Fungola",
+    totpActiveTitle: "Bokengi ya bakódi mibale ezali kosala",
+    totpActiveText:
+      "Kódi ekosengama na yo na kokɔta nyonso. Soki okangi yango, kódi ya sekré ekotikala sé yango.",
+    totpDisableCta: "Kanga",
+    totpChallengeTitle: "Bokengi ya bitape mibale",
+    totpChallengeSubtitle:
+      "Koma kódi ya mikɔ́lɔ́ mibale (6) oyo emonisami na aplikasio na yo.",
+    totpChallengeCta: "Ndima",
     workspaceTitle: "Session na yo ezali kosala",
     workspaceText:
       "Kokɔta ezali kosala. Esika ya mosálá mobimba ekoya na eteni ya sima.",

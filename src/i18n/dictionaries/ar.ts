@@ -900,6 +900,12 @@ const ar: Dictionary = {
       passwordMismatch: "كلمتا المرور غير متطابقتين.",
       samePassword: "كلمة المرور هذه هي نفسها القديمة.",
       sessionExpired: "انتهت صلاحية جلستك. اطلب رابطًا جديدًا.",
+      totpRequired: "أدخل الرمز المكوّن من 6 أرقام.",
+      totpInvalid: "هذا الرمز غير صالح. تحقّق منه وأعد المحاولة.",
+      totpExpired: "انتهت صلاحية هذا الرمز. أدخل الرمز الظاهر الآن.",
+      totpTooMany: "عدد العوامل المسجّلة على هذا الحساب كبير جدًا.",
+      totpDisabled: "التحقق بخطوتين غير متاح في هذا المشروع.",
+      totpVerifyFirst: "أكّد رمز التحقق أولًا.",
       serverError: "حدث خطأ. أعد المحاولة بعد لحظات.",
     },
     notConfigured:
@@ -923,6 +929,23 @@ const ar: Dictionary = {
     resetExpiredText:
       "لأمانك، رابط إعادة التعيين صالح لمرة واحدة وينتهي سريعًا. اطلب رابطًا جديدًا.",
     resetExpiredCta: "اطلب رابطًا جديدًا",
+    totpSetupTitle: "التحقق بخطوتين",
+    totpSetupSubtitle:
+      "رمز من 6 أرقام يُضاف إلى كلمة المرور. حتى لو عرف أحدهم كلمة مرورك، فلن يستطيع الدخول.",
+    totpStartCta: "تفعيل التحقق بخطوتين",
+    totpScanTitle: "امسح رمز QR",
+    totpScanText: "بواسطة Google Authenticator أو Authy أو 1Password أو تطبيق مشابه.",
+    totpSecretLabel: "أو انسخ هذا المفتاح يدويًا",
+    totpCodeLabel: "رمز من 6 أرقام",
+    totpCodeHint: "123456",
+    totpVerifyCta: "تفعيل",
+    totpActiveTitle: "التحقق بخطوتين مُفعّل",
+    totpActiveText:
+      "سيُطلب منك رمز عند كل تسجيل دخول. إذا أوقفته، ستعود كلمة المرور وحدها تحميك.",
+    totpDisableCta: "إيقاف",
+    totpChallengeTitle: "تحقّق بخطوتين",
+    totpChallengeSubtitle: "أدخل الرمز المكوّن من 6 أرقام الظاهر في تطبيق المصادقة.",
+    totpChallengeCta: "تأكيد",
     workspaceTitle: "جلستك نشطة",
     workspaceText:
       "تسجيل الدخول يعمل. مساحة العمل الكاملة تصدر في مرحلة لاحقة.",
