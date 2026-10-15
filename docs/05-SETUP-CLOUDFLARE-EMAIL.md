@@ -37,7 +37,7 @@ Vous avez demandé à créer les e-mails « sur Cloudflare ». **Ce n'est pas po
 | `support@pashove.com` | Support marchands & clients |
 | `hello@pashove.com` | Accueil / démo |
 | `billing@pashove.com` | Facturation / abonnements |
-| `noreply@pashove.com` | Alias ; les envois automatiques partent de `noreply@mail.pashove.com` |
+| `noreply@pashove.com` | Expéditeur automatique (Brevo) |
 | `legal@pashove.com` | Juridique / conformité |
 | `admin@pashove.com` | Administration |
 
@@ -98,15 +98,19 @@ Sans DMARC, vos e-mails risquent le **spam** et certains webhooks/notifications 
 > **Et** les e-mails d'authentification, qui ne partent pas de notre code mais de Supabase.
 
 1. Créer le compte **brevo.com** 🔴.
-2. Ajouter le domaine **`mail.pashove.com`** (⚠️ **sous-domaine dédié**, pour ne pas polluer la
-   réputation de `pashove.com` — bonne pratique professionnelle).
+2. Ajouter le domaine **`pashove.com`** — c'est bien le domaine **racine** qui est authentifié,
+   pas un sous-domaine (configuration retenue et vérifiée le 15/10/2026).
+   Brevo pose alors son DKIM sur `brevo1._domainkey.pashove.com` et
+   `brevo2._domainkey.pashove.com`.
 3. Brevo fournit les enregistrements à ajouter dans Cloudflare DNS : SPF, DKIM, et un
    code de vérification du domaine. Reprendre **exactement** les valeurs affichées.
 4. Vérifier le domaine dans Brevo.
 5. Récupérer `BREVO_API_KEY` → `.env.local`.
 
-> Emails transactionnels : **jamais** envoyés depuis `pashove.com` directement.
-> Toujours depuis `mail.pashove.com`. Le domaine principal reste propre pour les boîtes humaines.
+> ⚠️ Le **« branded subdomain »** que Brevo propose (par exemple `mail`) ne concerne que
+> les **liens de suivi** des campagnes. Il ne signe rien : le DKIM reste celui de
+> `pashove.com`. Envoyer depuis un sous-domaine non authentifié dégraderait au contraire
+> l'alignement et ferait tomber les messages en spam.
 
 ### 4.1 Brancher Brevo sur les e-mails d'authentification (Supabase)
 
@@ -124,12 +128,12 @@ panne silencieuse, et c'est le piège de cette étape.
 | Port | `587` |
 | Username | login SMTP Brevo (`…@smtp-brevo.com`, onglet *SMTP* de *SMTP & API*) |
 | Password | **clé SMTP** — ⚠️ pas la clé API, pas le mot de passe du compte |
-| Sender email | `noreply@mail.pashove.com` |
+| Sender email | `noreply@pashove.com` |
 | Sender name | `Pashove` |
 
-⚠️ L'expéditeur doit être sur `mail.pashove.com`, le sous-domaine authentifié. Une adresse
-sur `pashove.com` (par exemple `noreply@pashove.com`) n'est pas alignée avec le SPF/DKIM
-du sous-domaine : ça part, mais la délivrabilité en pâtit.
+⚠️ L'expéditeur doit rester sur **`pashove.com`**, le domaine effectivement authentifié :
+c'est ce qui aligne SPF et DKIM. Une adresse sur un sous-domaine (par exemple
+`noreply@mail.pashove.com`) ne bénéficierait pas de cette signature.
 
 Sur le même écran, relever la **limite d'envoi** : elle est très basse par défaut et bloque
 vite les tests de réinitialisation.
@@ -164,12 +168,16 @@ envoi, réponse, pièces jointes, assignation à un agent, modèles.
 | Type | Nom | Valeur | Rôle |
 |---|---|---|---|
 | MX ×3 | `@` | `mx.zoho.com` / `mx2` / `mx3` | Réception Zoho |
-| TXT | `@` | `v=spf1 include:zoho.com ~all` | SPF |
-| TXT | `zmail._domainkey` | *(fourni Zoho)* | DKIM |
+| TXT | `@` | `v=spf1 include:zoho.com …include Brevo… ~all` | SPF — **une seule entrée**, Zoho **et** Brevo |
+| TXT | `zmail._domainkey` | *(fourni Zoho)* | DKIM Zoho |
+| TXT | `brevo1._domainkey` | *(fourni Brevo)* | DKIM Brevo |
+| TXT | `brevo2._domainkey` | *(fourni Brevo)* | DKIM Brevo |
 | TXT | `_dmarc` | `v=DMARC1; p=quarantine; …` | DMARC |
-| TXT | `mail` | *(SPF + code de vérification, fournis par Brevo)* | Brevo |
-| TXT | `mail._domainkey.mail` | *(DKIM, fourni par Brevo)* | Brevo |
 | A / CNAME | `@` et `www` | *(fourni Vercel)* | Site |
+
+> ⚠️ SPF : **un seul enregistrement TXT pour `@`**, qui doit inclure les deux expéditeurs
+> (Zoho et Brevo). Deux enregistrements SPF concurrents se neutralisent et font échouer
+> l'authentification. Reprendre la valeur d'inclusion exacte affichée par Brevo.
 
 ---
 

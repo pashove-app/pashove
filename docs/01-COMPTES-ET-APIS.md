@@ -138,10 +138,12 @@ Boîtes à créer : `contact@`, `support@`, `hello@`, `billing@`, `noreply@`, `l
   `smtp-relay.brevo.com`, port `587`, identifiant = login SMTP (`…@smtp-brevo.com`),
   mot de passe = **clé SMTP** (⚠️ pas la clé API, pas le mot de passe du compte).
   Réglage dans *Supabase → Project Settings → Authentication → SMTP Settings*.
-- **Domaine d'envoi** : `mail.pashove.com` (sous-domaine dédié, pour ne pas engager la
-  réputation de `pashove.com`). L'expéditeur doit être `noreply@mail.pashove.com` :
-  une adresse sur le domaine racine ne bénéficie pas de l'alignement SPF/DKIM.
-- **DNS** : enregistrements SPF / DKIM fournis par Brevo, plus le DMARC déjà prévu.
+- **Domaine d'envoi** : **`pashove.com`** — le domaine racine est celui qui est authentifié
+  dans Brevo. Le « branded subdomain » que Brevo propose (`mail`) ne sert qu'aux liens de
+  suivi des campagnes et ne signe rien : envoyer depuis un sous-domaine non authentifié
+  casserait l'alignement DKIM et ferait tomber les messages en spam.
+- **DNS** : DKIM posé sur `brevo1._domainkey` et `brevo2._domainkey`, SPF du domaine
+  incluant Brevo, plus le DMARC déjà prévu.
 - 💳 Gratuit : 300 e-mails/jour.
 - 🟢 Je peux : templates d'e-mails + intégration.
 
