@@ -72,7 +72,7 @@ retrait**. C'est le bon design : il maximise l'activation, et il est conforme.
 | D8 | Paiements v1 | **Flutterwave** (socle) + **CinetPay** + **PayDunya** | Oui |
 | D9 | Stripe | **Reporté phase 2** (si entité US) | Oui |
 | D10 | Modèle de fonds | **Split-on-capture** (Modèle A) | Difficilement |
-| D11 | Emails | **Resend** (transactionnel) + **Zoho Mail** (boîtes humaines) | Oui |
+| D11 | Emails | **Brevo** (transactionnel) + **Zoho Mail** (boîtes humaines) | Oui |
 | D12 | Médias | **Cloudflare R2** (objets) + **Cloudflare Stream** (vidéo) | Oui |
 | D13 | KYC / identité | **Smile Identity** + revue manuelle admin v1 | Oui |
 | D14 | Mobile | **Responsive mobile-first + PWA** (app native = v2) | Oui |
@@ -122,7 +122,7 @@ src/app/
 | Paiement (socle) | Flutterwave | %/transaction |
 | Paiement mobile money CFA | CinetPay + PayDunya | %/transaction |
 | Cartes internationales (phase 2) | Stripe (si entité US) | — |
-| E-mail transactionnel | Resend | Gratuit (3 000/mois, 100/jour) |
+| E-mail transactionnel | Brevo | Gratuit (300/jour) |
 | Boîtes humaines | Zoho Mail | Gratuit (5 boîtes) |
 | DNS / Edge | Cloudflare | Gratuit |
 | Stockage fichiers | Cloudflare R2 | ~0,015 $/Go |

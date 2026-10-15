@@ -41,7 +41,7 @@
 💳 Cloudflare gratuit (R2/Stream facturés à l'usage).
 
 ### 0.2 E-mails professionnels — VOIR `docs/05-SETUP-CLOUDFLARE-EMAIL.md`
-Décision : **Zoho Mail** (boîtes réelles, envoi + réception) + **Resend** (transactionnel app).
+Décision : **Zoho Mail** (boîtes réelles, envoi + réception) + **Brevo** (transactionnel app).
 Procédure détaillée dans le fichier dédié.
 
 Boîtes à créer : `contact@`, `support@`, `hello@`, `billing@`, `noreply@`, `legal@`, `admin@`.
@@ -130,12 +130,20 @@ Boîtes à créer : `contact@`, `support@`, `hello@`, `billing@`, `noreply@`, `l
 
 ## BLOC 3 — Communications et identité
 
-### 3.1 Resend 🔴
-- **Rôle** : e-mails transactionnels de l'app (confirmation commande, accès numérique, KYC, retraits…).
-- **API** : `RESEND_API_KEY`.
-- **DNS** : ajouter les enregistrements SPF / DKIM / DMARC dans Cloudflare.
-- 💳 Gratuit : 3 000 e-mails/mois, plafond 100/jour, 1 domaine.
-- 🟢 Je peux : templates React Email + intégration.
+### 3.1 Brevo 🔴
+- **Rôle** : e-mails transactionnels de l'app (confirmation commande, accès numérique, KYC, retraits…)
+  **et** e-mails d'authentification de Supabase (confirmation d'inscription, réinitialisation de mot de passe).
+- **API** : `BREVO_API_KEY`.
+- **Relais SMTP** — ce que Supabase Auth utilise pour envoyer ses propres e-mails :
+  `smtp-relay.brevo.com`, port `587`, identifiant = login SMTP (`…@smtp-brevo.com`),
+  mot de passe = **clé SMTP** (⚠️ pas la clé API, pas le mot de passe du compte).
+  Réglage dans *Supabase → Project Settings → Authentication → SMTP Settings*.
+- **Domaine d'envoi** : `mail.pashove.com` (sous-domaine dédié, pour ne pas engager la
+  réputation de `pashove.com`). L'expéditeur doit être `noreply@mail.pashove.com` :
+  une adresse sur le domaine racine ne bénéficie pas de l'alignement SPF/DKIM.
+- **DNS** : enregistrements SPF / DKIM fournis par Brevo, plus le DMARC déjà prévu.
+- 💳 Gratuit : 300 e-mails/jour.
+- 🟢 Je peux : templates d'e-mails + intégration.
 
 ### 3.2 Zoho Mail 🔴
 - **Rôle** : boîtes humaines `contact@`, `support@`… (envoi **et** réception).
@@ -210,7 +218,7 @@ Boîtes à créer : `contact@`, `support@`, `hello@`, `billing@`, `noreply@`, `l
 ```
 MAINTENANT
   └─ 0.1 Cloudflare (R2, Stream, Turnstile, tokens)   🟢
-  └─ 0.2 E-mails pro (Zoho + Resend)                  🔴 → docs/05
+  └─ 0.2 E-mails pro (Zoho + Brevo)                   🔴 → docs/05
 
 SEMAINE 1
   └─ 1.1 GitHub      🔴
@@ -226,7 +234,7 @@ SEMAINE 1–2 (en parallèle, délais PSP 2–7 j)
   └─ 2.3 PayDunya                     🔴
 
 SEMAINE 2
-  └─ 3.1 Resend   🔴
+  └─ 3.1 Brevo    🔴
   └─ 3.3 Termii   🔴
   └─ 3.4 Smile Identity  🔴
   └─ 4.x R2 + Stream     🟢

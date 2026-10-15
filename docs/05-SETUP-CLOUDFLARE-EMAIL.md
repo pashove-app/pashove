@@ -21,7 +21,7 @@ Vous avez demandé à créer les e-mails « sur Cloudflare ». **Ce n'est pas po
 | Besoin | Outil retenu |
 |---|---|
 | Boîtes humaines (`contact@`, `support@`…) — **envoi + réception** | **Zoho Mail** (gratuit, 5 boîtes, domaine perso) |
-| E-mails automatiques de l'app (commandes, KYC, retraits…) | **Resend** (gratuit, 3 000/mois) |
+| E-mails automatiques de l'app (commandes, KYC, retraits…) | **Brevo** (gratuit, 300/jour) |
 | Redirections simples / alias secondaires | Cloudflare Email Routing *(optionnel, sur un sous-domaine)* |
 
 > ⚠️ **MX : un seul propriétaire.** Si Zoho prend les MX, Cloudflare Email Routing ne peut pas
@@ -37,7 +37,7 @@ Vous avez demandé à créer les e-mails « sur Cloudflare ». **Ce n'est pas po
 | `support@pashove.com` | Support marchands & clients |
 | `hello@pashove.com` | Accueil / démo |
 | `billing@pashove.com` | Facturation / abonnements |
-| `noreply@pashove.com` | Expéditeur automatique (Resend) |
+| `noreply@pashove.com` | Alias ; les envois automatiques partent de `noreply@mail.pashove.com` |
 | `legal@pashove.com` | Juridique / conformité |
 | `admin@pashove.com` | Administration |
 
@@ -92,22 +92,52 @@ Sans DMARC, vos e-mails risquent le **spam** et certains webhooks/notifications 
 
 ---
 
-## ÉTAPE 4 — Resend (e-mails automatiques de l'app)
+## ÉTAPE 4 — Brevo (e-mails automatiques de l'app)
 
 > KYC, confirmations de commande, liens d'accès numérique, alertes de retrait…
+> **Et** les e-mails d'authentification, qui ne partent pas de notre code mais de Supabase.
 
-1. Créer le compte **resend.com** 🔴.
+1. Créer le compte **brevo.com** 🔴.
 2. Ajouter le domaine **`mail.pashove.com`** (⚠️ **sous-domaine dédié**, pour ne pas polluer la
    réputation de `pashove.com` — bonne pratique professionnelle).
-3. Resend fournit les enregistrements à ajouter dans Cloudflare DNS :
-   - `TXT mail` → SPF Resend
-   - `TXT resend._domainkey.mail` → DKIM
-   - `MX mail` → `feedback-smtp.resend.com` (priorité 10) pour les bounces
-4. Vérifier le domaine dans Resend.
-5. Récupérer `RESEND_API_KEY` → `.env.local`.
+3. Brevo fournit les enregistrements à ajouter dans Cloudflare DNS : SPF, DKIM, et un
+   code de vérification du domaine. Reprendre **exactement** les valeurs affichées.
+4. Vérifier le domaine dans Brevo.
+5. Récupérer `BREVO_API_KEY` → `.env.local`.
 
 > Emails transactionnels : **jamais** envoyés depuis `pashove.com` directement.
 > Toujours depuis `mail.pashove.com`. Le domaine principal reste propre pour les boîtes humaines.
+
+### 4.1 Brancher Brevo sur les e-mails d'authentification (Supabase)
+
+Les e-mails d'inscription et de réinitialisation de mot de passe sont envoyés par
+**Supabase lui-même**, pas par l'application. Sans ce réglage, Supabase utilise son service
+d'envoi intégré, qui **ne délivre qu'aux membres du projet** : aucune erreur n'est remontée
+— l'appel d'API répond même `200` — et l'e-mail part simplement dans le vide. C'est une
+panne silencieuse, et c'est le piège de cette étape.
+
+*Supabase → Project Settings → Authentication → SMTP Settings* → activer **Custom SMTP** :
+
+| Champ | Valeur |
+|---|---|
+| Host | `smtp-relay.brevo.com` |
+| Port | `587` |
+| Username | login SMTP Brevo (`…@smtp-brevo.com`, onglet *SMTP* de *SMTP & API*) |
+| Password | **clé SMTP** — ⚠️ pas la clé API, pas le mot de passe du compte |
+| Sender email | `noreply@mail.pashove.com` |
+| Sender name | `Pashove` |
+
+⚠️ L'expéditeur doit être sur `mail.pashove.com`, le sous-domaine authentifié. Une adresse
+sur `pashove.com` (par exemple `noreply@pashove.com`) n'est pas alignée avec le SPF/DKIM
+du sous-domaine : ça part, mais la délivrabilité en pâtit.
+
+Sur le même écran, relever la **limite d'envoi** : elle est très basse par défaut et bloque
+vite les tests de réinitialisation.
+
+Enfin, *Authentication → URL Configuration* : ajouter les adresses de retour
+(`https://pashove.com/**`, et en développement `http://localhost:<port>/**` pour chaque port
+utilisé). Une adresse absente de cette liste est **silencieusement remplacée** par la
+*Site URL* : le lien de réinitialisation atterrit alors au mauvais endroit, sans erreur.
 
 ---
 
@@ -120,7 +150,7 @@ Le module `apps`/`/platform-admin/emails` s'appuiera sur :
 |---|---|---|
 | **A (recommandée)** | **Zoho Mail API** | Boîtes déjà créées, API REST, OAuth, threads, pièces jointes |
 | B | IMAP/SMTP brut | Universel, mais gestion des threads/dossiers à la main |
-| C | Resend Inbound + Postgres | Très contrôlé, mais il faut gérer nous-mêmes tout le dépôt/storage |
+| C | Brevo (parsing entrant) + Postgres | Très contrôlé, mais il faut gérer nous-mêmes tout le dépôt/storage |
 
 **Décision : option A.** Le module admin offrira : liste des boîtes, fil de conversation,
 envoi, réponse, pièces jointes, assignation à un agent, modèles.
@@ -137,9 +167,8 @@ envoi, réponse, pièces jointes, assignation à un agent, modèles.
 | TXT | `@` | `v=spf1 include:zoho.com ~all` | SPF |
 | TXT | `zmail._domainkey` | *(fourni Zoho)* | DKIM |
 | TXT | `_dmarc` | `v=DMARC1; p=quarantine; …` | DMARC |
-| TXT | `mail` | *(SPF Resend)* | Resend |
-| TXT | `resend._domainkey.mail` | *(DKIM Resend)* | Resend |
-| MX | `mail` | `feedback-smtp.resend.com` (10) | Bounces Resend |
+| TXT | `mail` | *(SPF + code de vérification, fournis par Brevo)* | Brevo |
+| TXT | `mail._domainkey.mail` | *(DKIM, fourni par Brevo)* | Brevo |
 | A / CNAME | `@` et `www` | *(fourni Vercel)* | Site |
 
 ---
@@ -147,7 +176,7 @@ envoi, réponse, pièces jointes, assignation à un agent, modèles.
 ## Ce que je fais de mon côté dès que c'est prêt
 
 - Je code les **templates d'e-mails** (React Email) : vérification, commande, paiement, KYC, retrait…
-- Je branche **Resend** sur les événements de l'application.
+- Je branche **Brevo** sur les événements de l'application.
 - Je prépare le **module boîte e-mail admin** (Phase 5).
 
-**Transmettez-moi :** `RESEND_API_KEY` et la confirmation que les DNS Zoho sont verts.
+**Transmettez-moi :** `BREVO_API_KEY` et la confirmation que les DNS Zoho sont verts.

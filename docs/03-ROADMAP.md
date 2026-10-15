@@ -31,8 +31,8 @@
 
 ### Authentification
 - [ ] Supabase Auth : inscription, connexion, session, refresh
-- [ ] Vérification e-mail (Resend)
-- [ ] Mot de passe oublié / réinitialisation
+- [ ] Vérification e-mail (Brevo)
+- [x] Mot de passe oublié / réinitialisation
 - [ ] 2FA (TOTP) + codes de secours
 - [ ] Gestion des sessions actives + révocation
 - [ ] Rate limiting (Upstash) + Turnstile
