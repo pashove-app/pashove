@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import { TotpSetupForm } from "@/components/auth/totp-setup-form";
 import { isLocale, resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
-import { requireSecondFactor, verifiedTotpId } from "@/lib/auth/mfa";
+import { RecoveryCodesPanel } from "@/components/auth/recovery-codes-panel";
+import { readRecoveryCodes, requireSecondFactor, verifiedTotpId } from "@/lib/auth/mfa";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 
 export async function generateMetadata({
@@ -45,13 +46,16 @@ export default async function TotpSetupPage({
   await requireSecondFactor(locale, user);
 
   const { data: factors } = await supabase.auth.mfa.listFactors();
+  const factorId = verifiedTotpId(factors?.all);
   const t = await getDictionary(locale);
 
+  // Les codes de secours n'ont de sens qu'une fois le second facteur actif.
+  const recovery = factorId ? await readRecoveryCodes(supabase) : null;
+
   return (
-    <TotpSetupForm
-      t={t}
-      locale={locale}
-      verifiedFactorId={verifiedTotpId(factors?.all)}
-    />
+    <>
+      <TotpSetupForm t={t} locale={locale} verifiedFactorId={factorId} />
+      {factorId ? <RecoveryCodesPanel t={t} locale={locale} status={recovery} /> : null}
+    </>
   );
 }

@@ -952,6 +952,10 @@ const fr = {
       currentPasswordWrong: "Ce n'est pas ton mot de passe actuel.",
       emailUnchanged: "C'est déjà ton adresse actuelle.",
       reauthenticationNeeded: "Reconnecte-toi pour confirmer cette modification.",
+      recoveryNotEnabled:
+        "Les codes de secours ne sont pas activés sur ce projet.",
+      recoveryCodeInvalid: "Ce code n'est pas valide, ou il a déjà servi.",
+      recoveryCodeRequired: "Saisis un code de secours.",
       serverError: "Une erreur est survenue. Réessaie dans un instant.",
     },
     notConfigured:
@@ -1059,6 +1063,30 @@ const fr = {
     securitySessionsText: "La session en cours, et de quoi fermer les autres.",
     securitySessionsManage: "Gérer les sessions",
     securitySignOutTitle: "Déconnexion",
+    logoutTitle: "Se déconnecter ?",
+    logoutText: "Tu devras saisir à nouveau ton mot de passe pour revenir.",
+    logoutStay: "Rester connecté",
+    lockedTitle: "Compte verrouillé",
+    lockedText:
+      "L'accès à ce compte est suspendu. Cela arrive pendant une vérification, ou après une alerte de sécurité.",
+    lockedHelp:
+      "Écris-nous : nous te dirons où en est ton dossier et ce qu'il faut pour le débloquer.",
+    lockedContact: "Contacter le support",
+    recoveryTitle: "Codes de secours",
+    recoveryText:
+      "Si tu perds ton téléphone, un code de secours te fait entrer à la place du code à 6 chiffres.",
+    recoveryGenerateCta: "Générer mes codes",
+    recoveryRegenerateCta: "Remplacer mes codes",
+    recoveryRemaining: "Codes restants : {remaining} / {total}",
+    recoveryCodesTitle: "Tes codes de secours",
+    recoveryWarning:
+      "Note-les maintenant, dans un endroit sûr : ils ne seront plus affichés.",
+    recoveryCodesNote: "Chaque code ne sert qu'une fois.",
+    recoveryChallengeTitle: "Code de secours",
+    recoveryChallengeText: "Saisis l'un des codes que tu as notés.",
+    recoveryChallengeCta: "Valider",
+    recoveryChallengeLink: "Utiliser un code de secours",
+    recoveryCodeLabel: "Code de secours",
     resendTitle: "Renvoyer le code de vérification",
     resendSubtitle: "Indique ton adresse : on t'envoie un nouveau code.",
     resendCta: "Envoyer le code",

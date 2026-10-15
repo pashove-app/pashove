@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import type { User } from "@supabase/supabase-js";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -48,4 +48,27 @@ export async function requireSecondFactor(
   const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
 
   if (data?.currentLevel !== "aal2") redirect(`/${locale}/auth/2fa`);
+}
+
+/* ------------------------------------------------------------------ *
+ *  Codes de secours
+ * ------------------------------------------------------------------ */
+
+export type RecoveryCodesStatus = { remaining: number; total: number };
+
+/**
+ * État du jeu de codes de secours, ou `null` s'il n'en existe pas encore.
+ *
+ * Attention : `null` couvre deux situations que Supabase ne distingue pas
+ * clairement ici — aucun code généré, et fonctionnalité indisponible sur le
+ * projet. C'est la génération qui tranche, en renvoyant alors une erreur
+ * explicite (`mfa_recovery_codes_enroll_not_enabled`).
+ */
+export async function readRecoveryCodes(
+  supabase: SupabaseClient,
+): Promise<RecoveryCodesStatus | null> {
+  const { data, error } = await supabase.auth.mfa.recoveryCodes.getStatus();
+
+  if (error || !data) return null;
+  return { remaining: data.remaining, total: data.total };
 }

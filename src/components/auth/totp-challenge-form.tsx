@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { FormNotice, TextField } from "@/components/ui/field";
 import { buttonClass, Icon, icons, Spinner } from "@/components/ui/primitives";
-import type { SectionProps } from "@/components/ui/types";
+import { path, type SectionProps } from "@/components/ui/types";
 import { signOutAction, verifyTotpChallengeAction } from "@/lib/auth/actions";
 import { INITIAL_AUTH_STATE } from "@/lib/auth/types";
 
@@ -73,15 +74,24 @@ export function TotpChallengeForm({ t, locale, factorId }: SectionProps & { fact
 
       {/* Sans cette porte de sortie, un utilisateur qui a perdu son téléphone
           resterait bloqué sur cet écran sans pouvoir revenir en arrière. */}
-      <form action={signOutAction} className="mt-7 text-center">
-        <input type="hidden" name="locale" value={locale} />
-        <button
-          type="submit"
+      <div className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+        <Link
+          href={path(locale, "/auth/login/recovery")}
           className="text-[0.875rem] font-medium text-accent transition-colors hover:text-accent-soft"
         >
-          {t.auth.workspaceSignOut}
-        </button>
-      </form>
+          {t.auth.recoveryChallengeLink}
+        </Link>
+
+        <form action={signOutAction}>
+          <input type="hidden" name="locale" value={locale} />
+          <button
+            type="submit"
+            className="text-[0.875rem] font-medium text-muted transition-colors hover:text-body"
+          >
+            {t.auth.workspaceSignOut}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

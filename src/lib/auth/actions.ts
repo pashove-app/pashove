@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { loginSchema, registerSchema, emailOnlySchema, resetPasswordSchema, changePasswordSchema, totpCodeSchema, verifyEmailSchema, toFieldErrors } from "@/lib/validation";
 import { clearPendingEmail, rememberPendingEmail } from "@/lib/auth/pending-email";
-import type { AuthState, TotpEnrollmentState } from "@/lib/auth/types";
+import type { AuthState, RecoveryCodesState, TotpEnrollmentState } from "@/lib/auth/types";
 
 /* ------------------------------------------------------------------ *
  *  Utilitaires
@@ -674,6 +674,94 @@ export async function changeEmailAction(
   if (error) return { status: "error", messageKey: messageKeyForRecovery(error) };
 
   return { status: "email-change-sent", email: parsed.data.email };
+}
+
+/* ------------------------------------------------------------------ *
+ *  Codes de secours
+ * ------------------------------------------------------------------ */
+
+/** Traduit une erreur de code de secours. */
+function recoveryMessageKey(error: {
+  code?: string;
+  status?: number;
+  message?: string;
+}): string {
+  switch (error.code) {
+    case "mfa_recovery_codes_enroll_not_enabled":
+    case "mfa_enroll_not_enabled":
+      return "recoveryNotEnabled";
+    case "mfa_verification_failed":
+    case "invalid_mfa_code":
+    case "mfa_recovery_code_expired":
+      return "recoveryCodeInvalid";
+    case "session_expired":
+    case "refresh_token_not_found":
+      return "sessionExpired";
+    default:
+      return error.status === 403 || error.status === 422
+        ? "recoveryCodeInvalid"
+        : "serverError";
+  }
+}
+
+/**
+ * Génère — ou remplace — le jeu de codes de secours.
+ *
+ * Les codes ne sont renvoyés qu'ici : Supabase ne permet pas de les relire
+ * ensuite. L'écran doit donc les montrer une fois, et prévenir.
+ */
+export async function generateRecoveryCodesAction(
+  _previous: RecoveryCodesState,
+  _formData: FormData,
+): Promise<RecoveryCodesState> {
+  if (!isSupabaseConfigured()) return { status: "unconfigured" };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { status: "error", messageKey: "sessionExpired" };
+
+  // Supabase refuse de générer un second jeu : s'il en existe déjà un, on le
+  // remplace, ce qui rend l'ancien inutilisable.
+  const { data: existing } = await supabase.auth.mfa.recoveryCodes.getStatus();
+
+  const { data, error } = existing
+    ? await supabase.auth.mfa.recoveryCodes.regenerate()
+    : await supabase.auth.mfa.recoveryCodes.generate();
+
+  if (error || !data) {
+    return { status: "error", messageKey: recoveryMessageKey(error ?? {}) };
+  }
+
+  return { status: "codes-generated", codes: data.codes };
+}
+
+/** Franchit le second facteur avec un code de secours, quand l'application est perdue. */
+export async function verifyRecoveryCodeAction(
+  _previous: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const locale = field(formData, "locale") || "fr";
+  const code = field(formData, "code").trim();
+
+  if (!code) return { status: "invalid", fieldErrors: { code: "recoveryCodeRequired" } };
+  if (!isSupabaseConfigured()) return { status: "unconfigured" };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { status: "error", messageKey: "sessionExpired" };
+
+  const { error } = await supabase.auth.mfa.recoveryCodes.verify({ code });
+
+  if (error) return { status: "error", messageKey: recoveryMessageKey(error) };
+
+  revalidatePath("/", "layout");
+  redirect(`/${locale}/app`);
 }
 
 /* ------------------------------------------------------------------ *

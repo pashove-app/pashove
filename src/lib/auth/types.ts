@@ -16,6 +16,7 @@ export type AuthState = {
     | "others-signed-out"
     | "password-changed"
     | "email-change-sent"
+    | "codes-generated"
     | "enrolling"
     | "unconfigured";
   /** Une clé de message par champ fautif (voir `auth.errors`). */
@@ -43,3 +44,13 @@ export type TotpEnrollmentState = AuthState & {
 };
 
 export const INITIAL_TOTP_ENROLLMENT_STATE: TotpEnrollmentState = { status: "idle" };
+
+/**
+ * État de la génération des codes de secours.
+ *
+ * `codes` n'est renvoyé qu'au moment de la génération : Supabase ne les affiche
+ * qu'une fois, il n'existe aucun moyen de les relire ensuite.
+ */
+export type RecoveryCodesState = AuthState & { codes?: string[] };
+
+export const INITIAL_RECOVERY_CODES_STATE: RecoveryCodesState = { status: "idle" };

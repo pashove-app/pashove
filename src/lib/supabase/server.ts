@@ -12,6 +12,9 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      // Les codes de secours MFA sont encore marqués expérimentaux : sans ce
+      // drapeau, la bibliothèque refuse net tout appel à `mfa.recoveryCodes.*`.
+      auth: { experimental: { recoveryCodes: true } },
       cookies: {
         getAll() {
           return cookieStore.getAll();
