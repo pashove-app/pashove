@@ -1098,6 +1098,40 @@ const fr = {
     pending: "Un instant…",
   },
 
+  onboarding: {
+    storeEyebrow: "Étape 1 · Ta boutique",
+    storeTitle: "Comment s'appelle ta boutique ?",
+    storeSubtitle:
+      "Ces informations s'affichent sur ta vitrine. Tu pourras les modifier quand tu veux.",
+    storeNameLabel: "Nom de la boutique",
+    storeNameHint: "Ex. Maison Kora",
+    slugLabel: "Adresse de la boutique",
+    slugHelp: "Ton lien :",
+    countryLabel: "Pays de vente",
+    currencyLabel: "Devise",
+    currencies: {
+      XOF: "Franc CFA (XOF)",
+      EUR: "Euro (EUR)",
+      USD: "Dollar américain (USD)",
+    },
+    storeCta: "Créer ma boutique",
+    errors: {
+      storeNameRequired: "Indique le nom de ta boutique.",
+      storeNameTooLong: "80 caractères au maximum.",
+      slugShort: "3 caractères au minimum.",
+      slugLong: "30 caractères au maximum.",
+      slugInvalid: "Lettres minuscules, chiffres et tirets uniquement.",
+      slugReserved: "Cette adresse est réservée par la plateforme.",
+      slugTaken: "Cette adresse est déjà prise. Essayons-en une autre.",
+      countryInvalid: "Choisis un pays de vente.",
+      currencyInvalid: "Choisis une devise.",
+      sessionExpired: "Ta session a expiré. Reconnecte-toi pour continuer.",
+      serverError: "Une erreur est survenue. Réessaie dans un instant.",
+      notConfigured:
+        "La plateforme n'est pas reliée à sa base dans cet environnement.",
+    },
+  },
+
   countries_names: {
     SN: "Sénégal",
     CI: "Côte d'Ivoire",

@@ -1061,6 +1061,39 @@ const bm: Dictionary = {
     pending: "A bɛ kɛ…",
   },
 
+  onboarding: {
+    storeEyebrow: "Da 1 · I butiki",
+    storeTitle: "I butiki tɔgɔ ye di?",
+    storeSubtitle:
+      "Nin kunnafoniw bɛ jira i butiki ɲɛ kan. I bɛ se ka u falen waati bɛɛ.",
+    storeNameLabel: "Butiki tɔgɔ",
+    storeNameHint: "Misali : Maison Kora",
+    slugLabel: "Butiki adrɛsi",
+    slugHelp: "I jɔli :",
+    countryLabel: "Feere jamana",
+    currencyLabel: "Wari sugu",
+    currencies: {
+      XOF: "CFA faran (XOF)",
+      EUR: "Ero (EUR)",
+      USD: "Ameriki dɔlari (USD)",
+    },
+    storeCta: "N butiki da",
+    errors: {
+      storeNameRequired: "I butiki tɔgɔ sɛbɛn.",
+      storeNameTooLong: "Sɛbɛn 80 dɔrɔn.",
+      slugShort: "Sɛbɛn 3 walima a kan ca.",
+      slugLong: "Sɛbɛn 30 dɔrɔn.",
+      slugInvalid: "Sɛbɛn fitininw, nɔmɔrow ni tire (-) dɔrɔn.",
+      slugReserved: "Nin adrɛsi dabɔlen don butiki fɛ.",
+      slugTaken: "Nin adrɛsi tɔlen don. Kura dɔ sugandi.",
+      countryInvalid: "Feere jamana sugandi.",
+      currencyInvalid: "Wari sugu sugandi.",
+      sessionExpired: "I session banna. Ka taa ɲɛ, kɔta tugun.",
+      serverError: "Fɔɲɔgɔ kɛra. Kɛlɛ tugun.",
+      notConfigured: "Butiki tɛ a ka donba la nin yɔrɔ in na.",
+    },
+  },
+
   countries_names: {
     SN: "Senegal",
     CI: "Kɔdivwa",

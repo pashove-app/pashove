@@ -1052,6 +1052,40 @@ const en: Dictionary = {
     pending: "One moment…",
   },
 
+  onboarding: {
+    storeEyebrow: "Step 1 · Your store",
+    storeTitle: "What is your store called?",
+    storeSubtitle:
+      "This is what shoppers will see. You can change it whenever you like.",
+    storeNameLabel: "Store name",
+    storeNameHint: "E.g. Maison Kora",
+    slugLabel: "Store address",
+    slugHelp: "Your link:",
+    countryLabel: "Selling country",
+    currencyLabel: "Currency",
+    currencies: {
+      XOF: "West African CFA franc (XOF)",
+      EUR: "Euro (EUR)",
+      USD: "US dollar (USD)",
+    },
+    storeCta: "Create my store",
+    errors: {
+      storeNameRequired: "Enter your store name.",
+      storeNameTooLong: "80 characters at most.",
+      slugShort: "3 characters minimum.",
+      slugLong: "30 characters at most.",
+      slugInvalid: "Lowercase letters, digits and hyphens only.",
+      slugReserved: "That address is reserved by the platform.",
+      slugTaken: "That address is already taken. Let's try another one.",
+      countryInvalid: "Choose a selling country.",
+      currencyInvalid: "Choose a currency.",
+      sessionExpired: "Your session has expired. Sign in again to continue.",
+      serverError: "Something went wrong. Try again in a moment.",
+      notConfigured:
+        "The platform is not connected to its database in this environment.",
+    },
+  },
+
   countries_names: {
     SN: "Senegal",
     CI: "Côte d'Ivoire",

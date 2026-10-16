@@ -7,9 +7,10 @@ import { buttonClass, ButtonLink, Icon, icons } from "@/components/ui/primitives
 import { path } from "@/components/ui/types";
 import { signOutAction } from "@/lib/auth/actions";
 import { requireSecondFactor } from "@/lib/auth/mfa";
+import { currentStore } from "@/lib/stores/queries";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { LOCALES, resolveLocale } from "@/i18n/config";
-import { getDictionary } from "@/i18n/get-dictionary";
+import { getDictionary, type Dictionary } from "@/i18n/get-dictionary";
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
@@ -23,9 +24,9 @@ export const metadata: Metadata = {
 /**
  * Première page protégée de la plateforme.
  *
- * Son rôle pour l'instant : prouver que l'authentification fonctionne de bout
- * en bout — session lue côté serveur, redirection si absente, déconnexion
- * réelle. Le tableau de bord complet viendra s'installer ici.
+ * Elle prouve la chaîne complète : session lue côté serveur, second facteur
+ * exigé, boutique lue depuis la base sous RLS, déconnexion réelle. Le tableau de
+ * bord complet viendra s'installer ici.
  */
 export default async function WorkspacePage({
   params,
@@ -47,9 +48,12 @@ export default async function WorkspacePage({
   // Un mot de passe volé ne doit pas suffire à ouvrir l'espace marchand.
   await requireSecondFactor(locale, user);
 
+  // Sans boutique, il n'y a rien à montrer : l'onboarding prend la suite. C'est
+  // aussi la logique de reprise — l'étape suivante se déduit de ce qui existe.
+  const store = await currentStore();
+  if (!store) redirect(`/${locale}/onboarding/store`);
+
   const t = await getDictionary(locale);
-  const storeName =
-    (user.user_metadata?.store_name as string | undefined) ?? "—";
 
   return (
     <div className="min-h-dvh bg-bg">
@@ -84,7 +88,7 @@ export default async function WorkspacePage({
         </span>
 
         <h1 className="text-[1.9rem] font-medium tracking-[-0.03em] text-fg sm:text-[2.4rem]">
-          {storeName}
+          {store.name}
         </h1>
 
         <p className="mt-3 max-w-xl text-[0.9375rem] leading-relaxed text-muted">
@@ -93,13 +97,15 @@ export default async function WorkspacePage({
 
         <dl className="mt-10 max-w-lg divide-y divide-border rounded-2xl border border-border bg-surface">
           <Row label={t.auth.workspaceSignedInAs} value={user.email ?? "—"} />
-          <Row label={t.auth.email} value={user.id} mono />
+          <Row label={t.onboarding.slugLabel} value={store.slug} mono />
           <Row
-            label={t.auth.country}
+            label={t.onboarding.countryLabel}
             value={
-              (user.user_metadata?.country as string | undefined) ?? "—"
+              t.countries_names[store.country as keyof Dictionary["countries_names"]] ??
+              store.country
             }
           />
+          <Row label={t.onboarding.currencyLabel} value={store.currency} mono />
         </dl>
 
         {/* Un seul point d'entrée : la page de sécurité rassemble le mot de

@@ -1053,6 +1053,38 @@ const ar: Dictionary = {
     pending: "لحظة…",
   },
 
+  onboarding: {
+    storeEyebrow: "الخطوة 1 · متجرك",
+    storeTitle: "ما اسم متجرك؟",
+    storeSubtitle: "تظهر هذه المعلومات على واجهة متجرك. يمكنك تغييرها وقتما تشاء.",
+    storeNameLabel: "اسم المتجر",
+    storeNameHint: "مثال: دار كوري",
+    slugLabel: "عنوان المتجر",
+    slugHelp: "رابطك:",
+    countryLabel: "بلد البيع",
+    currencyLabel: "العملة",
+    currencies: {
+      XOF: "فرنك CFA (XOF)",
+      EUR: "يورو (EUR)",
+      USD: "دولار أمريكي (USD)",
+    },
+    storeCta: "أنشئ متجري",
+    errors: {
+      storeNameRequired: "أدخل اسم متجرك.",
+      storeNameTooLong: "80 حرفًا كحد أقصى.",
+      slugShort: "3 أحرف كحد أدنى.",
+      slugLong: "30 حرفًا كحد أقصى.",
+      slugInvalid: "حروف لاتينية صغيرة وأرقام وشرطات فقط.",
+      slugReserved: "هذا العنوان محجوز للمنصة.",
+      slugTaken: "هذا العنوان مستعمل بالفعل. لنجرّب غيره.",
+      countryInvalid: "اختر بلد البيع.",
+      currencyInvalid: "اختر عملة.",
+      sessionExpired: "انتهت صلاحية جلستك. سجّل الدخول من جديد للمتابعة.",
+      serverError: "حدث خطأ. أعد المحاولة بعد لحظات.",
+      notConfigured: "المنصة غير مرتبطة بقاعدتها في هذه البيئة.",
+    },
+  },
+
   countries_names: {
     SN: "السنغال",
     CI: "ساحل العاج",

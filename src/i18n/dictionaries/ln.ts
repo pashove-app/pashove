@@ -1062,6 +1062,39 @@ const ln: Dictionary = {
     pending: "Kozela moke…",
   },
 
+  onboarding: {
+    storeEyebrow: "Etápɛ 1 · Magazini na yo",
+    storeTitle: "Magazini na yo ebengami nini?",
+    storeSubtitle:
+      "Makambo oyo emonanaka na magazini na yo. Okoki kobongola yango ntango nyonso.",
+    storeNameLabel: "Nkombo ya magazini",
+    storeNameHint: "Ndakisa : Maison Kora",
+    slugLabel: "Adrɛsi ya magazini",
+    slugHelp: "Lianɛ na yo :",
+    countryLabel: "Ekólo ya kotɛ́kɛ",
+    currencyLabel: "Loléngé ya mbongo",
+    currencies: {
+      XOF: "Fara CFA (XOF)",
+      EUR: "Ero (EUR)",
+      USD: "Dolar ya Ameriki (USD)",
+    },
+    storeCta: "Salá magazini na ngai",
+    errors: {
+      storeNameRequired: "Koma nkombo ya magazini na yo.",
+      storeNameTooLong: "Bilembo 80 koleka te.",
+      slugShort: "Bilembo 3 ata moke.",
+      slugLong: "Bilembo 30 koleka te.",
+      slugInvalid: "Bilembo mike, mikɔ́lɔ́ mpe (-) kaka.",
+      slugReserved: "Adrɛsi oyo ebombami mpo na porojɛ oyo.",
+      slugTaken: "Adrɛsi oyo esalelami deja. Pɔní mosusu.",
+      countryInvalid: "Pɔní ekólo ya kotɛ́kɛ.",
+      currencyInvalid: "Pɔní loléngé ya mbongo.",
+      sessionExpired: "Session na yo esili. Kɔta lisusu mpo na kokoba.",
+      serverError: "Likambo moko esalemi. Meká lisusu.",
+      notConfigured: "Porojɛ oyo ezali na baz ya makambo te na esika oyo.",
+    },
+  },
+
   countries_names: {
     SN: "Senegal",
     CI: "Côte d'Ivoire",
