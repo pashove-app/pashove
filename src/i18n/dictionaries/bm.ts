@@ -1126,6 +1126,22 @@ const bm: Dictionary = {
     },
   },
 
+  storefront: {
+    notFoundTitle: "Nin butiki tɛ yen",
+    notFoundText: "A tɛ yen, walima a tigi ma a da fɔlɔ.",
+    backHome: "Ka segi kaɲɛ ɲɛ",
+    closedTitle: "Butiki tɛ se ka sɔrɔ sisan",
+    closedText: "Nin butiki bɛ lakɔli la. Ka segi kɔfɛ.",
+    productsTitle: "Fɛnw",
+    emptyTitle: "Nin butiki bɛ a fɔlɔ ka fɛnw labɛn",
+    emptyText: "Fɛnw bɛ na joona.",
+    contactTitle: "Kunnafoni",
+    contactEmail: "Ka sɛbɛn butiki ma",
+    contactPhone: "Ka butiki wele",
+    poweredBy: "Pashove bɛ a kɛ",
+    metaFallback: "{name} jira Pashove kan",
+  },
+
   countries_names: {
     SN: "Senegal",
     CI: "Kɔdivwa",

@@ -1167,6 +1167,22 @@ const fr = {
     },
   },
 
+  storefront: {
+    notFoundTitle: "Cette boutique n'est pas disponible",
+    notFoundText: "Elle n'existe pas, ou son marchand ne l'a pas encore ouverte.",
+    backHome: "Retour à l'accueil",
+    closedTitle: "Boutique temporairement indisponible",
+    closedText: "Cette boutique est en pause. Reviens un peu plus tard.",
+    productsTitle: "Produits",
+    emptyTitle: "Cette boutique prépare sa première collection",
+    emptyText: "Les produits arriveront bientôt.",
+    contactTitle: "Contact",
+    contactEmail: "Écrire à la boutique",
+    contactPhone: "Appeler la boutique",
+    poweredBy: "Propulsé par Pashove",
+    metaFallback: "Découvre {name} sur Pashove",
+  },
+
   countries_names: {
     SN: "Sénégal",
     CI: "Côte d'Ivoire",

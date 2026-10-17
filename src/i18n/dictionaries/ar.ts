@@ -1115,6 +1115,22 @@ const ar: Dictionary = {
     },
   },
 
+  storefront: {
+    notFoundTitle: "هذا المتجر غير متاح",
+    notFoundText: "لا وجود له، أو لم يفتحه صاحبه بعد.",
+    backHome: "العودة إلى الرئيسية",
+    closedTitle: "المتجر غير متاح مؤقتًا",
+    closedText: "هذا المتجر في إجازة. عد بعد قليل.",
+    productsTitle: "المنتجات",
+    emptyTitle: "هذا المتجر يجهّز أول مجموعة له",
+    emptyText: "ستصل المنتجات قريبًا.",
+    contactTitle: "التواصل",
+    contactEmail: "راسل المتجر",
+    contactPhone: "اتصل بالمتجر",
+    poweredBy: "مدعوم من Pashove",
+    metaFallback: "اكتشف {name} على Pashove",
+  },
+
   countries_names: {
     SN: "السنغال",
     CI: "ساحل العاج",

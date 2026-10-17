@@ -1127,6 +1127,22 @@ const ln: Dictionary = {
     },
   },
 
+  storefront: {
+    notFoundTitle: "Magazini oyo ezali te",
+    notFoundText: "Ezali te, to mokonzi na yango afungoli yango ntango mosusu te.",
+    backHome: "Kozonga na ebandeli",
+    closedTitle: "Magazini ezali liboso te",
+    closedText: "Magazini oyo ezali na bopemi. Zonga na sima moke.",
+    productsTitle: "Biloko",
+    emptyTitle: "Magazini oyo ebongisi lisanga na yango ya liboso",
+    emptyText: "Biloko ekoya kala te.",
+    contactTitle: "Kokutana",
+    contactEmail: "Kokomela magazini",
+    contactPhone: "Kobenga magazini",
+    poweredBy: "Pashove nde esalaki",
+    metaFallback: "Talá {name} na Pashove",
+  },
+
   countries_names: {
     SN: "Senegal",
     CI: "Côte d'Ivoire",

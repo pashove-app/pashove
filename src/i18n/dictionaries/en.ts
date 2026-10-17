@@ -1117,6 +1117,22 @@ const en: Dictionary = {
     },
   },
 
+  storefront: {
+    notFoundTitle: "This store isn't available",
+    notFoundText: "It doesn't exist, or the merchant hasn't opened it yet.",
+    backHome: "Back to home",
+    closedTitle: "Store temporarily unavailable",
+    closedText: "This store is on pause. Check back soon.",
+    productsTitle: "Products",
+    emptyTitle: "This store is preparing its first collection",
+    emptyText: "Products will be here soon.",
+    contactTitle: "Contact",
+    contactEmail: "Email the store",
+    contactPhone: "Call the store",
+    poweredBy: "Powered by Pashove",
+    metaFallback: "Discover {name} on Pashove",
+  },
+
   countries_names: {
     SN: "Senegal",
     CI: "Côte d'Ivoire",
