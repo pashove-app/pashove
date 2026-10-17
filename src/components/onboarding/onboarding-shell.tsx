@@ -44,7 +44,10 @@ export function OnboardingShell({
           <main className="w-full max-w-xl flex-1 py-10 sm:py-14">{children}</main>
         </section>
 
-        <aside className="relative hidden overflow-hidden rounded-3xl lg:block">
+        {/* `sticky` plutôt que `stretch` : le formulaire peut dépasser la
+            hauteur de l'écran, le panneau doit rester une fenêtre de marque
+            dont la phrase du bas demeure visible. */}
+        <aside className="relative hidden overflow-hidden rounded-3xl lg:sticky lg:top-4 lg:block lg:h-[calc(100dvh-2rem)] lg:self-start">
           <BrandPanel t={t} />
         </aside>
       </div>
@@ -56,8 +59,17 @@ export function OnboardingShell({
 function BrandPanel({ t }: { t: Dictionary }) {
   return (
     <>
-      <div className="brand-panel absolute inset-0" aria-hidden="true" />
-      <div className="bg-grid-brand absolute inset-0" aria-hidden="true" />
+      {/* Décor posé en utilitaires arbitraires plutôt qu'en classes de
+          `globals.css` : Turbopack réutilise parfois un CSS compilé périmé
+          après modification de ce fichier (déjà constaté sur ce projet). */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 [background:radial-gradient(120%_85%_at_16%_6%,#7f9dff_0%,transparent_52%),radial-gradient(110%_80%_at_100%_100%,#1026a0_0%,transparent_62%),linear-gradient(158deg,#2f5cff_0%,#2447d6_52%,#17339c_100%)]"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.055)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.055)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(120%_90%_at_50%_40%,#000_35%,transparent_78%)]"
+      />
 
       <div
         aria-hidden="true"

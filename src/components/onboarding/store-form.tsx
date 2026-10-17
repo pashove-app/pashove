@@ -10,7 +10,7 @@ import type { Dictionary } from "@/i18n/get-dictionary";
 import { LAUNCH_COUNTRIES } from "@/lib/site-content";
 import { createStoreAction } from "@/lib/stores/actions";
 import { CURRENCIES, SLUG_MAX, STORE_DOMAIN, slugify } from "@/lib/stores/schema";
-import { INITIAL_STORE_FORM_STATE } from "@/lib/stores/types";
+import { INITIAL_STORE_FORM_STATE, type StoreFormState } from "@/lib/stores/types";
 
 /**
  * Étape 1 de l'onboarding : l'identité de la boutique.
@@ -34,8 +34,35 @@ export function StoreForm({
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
 
+  /**
+   * Champs corrigés depuis la dernière soumission.
+   *
+   * Une erreur de validation décrit une valeur qui n'existe plus dès que le
+   * marchand tape : la laisser affichée sous un champ désormais valide donne
+   * l'impression que le formulaire refuse ce qu'il vient d'accepter.
+   *
+   * Les corrections sont rattachées à l'état qui les a produites (`source`) :
+   * dès qu'une nouvelle soumission renvoie un état différent, elles cessent
+   * d'être prises en compte. Aucun effet, donc aucun état intermédiaire.
+   */
+  const [edits, setEdits] = useState<{
+    source: StoreFormState;
+    corrected: Record<string, boolean>;
+  }>({ source: INITIAL_STORE_FORM_STATE, corrected: {} });
+
+  const corrected = edits.source === state ? edits.corrected : {};
+
+  const clearField = (key: string) => {
+    setEdits((current) => {
+      const base = current.source === state ? current.corrected : {};
+      if (base[key]) return current;
+      return { source: state, corrected: { ...base, [key]: true } };
+    });
+  };
+
   const errors = t.onboarding.errors as Record<string, string>;
   const fieldError = (key: string) => {
+    if (corrected[key]) return undefined;
     const messageKey = state.fieldErrors?.[key];
     return messageKey ? errors[messageKey] : undefined;
   };
@@ -64,6 +91,7 @@ export function StoreForm({
           value={name}
           error={fieldError("name")}
           onChange={(event) => {
+            clearField("name");
             setName(event.target.value);
             if (!slugTouched) setSlug(slugify(event.target.value));
           }}
@@ -93,6 +121,7 @@ export function StoreForm({
             </span>
           }
           onChange={(event) => {
+            clearField("slug");
             setSlugTouched(true);
             setSlug(slugify(event.target.value));
           }}
@@ -102,6 +131,9 @@ export function StoreForm({
           role="radiogroup"
           aria-labelledby="country-label"
           className="flex flex-col gap-2.5"
+          // Le changement remonte depuis les boutons radio : un seul écouteur
+          // suffit pour toute la grille.
+          onChange={() => clearField("country")}
         >
           <p id="country-label" className="text-sm font-medium text-body">
             {t.onboarding.sellingQuestion}
@@ -135,6 +167,7 @@ export function StoreForm({
           role="radiogroup"
           aria-labelledby="currency-label"
           className="flex flex-col gap-2.5"
+          onChange={() => clearField("currency")}
         >
           <p id="currency-label" className="text-sm font-medium text-body">
             {t.onboarding.currencyQuestion}
@@ -168,18 +201,8 @@ export function StoreForm({
         {formMessage ? <FormNotice tone="error">{formMessage}</FormNotice> : null}
 
         <div className="flex flex-wrap items-center gap-3">
-          {/* Rien avant l'étape 1 : le bouton existe pour que la position ne
-              change pas d'un écran à l'autre, mais il reste inerte. */}
-          <button
-            type="button"
-            disabled
-            aria-disabled="true"
-            className={buttonClass({ variant: "outline", size: "lg" })}
-          >
-            <Icon path={icons.arrowRight} className="h-4 w-4 rotate-180 rtl:rotate-0" />
-            {t.onboarding.back}
-          </button>
-
+          {/* Pas de « Retour » à la première étape : il n'y a rien avant.
+              Il réapparaîtra à partir de l'étape 2. */}
           <button type="submit" disabled={pending} className={buttonClass({ size: "lg" })}>
             {pending ? (
               <>
