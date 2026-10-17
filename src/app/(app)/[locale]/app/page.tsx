@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { PashoveLogo } from "@/components/brand/pashove-logo";
-import { LocaleSwitcher } from "@/components/ui/locale-switcher";
-import { ThemeToggle } from "@/components/theme/theme-toggle";
-import { buttonClass, ButtonLink, Icon, icons } from "@/components/ui/primitives";
+import { MerchantHeader } from "@/components/app/merchant-header";
+import { ButtonLink, Icon, icons } from "@/components/ui/primitives";
 import { path } from "@/components/ui/types";
-import { signOutAction } from "@/lib/auth/actions";
 import { requireSecondFactor } from "@/lib/auth/mfa";
 import { currentOnboardingStep, onboardingPath } from "@/lib/onboarding/steps";
 import { currentStore } from "@/lib/stores/queries";
@@ -66,29 +63,7 @@ export default async function WorkspacePage({
 
   return (
     <div className="min-h-dvh bg-bg">
-      <header className="border-b border-border">
-        <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-3 px-5 sm:px-8">
-          <PashoveLogo />
-          <div className="flex items-center gap-2">
-            <LocaleSwitcher
-              locale={locale}
-              labels={{ label: t.header.languageLabel, current: t.header.currentLanguage }}
-            />
-            <ThemeToggle
-              labels={{ toLight: t.header.themeToLight, toDark: t.header.themeToDark }}
-            />
-            <form action={signOutAction}>
-              <input type="hidden" name="locale" value={locale} />
-              <button
-                type="submit"
-                className={buttonClass({ variant: "outline", size: "sm" })}
-              >
-                {t.auth.workspaceSignOut}
-              </button>
-            </form>
-          </div>
-        </div>
-      </header>
+      <MerchantHeader t={t} locale={locale} />
 
       <main className="mx-auto w-full max-w-5xl px-5 py-16 sm:px-8">
         {published ? (
@@ -138,12 +113,17 @@ export default async function WorkspacePage({
           <Row label={t.onboarding.currencyLabel} value={store.currency} mono />
         </dl>
 
-        {/* Un seul point d'entrée : la page de sécurité rassemble le mot de
-            passe, l'adresse, les sessions et la double authentification. */}
-        <div className="mt-6">
+        <div className="mt-6 flex flex-wrap gap-3">
+          {/* La page de sécurité rassemble le mot de passe, l'adresse, les
+              sessions et la double authentification. */}
           <ButtonLink href={path(locale, "/auth/security")} variant="outline">
             <Icon path={icons.shield} className="h-4 w-4" />
             {t.auth.securityTitle}
+          </ButtonLink>
+
+          <ButtonLink href={path(locale, "/app/settings/store")} variant="outline">
+            <Icon path={icons.store} className="h-4 w-4" />
+            {t.settings.storeTitle}
           </ButtonLink>
         </div>
 

@@ -2,11 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { LOCALES } from "@/i18n/config";
 import { currentOnboardingStep, onboardingPath } from "@/lib/onboarding/steps";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { currentStore } from "@/lib/stores/queries";
-import { createStoreSchema, sellingSchema } from "@/lib/stores/schema";
-import type { StoreFormState } from "@/lib/stores/types";
+import { createStoreSchema, sellingSchema, storeSettingsSchema } from "@/lib/stores/schema";
+import type { StoreFormState, StoreSettingsState } from "@/lib/stores/types";
 import { toFieldErrors } from "@/lib/validation";
 
 function field(formData: FormData, key: string): string {
@@ -163,4 +164,64 @@ export async function saveSellingAction(
 
   const step = await currentOnboardingStep();
   redirect(onboardingPath(locale, step));
+}
+
+/**
+ * Réglages de la vitrine : description, contacts publics, visuels.
+ *
+ * Une valeur vide devient `null` — la vitrine masque alors le bloc ou reprend
+ * son repli. Les pages de la vitrine sont revalidées dans les cinq langues
+ * pour que la modification soit visible tout de suite, malgré le cache.
+ */
+export async function saveStoreSettingsAction(
+  _previous: StoreSettingsState,
+  formData: FormData,
+): Promise<StoreSettingsState> {
+  const locale = field(formData, "locale") || "fr";
+
+  const parsed = storeSettingsSchema.safeParse({
+    description: field(formData, "description"),
+    contactEmail: field(formData, "contactEmail"),
+    contactPhone: field(formData, "contactPhone"),
+    logoUrl: field(formData, "logoUrl"),
+    bannerUrl: field(formData, "bannerUrl"),
+  });
+
+  if (!parsed.success) {
+    return { status: "invalid", fieldErrors: toFieldErrors(parsed.error) };
+  }
+
+  if (!isSupabaseConfigured()) return { status: "unconfigured" };
+
+  const supabase = await createClient();
+  const store = await currentStore();
+
+  if (!store) return { status: "error", messageKey: "sessionExpired" };
+
+  const blankToNull = (value: string) =>
+    value.trim() === "" ? null : value.trim();
+
+  const { error } = await supabase
+    .from("stores")
+    .update({
+      description: blankToNull(parsed.data.description),
+      contact_email: blankToNull(parsed.data.contactEmail),
+      contact_phone: blankToNull(parsed.data.contactPhone),
+      logo_url: blankToNull(parsed.data.logoUrl),
+      banner_url: blankToNull(parsed.data.bannerUrl),
+    })
+    .eq("id", store.id);
+
+  if (error) return { status: "error", messageKey: "serverError" };
+
+  revalidatePath(`/${locale}/app/settings/store`);
+  revalidatePath(`/${locale}/app`);
+
+  // La vitrine est mise en cache une minute : on invalide explicitement les
+  // cinq langues pour que la modification soit visible immédiatement.
+  for (const code of LOCALES) {
+    revalidatePath(`/${code}/store/${store.slug}`);
+  }
+
+  return { status: "saved" };
 }

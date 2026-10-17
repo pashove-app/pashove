@@ -1117,6 +1117,37 @@ const en: Dictionary = {
     },
   },
 
+  settings: {
+    storeTitle: "Store settings",
+    storeSubtitle: "What your customers see on your storefront.",
+    backToApp: "Merchant space",
+    presentationTitle: "About",
+    presentationText: "A sentence or two about who you are.",
+    descriptionLabel: "Description",
+    contactTitle: "Contact",
+    contactText:
+      "These details appear on your storefront. Leave them empty to hide them.",
+    contactEmailLabel: "Public email",
+    contactPhoneLabel: "Public phone",
+    visualTitle: "Visual identity",
+    visualText:
+      "Paste the address of an image hosted elsewhere. File uploads are coming later.",
+    logoLabel: "Logo (image URL)",
+    bannerLabel: "Banner (image URL)",
+    save: "Save",
+    saved: "Changes saved.",
+    errors: {
+      descriptionTooLong: "500 characters at most.",
+      contactEmailInvalid: "That email address isn't valid.",
+      contactPhoneInvalid: "That phone number isn't valid.",
+      imageUrlInvalid: "The address must start with https://.",
+      serverError: "Something went wrong. Try again in a moment.",
+      sessionExpired: "Your session has expired. Sign in again.",
+      notConfigured:
+        "The platform isn't connected to its database in this environment.",
+    },
+  },
+
   storefront: {
     notFoundTitle: "This store isn't available",
     notFoundText: "It doesn't exist, or the merchant hasn't opened it yet.",

@@ -10,11 +10,16 @@ export type Store = {
   category: string | null;
   status: "draft" | "active" | "suspended";
   product_types: string[];
+  description: string | null;
+  logo_url: string | null;
+  banner_url: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
   created_at: string;
 };
 
 const COLUMNS =
-  "id, name, slug, country, currency, category, status, product_types, created_at";
+  "id, name, slug, country, currency, category, status, product_types, description, logo_url, banner_url, contact_email, contact_phone, created_at";
 
 /**
  * Les boutiques de l'utilisateur connecté.

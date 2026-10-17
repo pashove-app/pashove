@@ -1127,6 +1127,36 @@ const ln: Dictionary = {
     },
   },
 
+  settings: {
+    storeTitle: "Makambo ya magazini",
+    storeSubtitle: "Oyo bakiliya na yo bamonaka na magazini na yo.",
+    backToApp: "Esika ya mosálá",
+    presentationTitle: "Na ntina na yo",
+    presentationText: "Maloba moke mpo na komimonisa.",
+    descriptionLabel: "Ndimbola",
+    contactTitle: "Kokutana",
+    contactText:
+      "Bazwi oyo emonanaka na magazini na yo. Tika polele mpo na kobomba yango.",
+    contactEmailLabel: "Imɛlɛ ya bato",
+    contactPhoneLabel: "Telefɔni ya bato",
+    visualTitle: "Bomoni ya magazini",
+    visualText:
+      "Koma adrɛsi ya etyɛ́nɛ oyo ezali na esika mosusu. Kotya mikanda ekoya na sima.",
+    logoLabel: "Logo (adrɛsi ya etyɛ́nɛ)",
+    bannerLabel: "Bannière (adrɛsi ya etyɛ́nɛ)",
+    save: "Kobomba",
+    saved: "Mbongwana ebombami.",
+    errors: {
+      descriptionTooLong: "Bilembo 500 koleka te.",
+      contactEmailInvalid: "Adrɛsi ya imɛlɛ oyo ezali malamu te.",
+      contactPhoneInvalid: "Nimero ya telefɔni oyo ezali malamu te.",
+      imageUrlInvalid: "Adrɛsi esengeli kobanda na https://.",
+      serverError: "Likambo moko esalemi. Meká lisusu.",
+      sessionExpired: "Session na yo esili. Kɔta lisusu.",
+      notConfigured: "Porojɛ oyo ezali na baz ya makambo te na esika oyo.",
+    },
+  },
+
   storefront: {
     notFoundTitle: "Magazini oyo ezali te",
     notFoundText: "Ezali te, to mokonzi na yango afungoli yango ntango mosusu te.",

@@ -126,6 +126,40 @@ export function TextField({
   );
 }
 
+const TEXTAREA_CONTROL = [
+  "block min-h-28 w-full resize-y rounded-xl border bg-surface px-4 py-3",
+  "text-[0.9375rem] leading-relaxed text-fg placeholder:text-faint",
+  "transition-[border-color,box-shadow] duration-200 focus:outline-none focus:ring-4",
+  "disabled:opacity-60",
+].join(" ");
+
+/** Zone de texte libre — description de vitrine, notes. */
+export function TextAreaField({
+  label,
+  hint,
+  help,
+  error,
+  addon,
+  className,
+  ...textarea
+}: Omit<BaseProps, "icon"> &
+  React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  const id = useId();
+
+  return (
+    <Shell id={id} label={label} help={help} error={error} addon={addon}>
+      <textarea
+        id={id}
+        aria-invalid={Boolean(error)}
+        aria-describedby={error ? `${id}-error` : help ? `${id}-help` : undefined}
+        {...textarea}
+        placeholder={hint}
+        className={cn(TEXTAREA_CONTROL, error ? CONTROL_ERROR : CONTROL_OK, className)}
+      />
+    </Shell>
+  );
+}
+
 export function PasswordField({
   label,
   hint,

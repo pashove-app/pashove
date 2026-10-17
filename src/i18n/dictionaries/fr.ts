@@ -1167,6 +1167,37 @@ const fr = {
     },
   },
 
+  settings: {
+    storeTitle: "Réglages de la boutique",
+    storeSubtitle: "Ce que tes clients voient sur ta vitrine.",
+    backToApp: "Espace marchand",
+    presentationTitle: "Présentation",
+    presentationText: "Une ou deux phrases pour dire qui tu es.",
+    descriptionLabel: "Description",
+    contactTitle: "Contact",
+    contactText:
+      "Ces coordonnées s'affichent sur ta vitrine. Laisse vide pour les masquer.",
+    contactEmailLabel: "E-mail public",
+    contactPhoneLabel: "Téléphone public",
+    visualTitle: "Identité visuelle",
+    visualText:
+      "Colle l'adresse d'une image hébergée ailleurs. L'import de fichiers arrive plus tard.",
+    logoLabel: "Logo (adresse de l'image)",
+    bannerLabel: "Bannière (adresse de l'image)",
+    save: "Enregistrer",
+    saved: "Modifications enregistrées.",
+    errors: {
+      descriptionTooLong: "500 caractères maximum.",
+      contactEmailInvalid: "Cette adresse e-mail n'est pas valide.",
+      contactPhoneInvalid: "Ce numéro n'est pas valide.",
+      imageUrlInvalid: "L'adresse doit commencer par https://.",
+      serverError: "Une erreur est survenue. Réessaie dans un instant.",
+      sessionExpired: "Ta session a expiré. Reconnecte-toi.",
+      notConfigured:
+        "La plateforme n'est pas reliée à sa base dans cet environnement.",
+    },
+  },
+
   storefront: {
     notFoundTitle: "Cette boutique n'est pas disponible",
     notFoundText: "Elle n'existe pas, ou son marchand ne l'a pas encore ouverte.",

@@ -7,6 +7,8 @@ export type PublicStore = {
   name: string;
   slug: string;
   description: string | null;
+  logo_url: string | null;
+  banner_url: string | null;
   contact_email: string | null;
   contact_phone: string | null;
   country: string;
@@ -17,7 +19,7 @@ export type PublicStore = {
 export type StorefrontStatus = "active" | "suspended" | "missing";
 
 const COLUMNS =
-  "id, name, slug, description, contact_email, contact_phone, country, currency, category";
+  "id, name, slug, description, logo_url, banner_url, contact_email, contact_phone, country, currency, category";
 
 /** Normalise un segment d'URL avant de le comparer : les slugs sont minuscules. */
 function normalize(slug: string): string {

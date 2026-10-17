@@ -12,31 +12,47 @@ export function StorefrontHero({ store }: { store: PublicStore }) {
   return (
     <div>
       <div className="relative h-40 overflow-hidden rounded-3xl sm:h-60">
-        <div className={`absolute inset-0 ${BRAND_GRADIENT}`} aria-hidden="true" />
-        <div className={`absolute inset-0 ${BRAND_GRID}`} aria-hidden="true" />
+        {store.banner_url ? (
+          // URL fournie par le marchand, hors des domaines configurés pour
+          // `next/image` : on l'affiche telle quelle, sans optimisation.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={store.banner_url}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            referrerPolicy="no-referrer"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        ) : (
+          <>
+            <div className={`absolute inset-0 ${BRAND_GRADIENT}`} aria-hidden="true" />
+            <div className={`absolute inset-0 ${BRAND_GRID}`} aria-hidden="true" />
 
-        <svg
-          viewBox="0 0 40 40"
-          fill="none"
-          aria-hidden="true"
-          focusable="false"
-          className="absolute end-[-3%] top-1/2 w-[44%] max-w-[20rem] -translate-y-1/2 text-white/[0.16]"
-        >
-          <path
-            d="M10.5 19.5 20 10l9.5 9.5"
-            stroke="currentColor"
-            strokeWidth="1.3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M13.5 28 20 21.5 26.5 28"
-            stroke="currentColor"
-            strokeWidth="1.3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+            <svg
+              viewBox="0 0 40 40"
+              fill="none"
+              aria-hidden="true"
+              focusable="false"
+              className="absolute end-[-3%] top-1/2 w-[44%] max-w-[20rem] -translate-y-1/2 text-white/[0.16]"
+            >
+              <path
+                d="M10.5 19.5 20 10l9.5 9.5"
+                stroke="currentColor"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M13.5 28 20 21.5 26.5 28"
+                stroke="currentColor"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </>
+        )}
       </div>
 
       {store.description ? (

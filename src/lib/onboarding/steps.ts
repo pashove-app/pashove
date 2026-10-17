@@ -15,9 +15,10 @@ export async function currentOnboardingStep(): Promise<OnboardingStep> {
   const store = await currentStore();
   if (!store) return "store";
 
-  // Une boutique publiée ne renvoie plus jamais vers l'onboarding, même si une
-  // donnée manquait — sinon un marchand en ligne se retrouverait coincé.
-  if (store.status === "active") return "done";
+  // Une boutique publiée — ou suspendue, donc déjà sortie du brouillon — ne
+  // renvoie plus jamais vers l'onboarding, même si une donnée manquait :
+  // sinon un marchand en ligne se retrouverait coincé.
+  if (store.status !== "draft") return "done";
 
   const profile = await readProfile();
   if (

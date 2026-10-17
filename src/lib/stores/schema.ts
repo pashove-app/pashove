@@ -67,6 +67,43 @@ export const sellingSchema = z.object({
     .min(1, "productTypesRequired"),
 });
 
+/* ------------------------------------------------------------------ *
+ *  Réglages de la vitrine
+ * ------------------------------------------------------------------ */
+
+/**
+ * Une adresse d'image collée à la main. Seul `https` est accepté : la base
+ * impose la même règle, et une page servie en clair ne doit pas tirer de
+ * ressource mixte.
+ */
+const httpsImageUrl = z
+  .string()
+  .trim()
+  .max(500, "imageUrlInvalid")
+  .refine(
+    (value) => value === "" || /^https:\/\/\S+$/i.test(value),
+    "imageUrlInvalid",
+  );
+
+export const storeSettingsSchema = z.object({
+  description: z.string().trim().max(500, "descriptionTooLong"),
+  contactEmail: z
+    .string()
+    .trim()
+    .max(254, "contactEmailInvalid")
+    .refine(
+      (value) => value === "" || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value),
+      "contactEmailInvalid",
+    ),
+  contactPhone: z
+    .string()
+    .trim()
+    .max(24, "contactPhoneInvalid")
+    .refine((value) => value === "" || value.length >= 6, "contactPhoneInvalid"),
+  logoUrl: httpsImageUrl,
+  bannerUrl: httpsImageUrl,
+});
+
 /** Nombre maximal de caractères de l'identifiant, repris par le formulaire. */
 export const SLUG_MAX = 30;
 
