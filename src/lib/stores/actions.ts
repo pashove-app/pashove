@@ -2,7 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { currentOnboardingStep, onboardingPath } from "@/lib/onboarding/steps";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { currentStore } from "@/lib/stores/queries";
 import { createStoreSchema } from "@/lib/stores/schema";
 import type { StoreFormState } from "@/lib/stores/types";
 import { toFieldErrors } from "@/lib/validation";
@@ -30,13 +32,14 @@ function messageKeyFor(error: { code?: string }): string {
 }
 
 /**
- * Crée la boutique du marchand connecté.
+ * Crée la boutique du marchand connecté, ou met à jour celle qui existe déjà.
  *
- * L'écriture ne passe pas par un `insert` : `create_store()` est la seule voie
- * ouverte, et c'est elle qui rend le créateur propriétaire dans la même
- * transaction. Le `store_id` n'est donc jamais fourni par le client.
+ * À la création, l'écriture ne passe pas par un `insert` : `create_store()` est
+ * la seule voie ouverte, et c'est elle qui rend le créateur propriétaire dans la
+ * même transaction. À la mise à jour, l'identifiant est lu côté serveur — la
+ * politique RLS interdit d'écrire la boutique d'un autre de toute façon.
  */
-export async function createStoreAction(
+export async function saveStoreAction(
   _previous: StoreFormState,
   formData: FormData,
 ): Promise<StoreFormState> {
@@ -56,17 +59,30 @@ export async function createStoreAction(
   if (!isSupabaseConfigured()) return { status: "unconfigured" };
 
   const supabase = await createClient();
+  const existing = await currentStore();
 
-  const { error } = await supabase.rpc("create_store", {
-    p_name: parsed.data.name,
-    p_slug: parsed.data.slug,
-    p_country: parsed.data.country,
-    p_currency: parsed.data.currency,
-  });
+  const { error } = existing
+    ? await supabase
+        .from("stores")
+        .update({
+          name: parsed.data.name,
+          slug: parsed.data.slug,
+          country: parsed.data.country,
+          currency: parsed.data.currency,
+        })
+        .eq("id", existing.id)
+    : await supabase.rpc("create_store", {
+        p_name: parsed.data.name,
+        p_slug: parsed.data.slug,
+        p_country: parsed.data.country,
+        p_currency: parsed.data.currency,
+      });
 
   if (error) return { status: "error", messageKey: messageKeyFor(error) };
 
   // Le nom de la boutique s'affiche dans l'en-tête de tout l'espace marchand.
   revalidatePath("/", "layout");
-  redirect(`/${locale}/app`);
+
+  const step = await currentOnboardingStep();
+  redirect(onboardingPath(locale, step));
 }

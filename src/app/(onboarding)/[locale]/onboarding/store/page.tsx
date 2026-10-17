@@ -46,7 +46,9 @@ export default async function OnboardingStorePage({
   // On ne construit pas une boutique derrière un simple mot de passe.
   await requireSecondFactor(locale, user);
 
-  if (await currentStore()) redirect(`/${locale}/app`);
+  // La boutique existante est éditable : c'est ce que trouve le bouton
+  // « Retour » de l'étape 2. Pas de redirection, donc, mais un mode édition.
+  const store = await currentStore();
 
   const t = await getDictionary(locale);
 
@@ -54,6 +56,7 @@ export default async function OnboardingStorePage({
     <StoreForm
       t={t}
       locale={locale}
+      store={store}
       // Interpolé côté serveur : le composant client n'a pas à embarquer le
       // chargeur de dictionnaires pour un simple remplacement de jetons.
       stepLabel={interpolate(t.onboarding.stepProgress, { current: 1, total: 4 })}

@@ -1105,12 +1105,25 @@ const fr = {
     },
     back: "Retour",
     next: "Continuer",
+    profileTitle: "Faisons connaissance",
+    profileSubtitle:
+      "Quelques informations sur toi. Elles restent privées et servent à te joindre.",
+    profileNameLabel: "Nom complet",
+    profileNameHint: "Ex : Aïssatou Diallo",
+    phoneLabel: "Téléphone",
+    phoneHint: "+221 77 123 45 67",
+    phoneHelp: "Ton numéro ne s'affiche jamais sur ta vitrine.",
+    timezoneLabel: "Fuseau horaire",
+    timezoneHelp: "Il fixe l'heure de tes commandes et de tes rendez-vous.",
     slugRules:
       "Lettres minuscules, chiffres et tirets. Tu pourras la changer plus tard.",
     panelTitle:
       "Ta vitrine en ligne, prête à recevoir sa première commande.",
     panelKicker: "Pashove · Commerce OS",
     errors: {
+      profileNameRequired: "Indique ton nom complet.",
+      phoneRequired: "Indique ton numéro de téléphone.",
+      timezoneInvalid: "Choisis un fuseau horaire.",
       storeNameRequired: "Indique le nom de ta boutique.",
       storeNameTooLong: "80 caractères au maximum.",
       slugShort: "3 caractères au minimum.",

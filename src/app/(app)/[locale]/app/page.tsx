@@ -7,6 +7,7 @@ import { buttonClass, ButtonLink, Icon, icons } from "@/components/ui/primitives
 import { path } from "@/components/ui/types";
 import { signOutAction } from "@/lib/auth/actions";
 import { requireSecondFactor } from "@/lib/auth/mfa";
+import { currentOnboardingStep, onboardingPath } from "@/lib/onboarding/steps";
 import { currentStore } from "@/lib/stores/queries";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { LOCALES, resolveLocale } from "@/i18n/config";
@@ -48,8 +49,11 @@ export default async function WorkspacePage({
   // Un mot de passe volé ne doit pas suffire à ouvrir l'espace marchand.
   await requireSecondFactor(locale, user);
 
-  // Sans boutique, il n'y a rien à montrer : l'onboarding prend la suite. C'est
-  // aussi la logique de reprise — l'étape suivante se déduit de ce qui existe.
+  // L'onboarding prend la suite tant qu'une étape reste à faire — la boutique,
+  // puis le profil. L'étape se déduit de ce qui existe en base, sans compteur.
+  const step = await currentOnboardingStep();
+  if (step !== "done") redirect(onboardingPath(locale, step));
+
   const store = await currentStore();
   if (!store) redirect(`/${locale}/onboarding/store`);
 

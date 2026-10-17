@@ -7,10 +7,12 @@ import { FormNotice, TextField } from "@/components/ui/field";
 import { buttonClass, Icon, icons, Spinner } from "@/components/ui/primitives";
 import type { SectionProps } from "@/components/ui/types";
 import type { Dictionary } from "@/i18n/get-dictionary";
+import { useFieldErrors } from "@/lib/forms/use-field-errors";
 import { LAUNCH_COUNTRIES } from "@/lib/site-content";
-import { createStoreAction } from "@/lib/stores/actions";
+import { saveStoreAction } from "@/lib/stores/actions";
+import type { Store } from "@/lib/stores/queries";
 import { CURRENCIES, SLUG_MAX, STORE_DOMAIN, slugify } from "@/lib/stores/schema";
-import { INITIAL_STORE_FORM_STATE, type StoreFormState } from "@/lib/stores/types";
+import { INITIAL_STORE_FORM_STATE } from "@/lib/stores/types";
 
 /**
  * Étape 1 de l'onboarding : l'identité de la boutique.
@@ -24,41 +26,20 @@ export function StoreForm({
   t,
   locale,
   stepLabel,
-}: SectionProps & { stepLabel: string }) {
+  store = null,
+}: SectionProps & { stepLabel: string; store?: Store | null }) {
   const [state, formAction, pending] = useActionState(
-    createStoreAction,
+    saveStoreAction,
     INITIAL_STORE_FORM_STATE,
   );
 
-  const [name, setName] = useState("");
-  const [slug, setSlug] = useState("");
-  const [slugTouched, setSlugTouched] = useState(false);
+  const [name, setName] = useState(store?.name ?? "");
+  const [slug, setSlug] = useState(store?.slug ?? "");
+  // Sur une boutique existante, renommer ne doit pas changer l'adresse en
+  // silence : l'identifiant ne suit le nom qu'à la création.
+  const [slugTouched, setSlugTouched] = useState(Boolean(store));
 
-  /**
-   * Champs corrigés depuis la dernière soumission.
-   *
-   * Une erreur de validation décrit une valeur qui n'existe plus dès que le
-   * marchand tape : la laisser affichée sous un champ désormais valide donne
-   * l'impression que le formulaire refuse ce qu'il vient d'accepter.
-   *
-   * Les corrections sont rattachées à l'état qui les a produites (`source`) :
-   * dès qu'une nouvelle soumission renvoie un état différent, elles cessent
-   * d'être prises en compte. Aucun effet, donc aucun état intermédiaire.
-   */
-  const [edits, setEdits] = useState<{
-    source: StoreFormState;
-    corrected: Record<string, boolean>;
-  }>({ source: INITIAL_STORE_FORM_STATE, corrected: {} });
-
-  const corrected = edits.source === state ? edits.corrected : {};
-
-  const clearField = (key: string) => {
-    setEdits((current) => {
-      const base = current.source === state ? current.corrected : {};
-      if (base[key]) return current;
-      return { source: state, corrected: { ...base, [key]: true } };
-    });
-  };
+  const { corrected, clear } = useFieldErrors(state);
 
   const errors = t.onboarding.errors as Record<string, string>;
   const fieldError = (key: string) => {
@@ -91,7 +72,7 @@ export function StoreForm({
           value={name}
           error={fieldError("name")}
           onChange={(event) => {
-            clearField("name");
+            clear("name");
             setName(event.target.value);
             if (!slugTouched) setSlug(slugify(event.target.value));
           }}
@@ -121,7 +102,7 @@ export function StoreForm({
             </span>
           }
           onChange={(event) => {
-            clearField("slug");
+            clear("slug");
             setSlugTouched(true);
             setSlug(slugify(event.target.value));
           }}
@@ -133,7 +114,7 @@ export function StoreForm({
           className="flex flex-col gap-2.5"
           // Le changement remonte depuis les boutons radio : un seul écouteur
           // suffit pour toute la grille.
-          onChange={() => clearField("country")}
+          onChange={() => clear("country")}
         >
           <p id="country-label" className="text-sm font-medium text-body">
             {t.onboarding.sellingQuestion}
@@ -151,7 +132,7 @@ export function StoreForm({
                     country.code as keyof Dictionary["countries_names"]
                   ] ?? country.code
                 }
-                defaultChecked={country.code === "SN"}
+                defaultChecked={country.code === (store?.country ?? "SN")}
               />
             ))}
           </div>
@@ -167,7 +148,7 @@ export function StoreForm({
           role="radiogroup"
           aria-labelledby="currency-label"
           className="flex flex-col gap-2.5"
-          onChange={() => clearField("currency")}
+          onChange={() => clear("currency")}
         >
           <p id="currency-label" className="text-sm font-medium text-body">
             {t.onboarding.currencyQuestion}
@@ -181,7 +162,7 @@ export function StoreForm({
                 value={code}
                 label={t.onboarding.currencies[code]}
                 hint={code}
-                defaultChecked={code === "XOF"}
+                defaultChecked={code === (store?.currency ?? "XOF")}
                 stacked
               />
             ))}
