@@ -61,10 +61,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${notoArabic.variable} h-full antialiased`}
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: BOOT_SCRIPT }} />
-      </head>
       <body className="flex min-h-full flex-col bg-bg text-fg">
+        {/*
+         * Le script d'amorçage est posé en `innerHTML` sur un conteneur, pas en
+         * élément `<script>` de l'arbre React.
+         *
+         * Au premier chargement, le navigateur analyse le HTML et l'exécute
+         * avant la première peinture : le thème est déjà le bon. Quand Next
+         * re-rend l'arbre côté client — ce qui arrive sur une page 404 — React
+         * réinjecte le même HTML, et un script inséré par `innerHTML`
+         * **ne s'exécute pas** (comportement du DOM). Il n'y a donc ni double
+         * exécution, ni avertissement de React sur un `<script>` dans l'arbre.
+         */}
+        <div
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: `<script>${BOOT_SCRIPT}</script>` }}
+        />
         <ThemeWatcher />
         {children}
       </body>
