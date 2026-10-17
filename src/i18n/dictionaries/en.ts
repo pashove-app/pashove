@@ -1080,6 +1080,16 @@ const en: Dictionary = {
     productDigitalHint: "E-books, files, videos…",
     productService: "Service",
     productServiceHint: "Coaching, consulting, appointments…",
+    launchTitle: "Your store is ready to go live.",
+    launchSubtitle: "Take one last look, then open your storefront.",
+    launchStoreSection: "Store",
+    launchProfileSection: "Profile",
+    launchSellingSection: "Sales",
+    launchPublish: "Publish my store",
+    launchEdit: "Edit my details",
+    launchPublished: "Your store is published.",
+    launchPublishedText:
+      "Everything is saved. The public storefront is coming in a later release.",
     slugRules:
       "Lowercase letters, digits and hyphens. You can change it later.",
     panelTitle: "Your storefront online, ready for its first order.",

@@ -1129,6 +1129,16 @@ const fr = {
     productDigitalHint: "E-books, fichiers, vidéos…",
     productService: "Service",
     productServiceHint: "Coaching, prestation, rendez-vous…",
+    launchTitle: "Ta boutique est prête à être publiée.",
+    launchSubtitle: "Vérifie une dernière fois, puis ouvre ta vitrine.",
+    launchStoreSection: "Boutique",
+    launchProfileSection: "Profil",
+    launchSellingSection: "Vente",
+    launchPublish: "Publier ma boutique",
+    launchEdit: "Modifier mes infos",
+    launchPublished: "Ta boutique est publiée.",
+    launchPublishedText:
+      "Tout est enregistré. La vitrine publique arrive dans un prochain lot.",
     slugRules:
       "Lettres minuscules, chiffres et tirets. Tu pourras la changer plus tard.",
     panelTitle:

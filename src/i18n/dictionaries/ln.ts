@@ -1090,6 +1090,16 @@ const ln: Dictionary = {
     productDigitalHint: "Búku ya e-books, bakásá, bavidéo…",
     productService: "Mosálá",
     productServiceHint: "Kosálisa, koyekola, bokutani…",
+    launchTitle: "Magazini na yo ebongisami mpo na kobima.",
+    launchSubtitle: "Talá yango mwa nsuka, mpe fungolá magazini na yo.",
+    launchStoreSection: "Magazini",
+    launchProfileSection: "Profil",
+    launchSellingSection: "Kotɛ́kɛ",
+    launchPublish: "Bimisá magazini na ngai",
+    launchEdit: "Bongolí makambo na ngai",
+    launchPublished: "Magazini na yo ebimi.",
+    launchPublishedText:
+      "Makambo nyonso esalemi. Vitrine ya bato ekoya na etápɛ ya sima.",
     slugRules:
       "Bilembo mike, mikɔ́lɔ́ mpe (-) kaka. Okoki kobongola yango na sima.",
     panelTitle:

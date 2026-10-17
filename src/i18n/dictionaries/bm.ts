@@ -1089,6 +1089,16 @@ const bm: Dictionary = {
     productDigitalHint: "E-book, fichie, videyo…",
     productService: "Baara",
     productServiceHint: "Baara, lajɔli, waati sigi…",
+    launchTitle: "I butiki labɛnnen don ka bɔ kɛnɛ.",
+    launchSubtitle: "I lajɛ kɔfɛ, ka i butiki da.",
+    launchStoreSection: "Butiki",
+    launchProfileSection: "Profil",
+    launchSellingSection: "Feere",
+    launchPublish: "N butiki bɔ kɛnɛ",
+    launchEdit: "N kunnafoniw falen",
+    launchPublished: "I butiki bɔra kɛnɛ.",
+    launchPublishedText:
+      "A bɛɛ sɛbɛnnen don. Butiki ɲɛ bɛ na lot kura la.",
     slugRules:
       "Sɛbɛn fitininw, nɔmɔrow ni tire (-) dɔrɔn. I bɛ se ka a falen kɔfɛ.",
     panelTitle:

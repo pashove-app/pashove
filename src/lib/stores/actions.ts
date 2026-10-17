@@ -88,6 +88,41 @@ export async function saveStoreAction(
 }
 
 /**
+ * Étape 4 : publication de la boutique.
+ *
+ * Le statut passe de `draft` à `active` et `launched_at` garde la date de la
+ * première mise en ligne — republier ne la réécrit pas. Une boutique publiée
+ * ne repasse plus jamais par l'onboarding.
+ */
+export async function publishStoreAction(
+  _previous: StoreFormState,
+  formData: FormData,
+): Promise<StoreFormState> {
+  const locale = field(formData, "locale") || "fr";
+
+  if (!isSupabaseConfigured()) return { status: "unconfigured" };
+
+  const supabase = await createClient();
+  const store = await currentStore();
+
+  if (!store) return { status: "error", messageKey: "serverError" };
+
+  const { error } = await supabase
+    .from("stores")
+    .update(
+      store.status === "active"
+        ? { status: "active" }
+        : { status: "active", launched_at: new Date().toISOString() },
+    )
+    .eq("id", store.id);
+
+  if (error) return { status: "error", messageKey: "serverError" };
+
+  revalidatePath("/", "layout");
+  redirect(`/${locale}/app?published=1`);
+}
+
+/**
  * Étape 3 : ce que la boutique vend.
  *
  * Les cases à cocher arrivent sous un même nom, et `getAll` les rend toutes.

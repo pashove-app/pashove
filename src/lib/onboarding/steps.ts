@@ -1,7 +1,7 @@
 import { readProfile } from "@/lib/profile/queries";
 import { currentStore } from "@/lib/stores/queries";
 
-export type OnboardingStep = "store" | "profile" | "selling" | "done";
+export type OnboardingStep = "store" | "profile" | "selling" | "launch" | "done";
 
 /**
  * Première étape non satisfaite, déduite de ce qui existe réellement en base.
@@ -15,6 +15,10 @@ export async function currentOnboardingStep(): Promise<OnboardingStep> {
   const store = await currentStore();
   if (!store) return "store";
 
+  // Une boutique publiée ne renvoie plus jamais vers l'onboarding, même si une
+  // donnée manquait — sinon un marchand en ligne se retrouverait coincé.
+  if (store.status === "active") return "done";
+
   const profile = await readProfile();
   if (
     !profile ||
@@ -27,7 +31,7 @@ export async function currentOnboardingStep(): Promise<OnboardingStep> {
 
   if (store.product_types.length === 0) return "selling";
 
-  return "done";
+  return "launch";
 }
 
 /** Adresse de l'étape, ou de l'espace marchand une fois l'onboarding terminé. */

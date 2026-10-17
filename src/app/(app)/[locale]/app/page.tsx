@@ -31,11 +31,16 @@ export const metadata: Metadata = {
  */
 export default async function WorkspacePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ published?: string }>;
 }) {
   const { locale: raw } = await params;
   const locale = resolveLocale(raw);
+  // Le message de réussite vient de l'étape de publication ; il ne s'affiche
+  // qu'au retour de celle-ci, jamais au chargement ordinaire.
+  const { published } = await searchParams;
 
   if (!isSupabaseConfigured()) redirect(`/${locale}/auth/login`);
 
@@ -86,6 +91,27 @@ export default async function WorkspacePage({
       </header>
 
       <main className="mx-auto w-full max-w-5xl px-5 py-16 sm:px-8">
+        {published ? (
+          <div
+            role="status"
+            className="mb-8 flex animate-rise items-start gap-3 rounded-2xl border border-emerald-400/25 bg-emerald-400/[0.07] p-4 motion-reduce:animate-none"
+          >
+            <Icon
+              path={icons.check}
+              className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-300"
+              strokeWidth={2.4}
+            />
+            <div>
+              <p className="text-[0.875rem] font-medium text-emerald-700 dark:text-emerald-300">
+                {t.onboarding.launchPublished}
+              </p>
+              <p className="mt-0.5 text-[0.8125rem] leading-relaxed text-muted">
+                {t.onboarding.launchPublishedText}
+              </p>
+            </div>
+          </div>
+        ) : null}
+
         <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-emerald-600 dark:text-emerald-300">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
           {t.auth.workspaceTitle}
