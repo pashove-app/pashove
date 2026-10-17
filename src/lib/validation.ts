@@ -40,14 +40,17 @@ export const loginSchema = z.object({
   password: z.string().min(1, "passwordRequired"),
 });
 
+/**
+ * Inscription volontairement courte : nom, adresse, mot de passe.
+ *
+ * Le nom de boutique, le pays et le téléphone sont demandés dans l'onboarding,
+ * une fois le compte créé — les poser ici aussi ferait remplir deux fois la même
+ * chose, et découragerait avant la première vente.
+ */
 export const registerSchema = z.object({
   fullName: trimmed(2, 120, "nameRequired"),
-  storeName: trimmed(2, 80, "storeRequired"),
   email: emailField,
   password: passwordField,
-  phone: z.string().trim().min(6, "phoneRequired").max(24, "phoneRequired"),
-  country: z.string().trim().min(2, "countryRequired"),
-  referral: z.string().trim().max(24).optional(),
   consent: z.literal(true, { message: "consentRequired" }),
 });
 

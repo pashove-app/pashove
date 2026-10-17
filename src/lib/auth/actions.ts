@@ -90,12 +90,8 @@ export async function signUpAction(
 
   const parsed = registerSchema.safeParse({
     fullName: field(formData, "fullName"),
-    storeName: field(formData, "storeName"),
     email: field(formData, "email"),
     password: field(formData, "password"),
-    phone: field(formData, "phone"),
-    country: field(formData, "country"),
-    referral: field(formData, "referral"),
     consent: field(formData, "consent") === "on",
   });
 
@@ -110,14 +106,9 @@ export async function signUpAction(
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
-      // Repris plus tard par le trigger de création de profil côté base.
-      data: {
-        full_name: parsed.data.fullName,
-        store_name: parsed.data.storeName,
-        phone: parsed.data.phone,
-        country: parsed.data.country,
-        referral: parsed.data.referral || null,
-      },
+      // Seul le nom est conservé ici : il alimentera la ligne `profiles` créée
+      // à l'inscription. Le reste appartient à l'onboarding.
+      data: { full_name: parsed.data.fullName },
       emailRedirectTo: `${siteUrl()}/${locale}/auth/callback`,
     },
   });

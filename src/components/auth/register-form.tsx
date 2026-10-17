@@ -2,25 +2,19 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import {
-  Checkbox,
-  FormNotice,
-  PasswordField,
-  SelectField,
-  TextField,
-} from "@/components/ui/field";
+import { Checkbox, FormNotice, PasswordField, TextField } from "@/components/ui/field";
 import { buttonClass, Icon, icons, Spinner } from "@/components/ui/primitives";
 import { path, type SectionProps } from "@/components/ui/types";
 import { signUpAction } from "@/lib/auth/actions";
 import { INITIAL_AUTH_STATE } from "@/lib/auth/types";
-import { LAUNCH_COUNTRIES, NEXT_COUNTRIES } from "@/lib/site-content";
-import type { Dictionary } from "@/i18n/get-dictionary";
 
-const COUNTRY_CODES = [
-  ...LAUNCH_COUNTRIES.map((country) => country.code),
-  ...NEXT_COUNTRIES.map((country) => country.code),
-];
-
+/**
+ * Inscription courte : nom, adresse, mot de passe, consentement.
+ *
+ * Tout le reste — boutique, téléphone, pays — appartient à l'onboarding, une
+ * fois le compte créé. Un formulaire qui demande deux fois la même chose au
+ * même moment fait fuir avant même la première vente.
+ */
 export function RegisterForm({ t, locale }: SectionProps) {
   const [state, formAction, pending] = useActionState(signUpAction, INITIAL_AUTH_STATE);
 
@@ -92,16 +86,6 @@ export function RegisterForm({ t, locale }: SectionProps) {
         />
 
         <TextField
-          name="storeName"
-          label={t.auth.storeName}
-          hint={t.auth.storeNameHint}
-          help={t.auth.storeNameHelp}
-          icon="store"
-          autoComplete="organization"
-          error={fieldError("storeName")}
-        />
-
-        <TextField
           name="email"
           type="email"
           label={t.auth.email}
@@ -121,43 +105,6 @@ export function RegisterForm({ t, locale }: SectionProps) {
           revealLabel={t.auth.showPassword}
           concealLabel={t.auth.hidePassword}
           error={fieldError("password")}
-        />
-
-        <TextField
-          name="phone"
-          type="tel"
-          label={t.auth.phone}
-          hint={t.auth.phoneHint}
-          icon="phone"
-          autoComplete="tel"
-          inputMode="tel"
-          error={fieldError("phone")}
-        />
-
-        <SelectField
-          name="country"
-          label={t.auth.country}
-          icon="globe"
-          defaultValue=""
-          error={fieldError("country")}
-        >
-          <option value="" disabled>
-            —
-          </option>
-          {COUNTRY_CODES.map((code) => (
-            <option key={code} value={code}>
-              {t.countries_names[code as keyof Dictionary["countries_names"]] ?? code}
-            </option>
-          ))}
-        </SelectField>
-
-        <TextField
-          name="referral"
-          label={t.auth.referral}
-          hint={t.auth.referralHint}
-          help={t.auth.referralHelp}
-          icon="tag"
-          error={fieldError("referral")}
         />
 
         <div className="rounded-2xl border border-brand-500/25 bg-brand-500/[0.06] p-4">
