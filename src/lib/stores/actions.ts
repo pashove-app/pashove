@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { currentOnboardingStep, onboardingPath } from "@/lib/onboarding/steps";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { currentStore } from "@/lib/stores/queries";
-import { createStoreSchema } from "@/lib/stores/schema";
+import { createStoreSchema, sellingSchema } from "@/lib/stores/schema";
 import type { StoreFormState } from "@/lib/stores/types";
 import { toFieldErrors } from "@/lib/validation";
 
@@ -81,6 +81,49 @@ export async function saveStoreAction(
   if (error) return { status: "error", messageKey: messageKeyFor(error) };
 
   // Le nom de la boutique s'affiche dans l'en-tête de tout l'espace marchand.
+  revalidatePath("/", "layout");
+
+  const step = await currentOnboardingStep();
+  redirect(onboardingPath(locale, step));
+}
+
+/**
+ * Étape 3 : ce que la boutique vend.
+ *
+ * Les cases à cocher arrivent sous un même nom, et `getAll` les rend toutes.
+ * La boutique est lue côté serveur : le formulaire ne désigne jamais l'écran
+ * qu'il modifie.
+ */
+export async function saveSellingAction(
+  _previous: StoreFormState,
+  formData: FormData,
+): Promise<StoreFormState> {
+  const locale = field(formData, "locale") || "fr";
+
+  const productTypes = formData
+    .getAll("productType")
+    .filter((value): value is string => typeof value === "string");
+
+  const parsed = sellingSchema.safeParse({ productTypes });
+
+  if (!parsed.success) {
+    return { status: "invalid", fieldErrors: toFieldErrors(parsed.error) };
+  }
+
+  if (!isSupabaseConfigured()) return { status: "unconfigured" };
+
+  const supabase = await createClient();
+  const store = await currentStore();
+
+  if (!store) return { status: "error", messageKey: "serverError" };
+
+  const { error } = await supabase
+    .from("stores")
+    .update({ product_types: parsed.data.productTypes })
+    .eq("id", store.id);
+
+  if (error) return { status: "error", messageKey: "serverError" };
+
   revalidatePath("/", "layout");
 
   const step = await currentOnboardingStep();

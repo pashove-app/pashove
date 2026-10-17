@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { LOCALES } from "@/i18n/config";
+import { SUPPORTED_COUNTRY_CODES } from "@/lib/site-content";
 
 /**
  * Règles du profil marchand.
@@ -35,6 +37,36 @@ export const TIMEZONES = [
 
 export type Timezone = (typeof TIMEZONES)[number];
 
+/**
+ * Fuseau le plus probable pour un pays.
+ *
+ * La zone UEMOA vit en GMT, mais un marchand installé au Nigeria ou au Kenya
+ * n'a pas la même heure : le pays choisi pré-remplit le fuseau, que le marchand
+ * reste libre de corriger.
+ */
+export const TIMEZONE_BY_COUNTRY: Record<string, Timezone> = {
+  SN: "Africa/Dakar",
+  CI: "Africa/Abidjan",
+  ML: "Africa/Bamako",
+  BF: "Africa/Ouagadougou",
+  BJ: "Africa/Porto-Novo",
+  TG: "Africa/Lome",
+  NE: "Africa/Niamey",
+  GW: "Africa/Bissau",
+  GN: "Africa/Conakry",
+  GH: "Africa/Accra",
+  NG: "Africa/Lagos",
+  CM: "Africa/Douala",
+  CG: "Africa/Brazzaville",
+  CD: "Africa/Kinshasa",
+  GA: "Africa/Libreville",
+  TD: "Africa/Ndjamena",
+  KE: "Africa/Nairobi",
+  RW: "Africa/Kigali",
+  TZ: "Africa/Dar_es_Salaam",
+  MG: "Indian/Antananarivo",
+};
+
 export const profileSchema = z.object({
   fullName: z
     .string()
@@ -46,5 +78,9 @@ export const profileSchema = z.object({
     .trim()
     .min(6, "phoneRequired")
     .max(24, "phoneRequired"),
+  country: z.enum(SUPPORTED_COUNTRY_CODES as [string, ...string[]], {
+    message: "countryRequired",
+  }),
   timezone: z.enum(TIMEZONES, { message: "timezoneInvalid" }),
+  language: z.enum(LOCALES, { message: "languageInvalid" }),
 });

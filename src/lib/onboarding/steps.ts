@@ -1,7 +1,7 @@
 import { readProfile } from "@/lib/profile/queries";
 import { currentStore } from "@/lib/stores/queries";
 
-export type OnboardingStep = "store" | "profile" | "done";
+export type OnboardingStep = "store" | "profile" | "selling" | "done";
 
 /**
  * Première étape non satisfaite, déduite de ce qui existe réellement en base.
@@ -16,7 +16,16 @@ export async function currentOnboardingStep(): Promise<OnboardingStep> {
   if (!store) return "store";
 
   const profile = await readProfile();
-  if (!profile || !profile.full_name.trim() || !profile.phone) return "profile";
+  if (
+    !profile ||
+    !profile.full_name.trim() ||
+    !profile.phone ||
+    !profile.country
+  ) {
+    return "profile";
+  }
+
+  if (store.product_types.length === 0) return "selling";
 
   return "done";
 }

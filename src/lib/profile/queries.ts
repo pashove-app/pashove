@@ -4,7 +4,9 @@ export type Profile = {
   id: string;
   full_name: string;
   phone: string | null;
+  country: string | null;
   timezone: string;
+  language: string;
 };
 
 /**
@@ -18,7 +20,7 @@ export async function readProfile(): Promise<Profile | null> {
 
   const { data } = await supabase
     .from("profiles")
-    .select("id, full_name, phone, timezone")
+    .select("id, full_name, phone, country, timezone, language")
     .maybeSingle();
 
   return (data as Profile | null) ?? null;

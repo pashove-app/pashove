@@ -1115,6 +1115,20 @@ const fr = {
     phoneHelp: "Ton numéro ne s'affiche jamais sur ta vitrine.",
     timezoneLabel: "Fuseau horaire",
     timezoneHelp: "Il fixe l'heure de tes commandes et de tes rendez-vous.",
+    profileCountryLabel: "Pays de résidence",
+    profileCountryHelp:
+      "Il servira à ta vérification d'identité et à tes retraits.",
+    languageLabel: "Langue",
+    languageHelp: "Pour tes e-mails et tes documents.",
+    sellingTitle: "Que vends-tu ?",
+    sellingSubtitle:
+      "Choisis ce que tu proposes. Tu pourras en ajouter d'autres plus tard.",
+    productPhysical: "Produit physique",
+    productPhysicalHint: "Vêtements, cosmétiques, alimentation…",
+    productDigital: "Numérique",
+    productDigitalHint: "E-books, fichiers, vidéos…",
+    productService: "Service",
+    productServiceHint: "Coaching, prestation, rendez-vous…",
     slugRules:
       "Lettres minuscules, chiffres et tirets. Tu pourras la changer plus tard.",
     panelTitle:
@@ -1124,6 +1138,9 @@ const fr = {
       profileNameRequired: "Indique ton nom complet.",
       phoneRequired: "Indique ton numéro de téléphone.",
       timezoneInvalid: "Choisis un fuseau horaire.",
+      countryRequired: "Choisis ton pays de résidence.",
+      languageInvalid: "Choisis une langue.",
+      productTypesRequired: "Choisis au moins un type de vente.",
       storeNameRequired: "Indique le nom de ta boutique.",
       storeNameTooLong: "80 caractères au maximum.",
       slugShort: "3 caractères au minimum.",

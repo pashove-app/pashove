@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { StepProgress } from "@/components/onboarding/step-progress";
 import { FormNotice, SelectField, TextField } from "@/components/ui/field";
 import {
@@ -11,11 +11,14 @@ import {
   Spinner,
 } from "@/components/ui/primitives";
 import { path, type SectionProps } from "@/components/ui/types";
+import { LOCALES, LOCALE_META } from "@/i18n/config";
+import type { Dictionary } from "@/i18n/get-dictionary";
 import { useFieldErrors } from "@/lib/forms/use-field-errors";
 import { saveProfileAction } from "@/lib/profile/actions";
 import type { Profile } from "@/lib/profile/queries";
-import { TIMEZONES } from "@/lib/profile/schema";
+import { TIMEZONE_BY_COUNTRY, TIMEZONES } from "@/lib/profile/schema";
 import { INITIAL_PROFILE_FORM_STATE } from "@/lib/profile/types";
+import { SUPPORTED_COUNTRY_CODES } from "@/lib/site-content";
 
 /**
  * Étape 2 : le profil du marchand.
@@ -36,6 +39,22 @@ export function ProfileForm({
   );
 
   const { corrected, clear } = useFieldErrors(state);
+
+  // Le pays pilote le fuseau : choisir le Sénégal propose Dakar, choisir le
+  // Nigeria propose Lagos. Le marchand peut toujours corriger ensuite.
+  const [country, setCountry] = useState(profile.country ?? "");
+  const [timezone, setTimezone] = useState(profile.timezone);
+
+  function changeCountry(code: string) {
+    setCountry(code);
+    clear("country");
+
+    const suggested = TIMEZONE_BY_COUNTRY[code];
+    if (suggested) {
+      setTimezone(suggested);
+      clear("timezone");
+    }
+  }
 
   const errors = t.onboarding.errors as Record<string, string>;
   const fieldError = (key: string) => {
@@ -84,18 +103,58 @@ export function ProfileForm({
           onChange={() => clear("phone")}
         />
 
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-5">
+          <SelectField
+            name="country"
+            label={t.onboarding.profileCountryLabel}
+            help={t.onboarding.profileCountryHelp}
+            icon="globe"
+            value={country}
+            error={fieldError("country")}
+            onChange={(event) => changeCountry(event.target.value)}
+          >
+            <option value="" disabled>
+              —
+            </option>
+            {SUPPORTED_COUNTRY_CODES.map((code) => (
+              <option key={code} value={code}>
+                {t.countries_names[code as keyof Dictionary["countries_names"]] ?? code}
+              </option>
+            ))}
+          </SelectField>
+
+          <SelectField
+            name="timezone"
+            label={t.onboarding.timezoneLabel}
+            help={t.onboarding.timezoneHelp}
+            icon="clock"
+            value={timezone}
+            error={fieldError("timezone")}
+            onChange={(event) => {
+              setTimezone(event.target.value);
+              clear("timezone");
+            }}
+          >
+            {TIMEZONES.map((zone) => (
+              <option key={zone} value={zone}>
+                {zone}
+              </option>
+            ))}
+          </SelectField>
+        </div>
+
         <SelectField
-          name="timezone"
-          label={t.onboarding.timezoneLabel}
-          help={t.onboarding.timezoneHelp}
-          icon="globe"
-          defaultValue={profile.timezone}
-          error={fieldError("timezone")}
-          onChange={() => clear("timezone")}
+          name="language"
+          label={t.onboarding.languageLabel}
+          help={t.onboarding.languageHelp}
+          icon="chat"
+          defaultValue={profile.language}
+          error={fieldError("language")}
+          onChange={() => clear("language")}
         >
-          {TIMEZONES.map((timezone) => (
-            <option key={timezone} value={timezone}>
-              {timezone}
+          {LOCALES.map((code) => (
+            <option key={code} value={code}>
+              {LOCALE_META[code].native}
             </option>
           ))}
         </SelectField>

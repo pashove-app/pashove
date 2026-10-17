@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { LAUNCH_COUNTRIES, NEXT_COUNTRIES } from "@/lib/site-content";
+import { SUPPORTED_COUNTRY_CODES } from "@/lib/site-content";
 
 /**
  * Règles de la boutique, partagées par le formulaire et la Server Action.
@@ -27,11 +27,6 @@ const RESERVED_SLUGS = new Set([
   "staging", "preview",
 ]);
 
-const SELLING_COUNTRIES = [
-  ...LAUNCH_COUNTRIES.map((country) => country.code),
-  ...NEXT_COUNTRIES.map((country) => country.code),
-];
-
 /** Devise d'affichage de la boutique. Le FCFA d'abord : c'est la zone visée. */
 export const CURRENCIES = ["XOF", "EUR", "USD"] as const;
 export type Currency = (typeof CURRENCIES)[number];
@@ -50,13 +45,27 @@ export const createStoreSchema = z.object({
     .max(30, "slugLong")
     .regex(/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])$/, "slugInvalid")
     .refine((value) => !RESERVED_SLUGS.has(value), "slugReserved"),
-  country: z.enum(SELLING_COUNTRIES as [string, ...string[]], {
+  country: z.enum(SUPPORTED_COUNTRY_CODES as [string, ...string[]], {
     message: "countryInvalid",
   }),
   currency: z.enum(CURRENCIES, { message: "currencyInvalid" }),
 });
 
 export type CreateStoreValues = z.infer<typeof createStoreSchema>;
+
+/* ------------------------------------------------------------------ *
+ *  Étape 3 — ce que la boutique vend
+ * ------------------------------------------------------------------ */
+
+export const PRODUCT_TYPES = ["physical", "digital", "service"] as const;
+export type ProductType = (typeof PRODUCT_TYPES)[number];
+
+/** Au moins un type de vente, et seulement les trois connus. */
+export const sellingSchema = z.object({
+  productTypes: z
+    .array(z.enum(PRODUCT_TYPES, { message: "productTypesRequired" }))
+    .min(1, "productTypesRequired"),
+});
 
 /** Nombre maximal de caractères de l'identifiant, repris par le formulaire. */
 export const SLUG_MAX = 30;

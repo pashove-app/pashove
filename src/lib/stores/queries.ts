@@ -9,10 +9,12 @@ export type Store = {
   currency: string;
   category: string | null;
   status: "draft" | "active" | "suspended";
+  product_types: string[];
   created_at: string;
 };
 
-const COLUMNS = "id, name, slug, country, currency, category, status, created_at";
+const COLUMNS =
+  "id, name, slug, country, currency, category, status, product_types, created_at";
 
 /**
  * Les boutiques de l'utilisateur connecté.

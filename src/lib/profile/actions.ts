@@ -28,7 +28,9 @@ export async function saveProfileAction(
   const parsed = profileSchema.safeParse({
     fullName: field(formData, "fullName"),
     phone: field(formData, "phone"),
+    country: field(formData, "country"),
     timezone: field(formData, "timezone"),
+    language: field(formData, "language"),
   });
 
   if (!parsed.success) {
@@ -49,7 +51,9 @@ export async function saveProfileAction(
     .update({
       full_name: parsed.data.fullName,
       phone: parsed.data.phone,
+      country: parsed.data.country,
       timezone: parsed.data.timezone,
+      language: parsed.data.language,
     })
     .eq("id", user.id);
 

@@ -1,4 +1,4 @@
-import { Icon, icons } from "@/components/ui/primitives";
+import { Icon, icons, type IconKey } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
 
 /**
@@ -14,6 +14,8 @@ export function SelectionCard({
   label,
   hint,
   flag,
+  icon,
+  type = "radio",
   defaultChecked = false,
   stacked = false,
 }: {
@@ -24,14 +26,18 @@ export function SelectionCard({
   hint?: string;
   /** Drapeau affiché avant le libellé (pays). */
   flag?: string;
+  /** Icône affichée avant le libellé (types de vente). */
+  icon?: IconKey;
+  /** `checkbox` pour un choix multiple, `radio` pour un choix unique. */
+  type?: "radio" | "checkbox";
   defaultChecked?: boolean;
   /** Libellé au-dessus de la précision, au lieu d'être côte à côte. */
   stacked?: boolean;
 }) {
   return (
-    <label className="relative block">
+    <label className="relative block h-full">
       <input
-        type="radio"
+        type={type}
         name={name}
         value={value}
         defaultChecked={defaultChecked}
@@ -40,7 +46,7 @@ export function SelectionCard({
 
       <span
         className={cn(
-          "flex min-h-[3.875rem] cursor-pointer items-center gap-2.5 rounded-2xl border border-border bg-surface py-3 pe-9 ps-3.5",
+          "flex h-full min-h-[3.875rem] cursor-pointer items-center gap-2.5 rounded-2xl border border-border bg-surface py-3 pe-9 ps-3.5",
           "transition-[border-color,background-color,box-shadow] duration-200 hover:border-border-strong",
           "peer-checked:border-brand-500 peer-checked:bg-brand-500/[0.08]",
           "peer-checked:shadow-[inset_0_0_0_1px_var(--color-brand-500)]",
@@ -48,6 +54,12 @@ export function SelectionCard({
           stacked && "flex-col items-start justify-center gap-0.5 py-3.5",
         )}
       >
+        {icon ? (
+          <span aria-hidden="true" className={cn("text-accent", stacked && "mb-1")}>
+            <Icon path={icons[icon]} className="h-[1.125rem] w-[1.125rem]" strokeWidth={1.8} />
+          </span>
+        ) : null}
+
         {flag ? (
           <span aria-hidden="true" className="text-lg leading-none">
             {flag}

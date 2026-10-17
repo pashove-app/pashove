@@ -63,6 +63,12 @@ export const NEXT_COUNTRIES: CountryRef[] = [
   { flag: "🇲🇬", code: "MG" },
 ];
 
+/** Tous les pays que la plateforme sait vendre, dans l'ordre d'affichage. */
+export const SUPPORTED_COUNTRY_CODES = [
+  ...LAUNCH_COUNTRIES.map((country) => country.code),
+  ...NEXT_COUNTRIES.map((country) => country.code),
+];
+
 /* ------------------------------------------------------------------ *
  *  Démonstrateur multi-pays (section « International »)
  * ------------------------------------------------------------------ */
