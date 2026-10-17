@@ -26,12 +26,15 @@ function Shell({
   label,
   help,
   error,
+  addon,
   children,
 }: {
   id: string;
   label: string;
   help?: string;
   error?: string;
+  /** Élément posé entre le champ et l'aide — une pastille, un aperçu. */
+  addon?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -41,6 +44,8 @@ function Shell({
       </label>
 
       <div className="mt-2">{children}</div>
+
+      {addon ? <div className="mt-2">{addon}</div> : null}
 
       {error ? (
         <p
@@ -87,6 +92,8 @@ type BaseProps = {
   help?: string;
   error?: string;
   icon?: IconKey;
+  /** Élément posé entre le champ et l'aide — une pastille, un aperçu. */
+  addon?: ReactNode;
   className?: string;
 };
 
@@ -96,13 +103,14 @@ export function TextField({
   help,
   error,
   icon,
+  addon,
   className,
   ...input
 }: BaseProps & React.InputHTMLAttributes<HTMLInputElement>) {
   const id = useId();
 
   return (
-    <Shell id={id} label={label} help={help} error={error}>
+    <Shell id={id} label={label} help={help} error={error} addon={addon}>
       <div className="relative">
         {icon ? <LeadingIcon name={icon} invalid={Boolean(error)} /> : null}
         <input
@@ -123,6 +131,7 @@ export function PasswordField({
   hint,
   help,
   error,
+  addon,
   revealLabel,
   concealLabel,
   className,
@@ -132,7 +141,7 @@ export function PasswordField({
   const [visible, setVisible] = useState(false);
 
   return (
-    <Shell id={id} label={label} help={help} error={error}>
+    <Shell id={id} label={label} help={help} error={error} addon={addon}>
       <div className="relative">
         <LeadingIcon name="lock" invalid={Boolean(error)} />
         <input
@@ -163,6 +172,7 @@ export function SelectField({
   help,
   error,
   icon,
+  addon,
   className,
   children,
   ...select
@@ -170,7 +180,7 @@ export function SelectField({
   const id = useId();
 
   return (
-    <Shell id={id} label={label} help={help} error={error}>
+    <Shell id={id} label={label} help={help} error={error} addon={addon}>
       <div className="relative">
         {icon ? <LeadingIcon name={icon} invalid={Boolean(error)} /> : null}
         <select

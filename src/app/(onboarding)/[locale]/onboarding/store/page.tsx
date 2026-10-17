@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { StoreForm } from "@/components/onboarding/store-form";
 import { isLocale, resolveLocale } from "@/i18n/config";
-import { getDictionary } from "@/i18n/get-dictionary";
+import { getDictionary, interpolate } from "@/i18n/get-dictionary";
 import { requireSecondFactor } from "@/lib/auth/mfa";
 import { currentStore } from "@/lib/stores/queries";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
@@ -54,10 +54,9 @@ export default async function OnboardingStorePage({
     <StoreForm
       t={t}
       locale={locale}
-      // Le nom saisi à l'inscription sert de point de départ : le marchand l'a
-      // déjà écrit une fois, on ne le lui demande pas deux fois.
-      defaultName={(user.user_metadata?.store_name as string | undefined) ?? ""}
-      defaultCountry={(user.user_metadata?.country as string | undefined) ?? ""}
+      // Interpolé côté serveur : le composant client n'a pas à embarquer le
+      // chargeur de dictionnaires pour un simple remplacement de jetons.
+      stepLabel={interpolate(t.onboarding.stepProgress, { current: 1, total: 4 })}
     />
   );
 }

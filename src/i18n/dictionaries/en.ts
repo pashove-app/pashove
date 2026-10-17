@@ -1041,22 +1041,28 @@ const en: Dictionary = {
   },
 
   onboarding: {
-    storeEyebrow: "Step 1 · Your store",
+    stepProgress: "Step {current} of {total}",
+    sellingQuestion: "Where do you sell?",
+    currencyQuestion: "Which currency?",
     storeTitle: "What is your store called?",
     storeSubtitle:
       "This is what shoppers will see. You can change it whenever you like.",
     storeNameLabel: "Store name",
     storeNameHint: "E.g. Maison Kora",
     slugLabel: "Store address",
-    slugHelp: "Your link:",
     countryLabel: "Selling country",
     currencyLabel: "Currency",
     currencies: {
-      XOF: "West African CFA franc (XOF)",
-      EUR: "Euro (EUR)",
-      USD: "US dollar (USD)",
+      XOF: "CFA franc",
+      EUR: "Euro",
+      USD: "Dollar",
     },
-    storeCta: "Create my store",
+    back: "Back",
+    next: "Continue",
+    slugRules:
+      "Lowercase letters, digits and hyphens. You can change it later.",
+    panelTitle: "Your storefront online, ready for its first order.",
+    panelKicker: "Pashove · Commerce OS",
     errors: {
       storeNameRequired: "Enter your store name.",
       storeNameTooLong: "80 characters at most.",

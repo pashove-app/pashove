@@ -1050,22 +1050,29 @@ const bm: Dictionary = {
   },
 
   onboarding: {
-    storeEyebrow: "Da 1 · I butiki",
+    stepProgress: "Da {current} / {total}",
+    sellingQuestion: "I bɛ feere jamana jumɛn na?",
+    currencyQuestion: "I bɛ wari sugu jumɛn na?",
     storeTitle: "I butiki tɔgɔ ye di?",
     storeSubtitle:
       "Nin kunnafoniw bɛ jira i butiki ɲɛ kan. I bɛ se ka u falen waati bɛɛ.",
     storeNameLabel: "Butiki tɔgɔ",
     storeNameHint: "Misali : Maison Kora",
     slugLabel: "Butiki adrɛsi",
-    slugHelp: "I jɔli :",
     countryLabel: "Feere jamana",
     currencyLabel: "Wari sugu",
     currencies: {
-      XOF: "CFA faran (XOF)",
-      EUR: "Ero (EUR)",
-      USD: "Ameriki dɔlari (USD)",
+      XOF: "FCFA",
+      EUR: "Ero",
+      USD: "Dɔlari",
     },
-    storeCta: "N butiki da",
+    back: "Kɔsegi",
+    next: "Ka taa ɲɛ",
+    slugRules:
+      "Sɛbɛn fitininw, nɔmɔrow ni tire (-) dɔrɔn. I bɛ se ka a falen kɔfɛ.",
+    panelTitle:
+      "I butiki bɛ Ɛntɛrinɛti kan, a labɛnnen don i fɔlɔ ka sara ye.",
+    panelKicker: "Pashove · Commerce OS",
     errors: {
       storeNameRequired: "I butiki tɔgɔ sɛbɛn.",
       storeNameTooLong: "Sɛbɛn 80 dɔrɔn.",

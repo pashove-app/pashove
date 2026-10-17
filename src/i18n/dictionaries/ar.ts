@@ -1042,21 +1042,27 @@ const ar: Dictionary = {
   },
 
   onboarding: {
-    storeEyebrow: "الخطوة 1 · متجرك",
+    stepProgress: "الخطوة {current} من {total}",
+    sellingQuestion: "أين تبيع؟",
+    currencyQuestion: "بأي عملة؟",
     storeTitle: "ما اسم متجرك؟",
     storeSubtitle: "تظهر هذه المعلومات على واجهة متجرك. يمكنك تغييرها وقتما تشاء.",
     storeNameLabel: "اسم المتجر",
     storeNameHint: "مثال: دار كوري",
     slugLabel: "عنوان المتجر",
-    slugHelp: "رابطك:",
     countryLabel: "بلد البيع",
     currencyLabel: "العملة",
     currencies: {
-      XOF: "فرنك CFA (XOF)",
-      EUR: "يورو (EUR)",
-      USD: "دولار أمريكي (USD)",
+      XOF: "فرنك CFA",
+      EUR: "يورو",
+      USD: "دولار",
     },
-    storeCta: "أنشئ متجري",
+    back: "رجوع",
+    next: "متابعة",
+    slugRules:
+      "حروف لاتينية صغيرة وأرقام وشرطات. يمكنك تغييرها لاحقًا.",
+    panelTitle: "متجرك على الإنترنت، جاهز لأول طلب.",
+    panelKicker: "Pashove · Commerce OS",
     errors: {
       storeNameRequired: "أدخل اسم متجرك.",
       storeNameTooLong: "80 حرفًا كحد أقصى.",

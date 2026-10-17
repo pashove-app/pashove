@@ -1051,22 +1051,29 @@ const ln: Dictionary = {
   },
 
   onboarding: {
-    storeEyebrow: "Etápɛ 1 · Magazini na yo",
+    stepProgress: "Etápɛ {current} / {total}",
+    sellingQuestion: "Na ekólo nini otɛ́kɛkɛ?",
+    currencyQuestion: "Na mbongo nini?",
     storeTitle: "Magazini na yo ebengami nini?",
     storeSubtitle:
       "Makambo oyo emonanaka na magazini na yo. Okoki kobongola yango ntango nyonso.",
     storeNameLabel: "Nkombo ya magazini",
     storeNameHint: "Ndakisa : Maison Kora",
     slugLabel: "Adrɛsi ya magazini",
-    slugHelp: "Lianɛ na yo :",
     countryLabel: "Ekólo ya kotɛ́kɛ",
     currencyLabel: "Loléngé ya mbongo",
     currencies: {
-      XOF: "Fara CFA (XOF)",
-      EUR: "Ero (EUR)",
-      USD: "Dolar ya Ameriki (USD)",
+      XOF: "FCFA",
+      EUR: "Ero",
+      USD: "Dolar",
     },
-    storeCta: "Salá magazini na ngai",
+    back: "Kozonga",
+    next: "Kokoba",
+    slugRules:
+      "Bilembo mike, mikɔ́lɔ́ mpe (-) kaka. Okoki kobongola yango na sima.",
+    panelTitle:
+      "Magazini na yo ezali na ɛntɛrnɛ́tɛ, ebongisami mpo na kɔmanda ya liboso.",
+    panelKicker: "Pashove · Commerce OS",
     errors: {
       storeNameRequired: "Koma nkombo ya magazini na yo.",
       storeNameTooLong: "Bilembo 80 koleka te.",
