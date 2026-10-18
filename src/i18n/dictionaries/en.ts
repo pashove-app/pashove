@@ -1117,6 +1117,55 @@ const en: Dictionary = {
     },
   },
 
+  dashboard: {
+    nav: {
+      home: "Home",
+      orders: "Orders",
+      products: "Products",
+      customers: "Customers",
+      growth: "Growth",
+      discounts: "Discounts",
+      content: "Content",
+      analytics: "Analytics",
+      onlineStore: "Online store",
+      settings: "Settings",
+    },
+    topbar: {
+      search: "Search",
+      menu: "Open menu",
+      close: "Close menu",
+      notifications: "Notifications",
+      noNotifications: "No notifications yet.",
+      account: "My account",
+    },
+    palette: {
+      placeholder: "Search for a page or an action…",
+      empty: "No results.",
+      hint: "↑↓ to move · Enter to open · Esc to close",
+      storeSettings: "Store settings",
+      security: "Account security",
+    },
+    construction: {
+      title: "{section} is coming soon",
+      text: "This section is in the works. It arrives in a coming release.",
+      back: "Back to home",
+    },
+    settings: {
+      title: "Settings",
+      subtitle: "The configuration of your merchant space.",
+      storeTitle: "Store",
+      storeText: "Name, description, contacts, logo and banner.",
+      storeCta: "Open settings",
+      securityTitle: "Account security",
+      securityText:
+        "Password, email address, sessions and two-factor authentication.",
+      securityCta: "Manage security",
+      soonTitle: "Payments, shipping, domain",
+      soonText: "These settings arrive with their respective releases.",
+      soonBadge: "Soon",
+    },
+  },
+
   settings: {
     storeTitle: "Store settings",
     storeSubtitle: "What your customers see on your storefront.",

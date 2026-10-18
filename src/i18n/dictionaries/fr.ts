@@ -1167,6 +1167,55 @@ const fr = {
     },
   },
 
+  dashboard: {
+    nav: {
+      home: "Accueil",
+      orders: "Commandes",
+      products: "Produits",
+      customers: "Clients",
+      growth: "Croissance",
+      discounts: "Réductions",
+      content: "Contenu",
+      analytics: "Analyses",
+      onlineStore: "Boutique en ligne",
+      settings: "Paramètres",
+    },
+    topbar: {
+      search: "Rechercher",
+      menu: "Ouvrir le menu",
+      close: "Fermer le menu",
+      notifications: "Notifications",
+      noNotifications: "Aucune notification pour l'instant.",
+      account: "Mon compte",
+    },
+    palette: {
+      placeholder: "Rechercher une page ou une action…",
+      empty: "Aucun résultat.",
+      hint: "↑↓ pour naviguer · Entrée pour ouvrir · Échap pour fermer",
+      storeSettings: "Réglages de la boutique",
+      security: "Sécurité du compte",
+    },
+    construction: {
+      title: "{section} arrive bientôt",
+      text: "Cette section est en préparation. On y revient dans un prochain lot.",
+      back: "Retour à l'accueil",
+    },
+    settings: {
+      title: "Paramètres",
+      subtitle: "La configuration de ton espace marchand.",
+      storeTitle: "Boutique",
+      storeText: "Nom, description, contacts, logo et bannière.",
+      storeCta: "Ouvrir les réglages",
+      securityTitle: "Sécurité du compte",
+      securityText:
+        "Mot de passe, adresse e-mail, sessions et double authentification.",
+      securityCta: "Gérer la sécurité",
+      soonTitle: "Paiements, livraison, domaine",
+      soonText: "Ces réglages arrivent avec les lots correspondants.",
+      soonBadge: "Bientôt",
+    },
+  },
+
   settings: {
     storeTitle: "Réglages de la boutique",
     storeSubtitle: "Ce que tes clients voient sur ta vitrine.",

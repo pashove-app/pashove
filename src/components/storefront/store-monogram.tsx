@@ -1,18 +1,6 @@
 import { BRAND_GRADIENT } from "@/components/storefront/brand";
 import { cn } from "@/lib/cn";
-
-/** « Maison Kora » → « MK ». Une seule initiale si le nom n'a qu'un mot. */
-export function initialsOf(name: string): string {
-  const initials = name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((word) => Array.from(word)[0] ?? "")
-    .join("")
-    .toUpperCase();
-
-  return initials || "P";
-}
+import { initialsOf } from "@/lib/initials";
 
 /**
  * Logo de repli : les initiales sur l'aplat de marque.
