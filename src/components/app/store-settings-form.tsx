@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, type ReactNode } from "react";
+import { MediaUploader, type MediaValue } from "@/components/media/media-uploader";
 import { FormNotice, TextAreaField, TextField } from "@/components/ui/field";
 import { buttonClass, Icon, icons, Spinner } from "@/components/ui/primitives";
 import type { SectionProps } from "@/components/ui/types";
@@ -21,7 +22,13 @@ export function StoreSettingsForm({
   t,
   locale,
   store,
-}: SectionProps & { store: Store }) {
+  logoMedia,
+  bannerMedia,
+}: SectionProps & {
+  store: Store;
+  logoMedia: MediaValue;
+  bannerMedia: MediaValue;
+}) {
   const [state, formAction, pending] = useActionState(
     saveStoreSettingsAction,
     INITIAL_STORE_SETTINGS_STATE,
@@ -36,6 +43,12 @@ export function StoreSettingsForm({
     return messageKey ? errors[messageKey] : undefined;
   };
   const message = state.messageKey ? errors[state.messageKey] : undefined;
+
+  // Les téléverseurs valident côté client ; cette clé couvre le cas où une
+  // référence invalide arriverait tout de même au serveur.
+  const mediaKey =
+    state.fieldErrors?.logoMediaId ?? state.fieldErrors?.bannerMediaId;
+  const mediaError = mediaKey ? errors[mediaKey] : undefined;
 
   return (
     <form action={formAction} noValidate>
@@ -82,29 +95,48 @@ export function StoreSettingsForm({
       </Card>
 
       <Card title={t.settings.visualTitle} text={t.settings.visualText}>
-        <TextField
-          name="logoUrl"
+        <MediaUploader
+          name="logoMediaId"
+          kind="logo"
           label={t.settings.logoLabel}
-          icon="sparkle"
-          dir="ltr"
-          inputMode="url"
-          placeholder="https://…"
-          defaultValue={store.logo_url ?? ""}
-          error={fieldError("logoUrl")}
-          onChange={() => clear("logoUrl")}
+          help={t.settings.logoHelp}
+          initial={logoMedia}
+          labels={{
+            choose: t.settings.uploadChoose,
+            replace: t.settings.uploadReplace,
+            remove: t.settings.uploadRemove,
+            drop: t.settings.uploadDrop,
+            uploading: t.settings.uploadUploading,
+            errorType: t.settings.uploadErrorType,
+            errorSize: t.settings.uploadErrorSize,
+            errorUpload: t.settings.uploadErrorUpload,
+          }}
         />
 
-        <TextField
-          name="bannerUrl"
+        <MediaUploader
+          name="bannerMediaId"
+          kind="banner"
+          wide
           label={t.settings.bannerLabel}
-          icon="palette"
-          dir="ltr"
-          inputMode="url"
-          placeholder="https://…"
-          defaultValue={store.banner_url ?? ""}
-          error={fieldError("bannerUrl")}
-          onChange={() => clear("bannerUrl")}
+          help={t.settings.bannerHelp}
+          initial={bannerMedia}
+          labels={{
+            choose: t.settings.uploadChoose,
+            replace: t.settings.uploadReplace,
+            remove: t.settings.uploadRemove,
+            drop: t.settings.uploadDrop,
+            uploading: t.settings.uploadUploading,
+            errorType: t.settings.uploadErrorType,
+            errorSize: t.settings.uploadErrorSize,
+            errorUpload: t.settings.uploadErrorUpload,
+          }}
         />
+
+        {mediaError ? (
+          <p role="alert" className="text-[0.75rem] text-red-500 dark:text-red-400">
+            {mediaError}
+          </p>
+        ) : null}
       </Card>
 
       {state.status === "unconfigured" ? (

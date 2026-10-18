@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { LOCALES } from "@/i18n/config";
+import { deleteMediaAsset } from "@/lib/media/assets";
 import { currentOnboardingStep, onboardingPath } from "@/lib/onboarding/steps";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { currentStore } from "@/lib/stores/queries";
@@ -183,8 +184,8 @@ export async function saveStoreSettingsAction(
     description: field(formData, "description"),
     contactEmail: field(formData, "contactEmail"),
     contactPhone: field(formData, "contactPhone"),
-    logoUrl: field(formData, "logoUrl"),
-    bannerUrl: field(formData, "bannerUrl"),
+    logoMediaId: field(formData, "logoMediaId"),
+    bannerMediaId: field(formData, "bannerMediaId"),
   });
 
   if (!parsed.success) {
@@ -201,18 +202,30 @@ export async function saveStoreSettingsAction(
   const blankToNull = (value: string) =>
     value.trim() === "" ? null : value.trim();
 
+  const logoMediaId = parsed.data.logoMediaId || null;
+  const bannerMediaId = parsed.data.bannerMediaId || null;
+
   const { error } = await supabase
     .from("stores")
     .update({
       description: blankToNull(parsed.data.description),
       contact_email: blankToNull(parsed.data.contactEmail),
       contact_phone: blankToNull(parsed.data.contactPhone),
-      logo_url: blankToNull(parsed.data.logoUrl),
-      banner_url: blankToNull(parsed.data.bannerUrl),
+      logo_media_id: logoMediaId,
+      banner_media_id: bannerMediaId,
     })
     .eq("id", store.id);
 
   if (error) return { status: "error", messageKey: "serverError" };
+
+  // Une image remplacée ou retirée ne doit pas rester dans le bucket.
+  const replaced = [store.logo_media_id, store.banner_media_id].filter(
+    (id): id is string => Boolean(id) && id !== logoMediaId && id !== bannerMediaId,
+  );
+
+  for (const id of replaced) {
+    await deleteMediaAsset(supabase, id);
+  }
 
   revalidatePath(`/${locale}/app/settings/store`);
   revalidatePath(`/${locale}/app`);

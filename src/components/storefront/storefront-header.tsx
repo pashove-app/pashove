@@ -1,4 +1,6 @@
+import Image from "next/image";
 import { StoreMonogram } from "@/components/storefront/store-monogram";
+import { publicUrl } from "@/lib/r2/media";
 import type { PublicStore } from "@/lib/storefront/queries";
 
 /**
@@ -10,16 +12,12 @@ import type { PublicStore } from "@/lib/storefront/queries";
 export function StorefrontHeader({ store }: { store: PublicStore }) {
   return (
     <header className="flex items-center gap-3 border-b border-border py-5">
-      {store.logo_url ? (
-        // URL fournie par le marchand, hors des domaines configurés pour
-        // `next/image` : on l'affiche telle quelle, sans optimisation.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={store.logo_url}
+      {store.logo ? (
+        <Image
+          src={publicUrl(store.logo.object_key)}
           alt=""
-          loading="lazy"
-          decoding="async"
-          referrerPolicy="no-referrer"
+          width={40}
+          height={40}
           className="h-10 w-10 shrink-0 rounded-xl border border-border-soft object-cover"
         />
       ) : (

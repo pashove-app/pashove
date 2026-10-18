@@ -15,11 +15,22 @@ export type Store = {
   banner_url: string | null;
   contact_email: string | null;
   contact_phone: string | null;
+  logo_media_id: string | null;
+  banner_media_id: string | null;
+  /** Clé R2 de l'image, lue par jointure — l'URL publique s'en déduit. */
+  logo: { object_key: string } | null;
+  banner: { object_key: string } | null;
   created_at: string;
 };
 
-const COLUMNS =
-  "id, name, slug, country, currency, category, status, product_types, description, logo_url, banner_url, contact_email, contact_phone, created_at";
+const COLUMNS = [
+  "id, name, slug, country, currency, category, status, product_types",
+  "description, contact_email, contact_phone",
+  "logo_media_id, banner_media_id",
+  "logo:media_assets!logo_media_id(object_key)",
+  "banner:media_assets!banner_media_id(object_key)",
+  "created_at",
+].join(", ");
 
 /**
  * Les boutiques de l'utilisateur connecté.
@@ -37,7 +48,9 @@ export async function listStores(): Promise<Store[]> {
     .select(COLUMNS)
     .order("created_at", { ascending: true });
 
-  return (data ?? []) as Store[];
+  // Le client Supabase n'est pas typé : la forme renvoyée est vérifiée par le
+  // select ci-dessus, pas par le compilateur.
+  return (data ?? []) as unknown as Store[];
 }
 
 /**

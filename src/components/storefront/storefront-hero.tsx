@@ -1,4 +1,6 @@
+import Image from "next/image";
 import { BRAND_GRADIENT, BRAND_GRID } from "@/components/storefront/brand";
+import { publicUrl } from "@/lib/r2/media";
 import type { PublicStore } from "@/lib/storefront/queries";
 
 /**
@@ -12,17 +14,13 @@ export function StorefrontHero({ store }: { store: PublicStore }) {
   return (
     <div>
       <div className="relative h-40 overflow-hidden rounded-3xl sm:h-60">
-        {store.banner_url ? (
-          // URL fournie par le marchand, hors des domaines configurés pour
-          // `next/image` : on l'affiche telle quelle, sans optimisation.
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={store.banner_url}
+        {store.banner ? (
+          <Image
+            src={publicUrl(store.banner.object_key)}
             alt=""
-            loading="lazy"
-            decoding="async"
-            referrerPolicy="no-referrer"
-            className="absolute inset-0 h-full w-full object-cover"
+            fill
+            sizes="(max-width: 1024px) 100vw, 1024px"
+            className="object-cover"
           />
         ) : (
           <>

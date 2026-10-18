@@ -72,17 +72,20 @@ export const sellingSchema = z.object({
  * ------------------------------------------------------------------ */
 
 /**
- * Une adresse d'image collée à la main. Seul `https` est accepté : la base
- * impose la même règle, et une page servie en clair ne doit pas tirer de
- * ressource mixte.
+ * Identifiant d'un média déjà téléversé, ou chaîne vide pour « aucun ».
+ *
+ * Le formulaire ne transmet plus d'adresse d'image : seulement la référence
+ * d'une ligne `media_assets`, créée par la route d'envoi après vérification de
+ * l'objet dans le bucket.
  */
-const httpsImageUrl = z
+const optionalMediaId = z
   .string()
   .trim()
-  .max(500, "imageUrlInvalid")
   .refine(
-    (value) => value === "" || /^https:\/\/\S+$/i.test(value),
-    "imageUrlInvalid",
+    (value) =>
+      value === "" ||
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value),
+    "mediaInvalid",
   );
 
 export const storeSettingsSchema = z.object({
@@ -100,8 +103,8 @@ export const storeSettingsSchema = z.object({
     .trim()
     .max(24, "contactPhoneInvalid")
     .refine((value) => value === "" || value.length >= 6, "contactPhoneInvalid"),
-  logoUrl: httpsImageUrl,
-  bannerUrl: httpsImageUrl,
+  logoMediaId: optionalMediaId,
+  bannerMediaId: optionalMediaId,
 });
 
 /** Nombre maximal de caractères de l'identifiant, repris par le formulaire. */

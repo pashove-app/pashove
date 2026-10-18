@@ -9,6 +9,7 @@ import { resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { requireSecondFactor } from "@/lib/auth/mfa";
 import { currentOnboardingStep, onboardingPath } from "@/lib/onboarding/steps";
+import { publicUrl } from "@/lib/r2/media";
 import { currentStore } from "@/lib/stores/queries";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 
@@ -61,6 +62,16 @@ export default async function StoreSettingsPage({
 
   const t = await getDictionary(locale);
 
+  const logoMedia =
+    store.logo && store.logo_media_id
+      ? { id: store.logo_media_id, url: publicUrl(store.logo.object_key) }
+      : null;
+
+  const bannerMedia =
+    store.banner && store.banner_media_id
+      ? { id: store.banner_media_id, url: publicUrl(store.banner.object_key) }
+      : null;
+
   return (
     <div className="min-h-dvh bg-bg">
       <MerchantHeader t={t} locale={locale} />
@@ -79,7 +90,13 @@ export default async function StoreSettingsPage({
         </h1>
         <p className="mt-2 text-[0.9375rem] text-muted">{t.settings.storeSubtitle}</p>
 
-        <StoreSettingsForm t={t} locale={locale} store={store} />
+        <StoreSettingsForm
+          t={t}
+          locale={locale}
+          store={store}
+          logoMedia={logoMedia}
+          bannerMedia={bannerMedia}
+        />
       </main>
     </div>
   );
