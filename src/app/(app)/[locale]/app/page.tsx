@@ -61,7 +61,7 @@ export default async function DashboardHomePage({
     "—";
 
   const revenue = formatMoney(0, store.currency, LOCALE_META[locale].tag);
-  const productsCount = await countProducts();
+  const productsCount = await countProducts(store.id);
 
   return (
     <div className="mx-auto w-full max-w-5xl">

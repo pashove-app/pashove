@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { deleteObject } from "@/lib/r2/client";
+import type { MediaKind } from "@/lib/r2/media";
 
 /**
  * Supprime un média : sa ligne, puis son objet.
@@ -13,7 +14,7 @@ export async function deleteMediaAsset(
 ): Promise<void> {
   const { data } = await supabase
     .from("media_assets")
-    .select("id, object_key")
+    .select("id, object_key, kind")
     .eq("id", id)
     .maybeSingle();
 
@@ -22,8 +23,8 @@ export async function deleteMediaAsset(
   await supabase.from("media_assets").delete().eq("id", id);
 
   try {
-    await deleteObject(data.object_key as string);
+    await deleteObject(data.object_key as string, data.kind as MediaKind);
   } catch {
-    // Un échec côté bucket ne doit pas empêcher d'enregistrer les réglages.
+    // Un échec côté bucket ne doit pas empêcher d'enregistrer le produit.
   }
 }

@@ -27,16 +27,16 @@ export default async function ProductsPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ created?: string }>;
+  searchParams: Promise<{ created?: string; updated?: string }>;
 }) {
   const { locale: raw } = await params;
   const locale = resolveLocale(raw);
-  const { created } = await searchParams;
+  const { created, updated } = await searchParams;
 
   const store = await currentStore();
   if (!store) redirect(`/${locale}/onboarding/store`);
 
-  const products = await listProducts();
+  const products = await listProducts(store.id);
   const t = await getDictionary(locale);
 
   const count = products.length;
@@ -60,13 +60,13 @@ export default async function ProductsPage({
         </ButtonLink>
       </div>
 
-      {created ? (
+      {created || updated ? (
         <p
           role="status"
           className="mt-5 flex items-start gap-2.5 rounded-xl border border-emerald-400/25 bg-emerald-400/[0.07] p-3.5 text-[0.8125rem] leading-relaxed text-emerald-700 dark:text-emerald-300"
         >
           <Icon path={icons.check} className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.4} />
-          {t.dashboard.products.created}
+          {updated ? t.dashboard.products.updated : t.dashboard.products.created}
         </p>
       ) : null}
 

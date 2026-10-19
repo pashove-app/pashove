@@ -7,16 +7,15 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import {
   buildObjectKey,
-  type AllowedImageType,
+  isPrivateKind,
   type MediaKind,
 } from "@/lib/r2/media";
 
 /**
  * Cloudflare R2, par son API compatible S3.
  *
- * Le point d'entrée porte déjà l'identifiant de compte : une seule variable
- * suffit, `R2_ENDPOINT`, et `forcePathStyle` évite de dépendre du style
- * d'adressage des buckets.
+ * Deux buckets : le public pour les images de vitrine, le privé pour les
+ * fichiers vendus. Le choix dépend du type d'objet, jamais du client.
  */
 const PRESIGN_TTL_SECONDS = 300;
 
@@ -30,8 +29,24 @@ export function isR2Configured(): boolean {
   );
 }
 
-function bucketName(): string {
-  return process.env.R2_BUCKET!;
+export function isPrivateBucketConfigured(): boolean {
+  return Boolean(
+    process.env.R2_ENDPOINT &&
+      process.env.R2_ACCESS_KEY_ID &&
+      process.env.R2_SECRET_ACCESS_KEY &&
+      process.env.R2_PRIVATE_BUCKET,
+  );
+}
+
+/** Vrai si le stockage nécessaire à ce type d'objet est configuré. */
+export function isStorageConfigured(kind: MediaKind): boolean {
+  return isPrivateKind(kind) ? isPrivateBucketConfigured() : isR2Configured();
+}
+
+function bucketFor(kind: MediaKind): string {
+  return isPrivateKind(kind)
+    ? process.env.R2_PRIVATE_BUCKET!
+    : process.env.R2_BUCKET!;
 }
 
 function client(): S3Client {
@@ -50,12 +65,12 @@ function client(): S3Client {
 export async function signUpload(params: {
   storeId: string;
   kind: MediaKind;
-  contentType: AllowedImageType;
+  contentType: string;
 }): Promise<{ key: string; uploadUrl: string; expiresIn: number }> {
   const key = buildObjectKey(params.storeId, params.kind, params.contentType);
 
   const command = new PutObjectCommand({
-    Bucket: bucketName(),
+    Bucket: bucketFor(params.kind),
     Key: key,
     ContentType: params.contentType,
   });
@@ -67,16 +82,14 @@ export async function signUpload(params: {
   return { key, uploadUrl, expiresIn: PRESIGN_TTL_SECONDS };
 }
 
-/**
- * Relit l'objet après l'envoi : c'est la seule preuve que le fichier est bien
- * arrivé, avec la taille et le type annoncés.
- */
+/** Relit l'objet après l'envoi : la seule preuve qu'il est bien arrivé. */
 export async function inspectObject(
   key: string,
+  kind: MediaKind,
 ): Promise<{ size: number; contentType: string } | null> {
   try {
     const head = await client().send(
-      new HeadObjectCommand({ Bucket: bucketName(), Key: key }),
+      new HeadObjectCommand({ Bucket: bucketFor(kind), Key: key }),
     );
 
     return {
@@ -88,9 +101,9 @@ export async function inspectObject(
   }
 }
 
-/** Supprime l'objet du bucket. Appelé après la suppression de sa ligne. */
-export async function deleteObject(key: string): Promise<void> {
+/** Supprime l'objet du bon bucket. Appelé après la suppression de sa ligne. */
+export async function deleteObject(key: string, kind: MediaKind): Promise<void> {
   await client().send(
-    new DeleteObjectCommand({ Bucket: bucketName(), Key: key }),
+    new DeleteObjectCommand({ Bucket: bucketFor(kind), Key: key }),
   );
 }

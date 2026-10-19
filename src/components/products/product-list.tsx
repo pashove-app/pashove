@@ -1,7 +1,9 @@
 import Image from "next/image";
+import Link from "next/link";
 import { ProductStatusBadge } from "@/components/products/product-status-badge";
 import { Icon, icons } from "@/components/ui/primitives";
 import { LOCALE_META, type Locale } from "@/i18n/config";
+import { path } from "@/components/ui/types";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import { formatMoney } from "@/lib/money";
 import type { Product } from "@/lib/products/queries";
@@ -54,9 +56,12 @@ export function ProductList({
                 <div className="flex items-center gap-3">
                   <Thumb product={product} />
                   <div className="min-w-0">
-                    <p className="truncate text-[0.875rem] font-medium text-fg">
+                    <Link
+                      href={path(locale, `/app/products/${product.id}`)}
+                      className="block truncate text-[0.875rem] font-medium text-fg transition-colors hover:text-accent"
+                    >
                       {product.name}
-                    </p>
+                    </Link>
                     <p
                       dir="ltr"
                       className="truncate font-mono text-[0.75rem] text-faint"
@@ -87,9 +92,12 @@ export function ProductList({
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="min-w-0 truncate text-[0.875rem] font-medium text-fg">
+                  <Link
+                    href={path(locale, `/app/products/${product.id}`)}
+                    className="min-w-0 truncate text-[0.875rem] font-medium text-fg transition-colors hover:text-accent"
+                  >
                     {product.name}
-                  </p>
+                  </Link>
                   <ProductStatusBadge t={t} status={product.status} />
                 </div>
 

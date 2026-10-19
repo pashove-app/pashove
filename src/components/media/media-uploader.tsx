@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useId, useRef, useState } from "react";
 import { buttonClass, Icon, icons, Spinner } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
+import { uploadWithPresign } from "@/lib/media/upload-client";
 import { MAX_IMAGE_BYTES, type MediaKind } from "@/lib/r2/media";
 
 export type MediaValue = { id: string; url: string } | null;
@@ -25,8 +26,7 @@ const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/avif"];
  * Téléverseur d'image : dépôt ou sélection, envoi direct vers R2, aperçu.
  *
  * Le fichier ne passe pas par le serveur. Le composant ne garde qu'un
- * identifiant dans un champ caché : la sauvegarde enregistre la référence,
- * pas une adresse d'image.
+ * identifiant dans un champ caché : la sauvegarde enregistre la référence.
  */
 export function MediaUploader({
   name,
@@ -71,37 +71,8 @@ export function MediaUploader({
     setProgress(0);
 
     try {
-      const dimensions = await readDimensions(file);
-
-      const presign = await fetch("/api/uploads/presign", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind, contentType: file.type, size: file.size }),
-      });
-
-      if (!presign.ok) throw new Error("presign");
-
-      const { uploadUrl, key } = (await presign.json()) as {
-        uploadUrl: string;
-        key: string;
-      };
-
-      await putFile(uploadUrl, file, setProgress);
-
-      const complete = await fetch("/api/uploads/complete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          key,
-          width: dimensions?.width,
-          height: dimensions?.height,
-        }),
-      });
-
-      if (!complete.ok) throw new Error("complete");
-
-      const saved = (await complete.json()) as { id: string; url: string };
-      setMedia({ id: saved.id, url: saved.url });
+      const saved = await uploadWithPresign(file, kind, setProgress);
+      setMedia({ id: saved.id, url: saved.url ?? "" });
     } catch {
       setError(labels.errorUpload);
     } finally {
@@ -210,45 +181,4 @@ export function MediaUploader({
       ) : null}
     </div>
   );
-}
-
-/** Envoi direct : `fetch` ne donne pas la progression, `XMLHttpRequest` si. */
-function putFile(
-  url: string,
-  file: File,
-  onProgress: (percent: number) => void,
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const request = new XMLHttpRequest();
-    request.open("PUT", url);
-    request.setRequestHeader("Content-Type", file.type);
-
-    request.upload.onprogress = (event) => {
-      if (!event.lengthComputable) return;
-      onProgress(Math.round((event.loaded / event.total) * 100));
-    };
-
-    request.onload = () => {
-      if (request.status >= 200 && request.status < 300) resolve();
-      else reject(new Error(`HTTP ${request.status}`));
-    };
-    request.onerror = () => reject(new Error("network"));
-    request.onabort = () => reject(new Error("aborted"));
-
-    request.send(file);
-  });
-}
-
-/** Dimensions de l'image, lues avant l'envoi. */
-async function readDimensions(
-  file: File,
-): Promise<{ width: number; height: number } | null> {
-  try {
-    const bitmap = await createImageBitmap(file);
-    const dimensions = { width: bitmap.width, height: bitmap.height };
-    bitmap.close();
-    return dimensions;
-  } catch {
-    return null;
-  }
 }

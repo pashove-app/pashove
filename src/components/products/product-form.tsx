@@ -1,51 +1,84 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { MediaUploader } from "@/components/media/media-uploader";
-import { FormNotice, TextAreaField, TextField } from "@/components/ui/field";
+import { FileUploader, type FileValue } from "@/components/media/file-uploader";
+import { MediaUploader, type MediaValue } from "@/components/media/media-uploader";
+import { FormNotice, SelectField, TextAreaField, TextField } from "@/components/ui/field";
 import { buttonClass, ButtonLink, Icon, icons, Spinner } from "@/components/ui/primitives";
 import { path } from "@/components/ui/types";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import { useFieldErrors } from "@/lib/forms/use-field-errors";
-import { createProductAction } from "@/lib/products/actions";
+import { createProductAction, updateProductAction } from "@/lib/products/actions";
+import type { Product } from "@/lib/products/queries";
+import { formatPriceInput, type ProductType } from "@/lib/products/schema";
 import { INITIAL_PRODUCT_FORM_STATE } from "@/lib/products/types";
 import { slugify } from "@/lib/slug";
 import { cn } from "@/lib/cn";
 
-type Status = "draft" | "published";
+const DURATIONS = [15, 30, 45, 60, 90, 120, 180, 240] as const;
+
+type DurationKey = keyof Dictionary["dashboard"]["products"]["durations"];
+
+const DURATION_KEYS: Record<number, DurationKey> = {
+  15: "m15",
+  30: "m30",
+  45: "m45",
+  60: "m60",
+  90: "m90",
+  120: "m120",
+  180: "m180",
+  240: "m240",
+};
 
 /**
- * Formulaire de création d'un produit.
+ * Formulaire de produit, partagé par les trois types.
  *
- * L'adresse suit le nom tant que le marchand ne l'a pas corrigée ; le prix est
- * saisi en unité majeure et converti côté serveur. L'image passe par le
- * téléverseur R2, jamais par une URL collée.
+ * Seule la section du milieu change : chaque type n'affiche que ses champs, et
+ * la Server Action valide exactement ceux-là. Le type vient de la route.
  */
 export function ProductForm({
   t,
   locale,
+  mode,
+  type,
   currency,
   storeSlug,
+  product,
+  initialImage,
+  initialFile,
 }: {
   t: Dictionary;
   locale: Locale;
+  mode: "create" | "edit";
+  type: ProductType;
   currency: string;
   storeSlug: string;
+  product?: Product;
+  initialImage: MediaValue;
+  initialFile: FileValue;
 }) {
+  const isEdit = mode === "edit";
+
   const [state, formAction, pending] = useActionState(
-    createProductAction,
+    isEdit ? updateProductAction : createProductAction,
     INITIAL_PRODUCT_FORM_STATE,
   );
 
   const { corrected, clear } = useFieldErrors(state);
 
-  const [name, setName] = useState("");
-  const [slug, setSlug] = useState("");
-  const [slugTouched, setSlugTouched] = useState(false);
-  const [status, setStatus] = useState<Status>("draft");
+  const [name, setName] = useState(product?.name ?? "");
+  const [slug, setSlug] = useState(product?.slug ?? "");
+  const [slugTouched, setSlugTouched] = useState(Boolean(product));
+  const [status, setStatus] = useState<"draft" | "published">(
+    product?.status ?? "draft",
+  );
+  const [location, setLocation] = useState<"online" | "in_person">(
+    product?.service_location ?? "online",
+  );
 
-  const errors = t.dashboard.products.errors as Record<string, string>;
+  const labels = t.dashboard.products;
+  const errors = labels.errors as Record<string, string>;
   const fieldError = (key: string) => {
     if (corrected[key]) return undefined;
     const messageKey = state.fieldErrors?.[key];
@@ -56,11 +89,13 @@ export function ProductForm({
   return (
     <form action={formAction} noValidate className="mt-8 space-y-7">
       <input type="hidden" name="locale" value={locale} />
+      <input type="hidden" name="productType" value={type} />
+      {isEdit ? <input type="hidden" name="productId" value={product?.id} /> : null}
 
       <TextField
         name="name"
-        label={t.dashboard.products.nameLabel}
-        hint={t.dashboard.products.nameHint}
+        label={labels.nameLabel}
+        hint={labels.nameHint}
         icon="tag"
         value={name}
         error={fieldError("name")}
@@ -73,7 +108,7 @@ export function ProductForm({
 
       <TextField
         name="slug"
-        label={t.dashboard.products.slugLabel}
+        label={labels.slugLabel}
         dir="ltr"
         maxLength={60}
         autoCapitalize="none"
@@ -81,7 +116,7 @@ export function ProductForm({
         spellCheck={false}
         value={slug}
         error={fieldError("slug")}
-        help={t.dashboard.products.slugHelp}
+        help={labels.slugHelp}
         addon={
           <span
             dir="ltr"
@@ -102,47 +137,191 @@ export function ProductForm({
 
       <TextAreaField
         name="description"
-        label={t.dashboard.products.descriptionLabel}
-        help={t.dashboard.products.descriptionHelp}
-        rows={6}
+        label={labels.descriptionLabel}
+        help={labels.descriptionHelp}
+        rows={5}
         maxLength={5000}
+        defaultValue={product?.description ?? ""}
         error={fieldError("description")}
         onChange={() => clear("description")}
       />
 
       <TextField
         name="price"
-        label={t.dashboard.products.priceLabel}
-        help={t.dashboard.products.priceHelp.replace("{currency}", currency)}
+        label={labels.priceLabel}
+        help={labels.priceHelp.replace("{currency}", currency)}
         icon="wallet"
         dir="ltr"
         inputMode="decimal"
         autoComplete="off"
+        defaultValue={
+          product ? formatPriceInput(product.price_amount, currency) : undefined
+        }
         error={fieldError("price")}
         onChange={() => clear("price")}
       />
 
-      <MediaUploader
-        name="productMediaId"
-        kind="product"
-        label={t.dashboard.products.imageLabel}
-        help={t.dashboard.products.imageHelp}
-        initial={null}
-        labels={{
-          choose: t.settings.uploadChoose,
-          replace: t.settings.uploadReplace,
-          remove: t.settings.uploadRemove,
-          drop: t.settings.uploadDrop,
-          uploading: t.settings.uploadUploading,
-          errorType: t.settings.uploadErrorType,
-          errorSize: t.settings.uploadErrorSize,
-          errorUpload: t.settings.uploadErrorUpload,
-        }}
+      <TextField
+        name="tags"
+        label={labels.tagsLabel}
+        hint={labels.tagsHint}
+        help={labels.tagsHelp}
+        defaultValue={(product?.tags ?? []).join(", ")}
+        error={fieldError("tags")}
+        onChange={() => clear("tags")}
+      />
+
+      <TextField
+        name="videoUrl"
+        label={labels.videoLabel}
+        help={labels.videoHelp}
+        dir="ltr"
+        placeholder="https://…"
+        defaultValue={product?.video_url ?? ""}
+        error={fieldError("videoUrl")}
+        onChange={() => clear("videoUrl")}
       />
 
       <div>
+        <MediaUploader
+          name="productMediaId"
+          kind="product"
+          label={labels.imageLabel}
+          help={labels.imageHelp}
+          initial={initialImage}
+          labels={{
+            choose: t.settings.uploadChoose,
+            replace: t.settings.uploadReplace,
+            remove: t.settings.uploadRemove,
+            drop: t.settings.uploadDrop,
+            uploading: t.settings.uploadUploading,
+            errorType: t.settings.uploadErrorType,
+            errorSize: t.settings.uploadErrorSize,
+            errorUpload: t.settings.uploadErrorUpload,
+          }}
+        />
+        {fieldError("imageId") ? (
+          <p role="alert" className="mt-2 text-[0.75rem] text-red-500 dark:text-red-400">
+            {fieldError("imageId")}
+          </p>
+        ) : null}
+      </div>
+
+      {type === "physical" ? (
+        <div className="grid gap-6 sm:grid-cols-2">
+          <TextField
+            name="stock"
+            label={labels.stockLabel}
+            help={labels.stockHelp}
+            dir="ltr"
+            inputMode="numeric"
+            defaultValue={
+              product?.stock_quantity === null || product?.stock_quantity === undefined
+                ? undefined
+                : String(product.stock_quantity)
+            }
+            error={fieldError("stock")}
+            onChange={() => clear("stock")}
+          />
+
+          <TextField
+            name="weight"
+            label={labels.weightLabel}
+            help={labels.weightHelp}
+            dir="ltr"
+            inputMode="numeric"
+            defaultValue={
+              product?.weight_grams === null || product?.weight_grams === undefined
+                ? undefined
+                : String(product.weight_grams)
+            }
+            error={fieldError("weight")}
+            onChange={() => clear("weight")}
+          />
+        </div>
+      ) : null}
+
+      {type === "digital" ? (
+        <div>
+          <FileUploader
+            name="digitalFileId"
+            label={labels.fileLabel}
+            help={labels.fileHelp}
+            initial={initialFile}
+            labels={{
+              choose: labels.fileChoose,
+              replace: labels.fileReplace,
+              remove: labels.fileRemove,
+              uploading: labels.fileUploading,
+              errorType: labels.fileErrorType,
+              errorSize: labels.fileErrorSize,
+              errorUpload: labels.fileErrorUpload,
+            }}
+          />
+          {fieldError("fileId") ? (
+            <p role="alert" className="mt-2 text-[0.75rem] text-red-500 dark:text-red-400">
+              {fieldError("fileId")}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
+      {type === "service" ? (
+        <div className="grid gap-6 sm:grid-cols-2">
+          <SelectField
+            name="duration"
+            label={labels.durationLabel}
+            defaultValue={String(product?.duration_minutes ?? 60)}
+            error={fieldError("duration")}
+            onChange={() => clear("duration")}
+          >
+            {DURATIONS.map((minutes) => (
+              <option key={minutes} value={minutes}>
+                {labels.durations[DURATION_KEYS[minutes]]}
+              </option>
+            ))}
+          </SelectField>
+
+          <div>
+            <p className="text-[0.8125rem] font-medium text-body">
+              {labels.locationLabel}
+            </p>
+            <input type="hidden" name="serviceLocation" value={location} />
+            <div className="mt-2 inline-flex rounded-full border border-border bg-bg-soft p-1">
+              {(["online", "in_person"] as const).map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  aria-pressed={location === option}
+                  onClick={() => {
+                    setLocation(option);
+                    clear("location");
+                  }}
+                  className={cn(
+                    "rounded-full px-4 py-1.5 text-[0.8125rem] font-medium transition-colors",
+                    location === option
+                      ? "bg-surface text-fg shadow-[0_1px_3px_rgba(0,0,0,0.2)]"
+                      : "text-subtle hover:text-fg",
+                  )}
+                >
+                  {option === "online"
+                    ? labels.locationOnline
+                    : labels.locationInPerson}
+                </button>
+              ))}
+            </div>
+            {fieldError("location") ? (
+              <p role="alert" className="mt-2 text-[0.75rem] text-red-500 dark:text-red-400">
+                {fieldError("location")}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
+      <div>
         <p className="text-[0.8125rem] font-medium text-body">
-          {t.dashboard.products.statusLabel}
+          {labels.statusLabel}
         </p>
         <input type="hidden" name="status" value={status} />
 
@@ -160,9 +339,7 @@ export function ProductForm({
                   : "text-subtle hover:text-fg",
               )}
             >
-              {option === "draft"
-                ? t.dashboard.products.statusDraft
-                : t.dashboard.products.statusPublished}
+              {option === "draft" ? labels.statusDraft : labels.statusPublished}
             </button>
           ))}
         </div>
@@ -175,11 +352,7 @@ export function ProductForm({
       {message ? <FormNotice tone="error">{message}</FormNotice> : null}
 
       <div className="flex flex-wrap items-center gap-3 pt-1">
-        <button
-          type="submit"
-          disabled={pending}
-          className={buttonClass({ size: "lg" })}
-        >
+        <button type="submit" disabled={pending} className={buttonClass({ size: "lg" })}>
           {pending ? (
             <>
               <Spinner />
@@ -187,18 +360,14 @@ export function ProductForm({
             </>
           ) : (
             <>
-              <Icon path={icons.plus} className="h-4 w-4" strokeWidth={2.4} />
-              {t.dashboard.products.submit}
+              <Icon path={icons.check} className="h-4 w-4" strokeWidth={2.4} />
+              {isEdit ? labels.save : labels.submit}
             </>
           )}
         </button>
 
-        <ButtonLink
-          href={path(locale, "/app/products")}
-          variant="outline"
-          size="lg"
-        >
-          {t.dashboard.products.cancel}
+        <ButtonLink href={path(locale, "/app/products")} variant="outline" size="lg">
+          {labels.cancel}
         </ButtonLink>
       </div>
     </form>

@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
-import { isR2Configured, signUpload } from "@/lib/r2/client";
+import { isStorageConfigured, signUpload } from "@/lib/r2/client";
 import {
+  isAllowedFileType,
   isAllowedImageType,
   isMediaKind,
-  MAX_IMAGE_BYTES,
+  isPrivateKind,
+  maxBytesFor,
   publicUrl,
 } from "@/lib/r2/media";
 import { currentStore } from "@/lib/stores/queries";
@@ -12,16 +14,10 @@ import { createClient } from "@/lib/supabase/server";
 /**
  * Prépare un envoi direct vers R2.
  *
- * Le navigateur repart avec une URL signée valable cinq minutes : le fichier
- * ne traverse jamais Next ni Vercel, ce qui évite la limite de corps de requête
- * et la double bande passante. La boutique vient de la session, jamais du
- * client.
+ * Images publiques et fichiers vendus suivent le même chemin, mais pas le
+ * même bucket : le type d'objet décide, jamais le client.
  */
 export async function POST(request: Request) {
-  if (!isR2Configured()) {
-    return NextResponse.json({ error: "not_configured" }, { status: 503 });
-  }
-
   let body: unknown;
   try {
     body = await request.json();
@@ -39,7 +35,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "bad_kind" }, { status: 400 });
   }
 
-  if (!isAllowedImageType(contentType)) {
+  if (!isStorageConfigured(kind)) {
+    return NextResponse.json({ error: "not_configured" }, { status: 503 });
+  }
+
+  // La validation directe (et non un booléen intermédiaire) permet au
+  // compilateur de savoir que `contentType` est bien une chaîne ensuite.
+  if (isPrivateKind(kind)) {
+    if (!isAllowedFileType(contentType)) {
+      return NextResponse.json({ error: "type_not_allowed" }, { status: 415 });
+    }
+  } else if (!isAllowedImageType(contentType)) {
     return NextResponse.json({ error: "type_not_allowed" }, { status: 415 });
   }
 
@@ -47,7 +53,7 @@ export async function POST(request: Request) {
     typeof size !== "number" ||
     !Number.isInteger(size) ||
     size <= 0 ||
-    size > MAX_IMAGE_BYTES
+    size > maxBytesFor(kind)
   ) {
     return NextResponse.json({ error: "size_not_allowed" }, { status: 413 });
   }
@@ -74,6 +80,7 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     ...signed,
-    publicUrl: publicUrl(signed.key),
+    // Un fichier vendu n'a pas d'adresse publique.
+    ...(isPrivateKind(kind) ? {} : { publicUrl: publicUrl(signed.key) }),
   });
 }

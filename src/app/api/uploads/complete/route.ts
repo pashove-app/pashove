@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
-import { inspectObject, isR2Configured } from "@/lib/r2/client";
+import { inspectObject, isStorageConfigured } from "@/lib/r2/client";
 import {
+  isAllowedFileType,
   isAllowedImageType,
-  MAX_IMAGE_BYTES,
+  isPrivateKind,
+  maxBytesFor,
   parseObjectKey,
   publicUrl,
 } from "@/lib/r2/media";
@@ -12,15 +14,10 @@ import { createClient } from "@/lib/supabase/server";
 /**
  * Enregistre un média après l'envoi.
  *
- * Rien n'est cru sur parole : la clé est relue, l'objet interrogé dans le
- * bucket, sa taille et son type comparés. Un client ne peut donc pas
- * enregistrer une ligne pour un fichier qui n'existe pas.
+ * Rien n'est cru sur parole : la clé est relue, l'objet interrogé dans le bon
+ * bucket, sa taille et son type comparés.
  */
 export async function POST(request: Request) {
-  if (!isR2Configured()) {
-    return NextResponse.json({ error: "not_configured" }, { status: 503 });
-  }
-
   let body: unknown;
   try {
     body = await request.json();
@@ -28,15 +25,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "bad_request" }, { status: 400 });
   }
 
-  const { key, width, height } = (body ?? {}) as {
+  const { key, width, height, fileName } = (body ?? {}) as {
     key?: unknown;
     width?: unknown;
     height?: unknown;
+    fileName?: unknown;
   };
 
   const parsed = parseObjectKey(key);
   if (!parsed) {
     return NextResponse.json({ error: "bad_key" }, { status: 400 });
+  }
+
+  if (!isStorageConfigured(parsed.kind)) {
+    return NextResponse.json({ error: "not_configured" }, { status: 503 });
   }
 
   const supabase = await createClient();
@@ -53,17 +55,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
-  const object = await inspectObject(key as string);
+  const object = await inspectObject(key as string, parsed.kind);
   if (!object) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
 
-  if (object.size <= 0 || object.size > MAX_IMAGE_BYTES) {
-    return NextResponse.json({ error: "size_not_allowed" }, { status: 413 });
+  const privateKind = isPrivateKind(parsed.kind);
+
+  const accepted = privateKind
+    ? isAllowedFileType(object.contentType)
+    : isAllowedImageType(object.contentType);
+
+  if (!accepted) {
+    return NextResponse.json({ error: "type_not_allowed" }, { status: 415 });
   }
 
-  if (!isAllowedImageType(object.contentType)) {
-    return NextResponse.json({ error: "type_not_allowed" }, { status: 415 });
+  if (object.size <= 0 || object.size > maxBytesFor(parsed.kind)) {
+    return NextResponse.json({ error: "size_not_allowed" }, { status: 413 });
   }
 
   const safeDimension = (value: unknown): number | null => {
@@ -71,6 +79,11 @@ export async function POST(request: Request) {
     const rounded = Math.round(value);
     return rounded > 0 && rounded <= 20000 ? rounded : null;
   };
+
+  const safeFileName =
+    privateKind && typeof fileName === "string"
+      ? fileName.replace(/[\\/]/g, "").trim().slice(0, 255) || null
+      : null;
 
   const { data, error } = await supabase
     .from("media_assets")
@@ -82,6 +95,7 @@ export async function POST(request: Request) {
       size_bytes: object.size,
       width: safeDimension(width),
       height: safeDimension(height),
+      file_name: safeFileName,
     })
     .select("id")
     .single();
@@ -92,6 +106,8 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     id: data.id,
-    url: publicUrl(key as string),
+    ...(privateKind
+      ? { name: safeFileName }
+      : { url: publicUrl(key as string) }),
   });
 }
