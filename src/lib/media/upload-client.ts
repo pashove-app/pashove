@@ -3,6 +3,27 @@ import type { MediaKind } from "@/lib/r2/media";
 export type UploadResult = { id: string; url?: string; name?: string };
 
 /**
+ * Erreur d'envoi porteuse d'un code stable, pour que l'interface distingue
+ * un refus de signature (403), un CORS bloqué, un bucket absent ou une
+ * configuration manquante.
+ */
+export class UploadError extends Error {
+  readonly code: string;
+
+  constructor(code: string) {
+    super(code);
+    this.name = "UploadError";
+    this.code = code;
+  }
+}
+
+async function errorCode(response: Response, prefix: string): Promise<UploadError> {
+  const payload = (await response.json().catch(() => null)) as { error?: unknown } | null;
+  const detail = typeof payload?.error === "string" ? payload.error : String(response.status);
+  return new UploadError(`${prefix}_${detail}`);
+}
+
+/**
  * Certains navigateurs annoncent `application/octet-stream` pour un PDF ou un
  * ZIP. On retombe alors sur l'extension : c'est elle qui décide du type signé.
  */
@@ -36,7 +57,7 @@ export async function uploadWithPresign(
     body: JSON.stringify({ kind, contentType, size: file.size }),
   });
 
-  if (!presign.ok) throw new Error("presign");
+  if (!presign.ok) throw await errorCode(presign, "presign");
 
   const { uploadUrl, key } = (await presign.json()) as {
     uploadUrl: string;
@@ -59,7 +80,7 @@ export async function uploadWithPresign(
     }),
   });
 
-  if (!complete.ok) throw new Error("complete");
+  if (!complete.ok) throw await errorCode(complete, "complete");
 
   return (await complete.json()) as UploadResult;
 }
@@ -83,10 +104,10 @@ function putFile(
 
     request.onload = () => {
       if (request.status >= 200 && request.status < 300) resolve();
-      else reject(new Error(`HTTP ${request.status}`));
+      else reject(new UploadError(`put_${request.status}`));
     };
-    request.onerror = () => reject(new Error("network"));
-    request.onabort = () => reject(new Error("aborted"));
+    request.onerror = () => reject(new UploadError("put_network"));
+    request.onabort = () => reject(new UploadError("put_aborted"));
 
     request.send(file);
   });

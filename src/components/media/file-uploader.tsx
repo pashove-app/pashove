@@ -3,7 +3,11 @@
 import { useId, useRef, useState } from "react";
 import { buttonClass, Icon, icons, Spinner } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
-import { uploadWithPresign, fileContentType } from "@/lib/media/upload-client";
+import {
+  UploadError,
+  uploadWithPresign,
+  fileContentType,
+} from "@/lib/media/upload-client";
 import { FILE_EXTENSIONS, MAX_FILE_BYTES } from "@/lib/r2/media";
 
 export type FileValue = { id: string; name: string | null } | null;
@@ -16,6 +20,12 @@ export type FileUploaderLabels = {
   errorType: string;
   errorSize: string;
   errorUpload: string;
+  errorStorage: string;
+  errorForbidden: string;
+  errorCors: string;
+  errorNotFound: string;
+  errorSession: string;
+  errorComplete: string;
 };
 
 const ACCEPT = ".pdf,.zip,.epub,.mp3,application/pdf,application/zip,application/epub+zip,audio/mpeg";
@@ -47,6 +57,20 @@ export function FileUploader({
   const inputRef = useRef<HTMLInputElement>(null);
   const inputId = useId();
 
+  function messageFor(code: string): string {
+    if (code === "presign_not_configured") return labels.errorStorage;
+    if (code === "presign_unauthorized" || code === "presign_no_store") {
+      return labels.errorSession;
+    }
+    if (code === "presign_type_not_allowed") return labels.errorType;
+    if (code === "presign_size_not_allowed") return labels.errorSize;
+    if (code === "put_403") return labels.errorForbidden;
+    if (code === "put_404") return labels.errorNotFound;
+    if (code === "put_network") return labels.errorCors;
+    if (code.startsWith("complete_")) return labels.errorComplete;
+    return labels.errorUpload;
+  }
+
   async function handleFile(selected: File) {
     setError(null);
 
@@ -66,8 +90,18 @@ export function FileUploader({
     try {
       const saved = await uploadWithPresign(selected, "digital_file", setProgress);
       setFile({ id: saved.id, name: saved.name ?? selected.name });
-    } catch {
-      setError(labels.errorUpload);
+    } catch (cause) {
+      const code = cause instanceof UploadError ? cause.code : "unknown";
+
+      // Diagnostic précis : 403, CORS, bucket absent, configuration manquante.
+      console.error("[upload] échec du téléversement", {
+        code,
+        fileName: selected.name,
+        fileSize: selected.size,
+        contentType: fileContentType(selected),
+      });
+
+      setError(messageFor(code));
     } finally {
       setBusy(false);
     }

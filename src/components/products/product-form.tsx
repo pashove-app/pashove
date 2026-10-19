@@ -384,6 +384,12 @@ export function ProductForm({
               errorType: labels.fileErrorType,
               errorSize: labels.fileErrorSize,
               errorUpload: labels.fileErrorUpload,
+              errorStorage: labels.fileErrorStorage,
+              errorForbidden: labels.fileErrorForbidden,
+              errorCors: labels.fileErrorCors,
+              errorNotFound: labels.fileErrorNotFound,
+              errorSession: labels.fileErrorSession,
+              errorComplete: labels.fileErrorComplete,
             }}
           />
           {fieldError("fileId") ? (
