@@ -5,11 +5,17 @@ import { redirect } from "next/navigation";
 import { deleteMediaAsset } from "@/lib/media/assets";
 import { getProduct } from "@/lib/products/queries";
 import {
+  checkVariantMatrix,
   isProductType,
   normalizeTags,
   parsePrice,
+  parseProductOptions,
+  parseProductVariants,
   productSchemaFor,
+  type ProductOption,
   type ProductType,
+  type VariantInput,
+  type VariantPayload,
 } from "@/lib/products/schema";
 import type { ProductFormState } from "@/lib/products/types";
 import { currentStore } from "@/lib/stores/queries";
@@ -28,7 +34,14 @@ function list(formData: FormData, key: string): string[] {
 }
 
 /** Traduit le code d'erreur PostgreSQL en clé de message du dictionnaire. */
-function messageKeyFor(error: { code?: string }): string {
+function messageKeyFor(error: { code?: string; message?: string }): string {
+  const message = error.message ?? "";
+  if (message.includes("invalid_options")) return "productOptionsInvalid";
+  if (message.includes("invalid_variants")) return "productVariantsInvalid";
+  if (message.includes("invalid_media") || message.includes("too_many_images")) {
+    return "productMediaInvalid";
+  }
+  if (message.includes("invalid_file")) return "productFileRequired";
   if (error.code === "23505") return "productSlugTaken";
   if (error.code === "22023") return "productMediaInvalid";
   if (error.code === "23514") return "productInvalid";
@@ -52,6 +65,8 @@ type ParsedProduct = {
   height?: string;
   shippingAll?: "1" | "0";
   shippingCountries?: string[];
+  options: string;
+  variants: string;
   fileId?: string;
   duration?: string;
   location?: "online" | "in_person";
@@ -123,10 +138,74 @@ function readForm(formData: FormData) {
     height: field(formData, "height"),
     shippingAll: field(formData, "shippingAll") === "on" ? "1" : "0",
     shippingCountries: list(formData, "shippingCountry"),
+    options: field(formData, "optionsJson"),
+    variants: field(formData, "variantsJson"),
     fileId: field(formData, "digitalFileId"),
     duration: field(formData, "duration"),
     location: field(formData, "serviceLocation"),
   };
+}
+
+/**
+ * Options et matrice, validées avant tout enregistrement.
+ *
+ * Seul un produit physique en porte ; les autres types envoient des tableaux
+ * vides et ne peuvent donc pas créer de variantes par accident.
+ */
+function readVariantDraft(
+  type: ProductType,
+  data: ReturnType<typeof readForm>,
+):
+  | { options: ProductOption[]; variants: VariantInput[] }
+  | { error: string; field: string } {
+  if (type !== "physical") return { options: [], variants: [] };
+
+  const options = parseProductOptions(data.options);
+  if ("error" in options) return { error: options.error, field: "optionsJson" };
+
+  const variants = parseProductVariants(data.variants);
+  if ("error" in variants) return { error: variants.error, field: "variantsJson" };
+
+  const checked = checkVariantMatrix(options.options, variants.variants);
+  if (checked.error) return { error: checked.error, field: "variantsJson" };
+
+  return { options: options.options, variants: variants.variants };
+}
+
+/**
+ * Convertit les prix saisis en unité mineure.
+ *
+ * Le client n'envoie qu'un texte : la conversion, l'héritage du prix du
+ * produit et les arrondis restent côté serveur.
+ */
+function buildVariantPayload(
+  variants: VariantInput[],
+  productPrice: number,
+  currency: string,
+): { variants: VariantPayload[] } | { error: string } {
+  const payload: VariantPayload[] = [];
+
+  for (const [position, variant] of variants.entries()) {
+    const inherited = variant.price === null || variant.price.trim() === "";
+    const price = inherited ? productPrice : parsePrice(variant.price as string, currency);
+
+    if (price === null) return { error: "productVariantPriceInvalid" };
+
+    payload.push({
+      option_values: variant.option_values,
+      price_amount: price,
+      stock_quantity: Number(variant.stock),
+      sku: variant.sku,
+      barcode: variant.barcode,
+      position,
+    });
+  }
+
+  return { variants: payload };
+}
+
+function variantStockTotal(variants: VariantInput[]): string {
+  return String(variants.reduce((total, variant) => total + Number(variant.stock), 0));
 }
 
 /**
@@ -135,21 +214,25 @@ function readForm(formData: FormData) {
  * Le prix comparé, quand il existe, doit rester supérieur au prix de vente :
  * un prix « barré » plus bas n'aurait aucun sens.
  */
+type PriceResult =
+  | { ok: true; price: number; compareAt: number | null }
+  | { ok: false; error: string };
+
 function validatePrices(
   priceInput: string,
   compareInput: string,
   currency: string,
-): { price?: number; compareAt?: number | null; error?: string } {
+): PriceResult {
   const price = parsePrice(priceInput, currency);
-  if (price === null) return { error: "productPriceInvalid" };
+  if (price === null) return { ok: false, error: "productPriceInvalid" };
 
-  if (compareInput === "") return { price, compareAt: null };
+  if (compareInput === "") return { ok: true, price, compareAt: null };
 
   const compareAt = parsePrice(compareInput, currency);
-  if (compareAt === null) return { error: "productCompareInvalid" };
-  if (compareAt <= price) return { error: "productCompareTooLow" };
+  if (compareAt === null) return { ok: false, error: "productCompareInvalid" };
+  if (compareAt <= price) return { ok: false, error: "productCompareTooLow" };
 
-  return { price, compareAt };
+  return { ok: true, price, compareAt };
 }
 
 /** Crée un produit et sa galerie dans une seule transaction. */
@@ -167,7 +250,17 @@ export async function createProductAction(
     };
   }
 
-  const parsed = productSchemaFor(type).safeParse(readForm(formData));
+  const raw = readForm(formData);
+  const draft = readVariantDraft(type, raw);
+  if ("error" in draft) {
+    return { status: "invalid", fieldErrors: { [draft.field]: draft.error } };
+  }
+
+  // Avec variantes, le stock global est la somme : il est recalculé ici et
+  // jamais repris du champ masqué.
+  const stock = draft.options.length > 0 ? variantStockTotal(draft.variants) : raw.stock;
+
+  const parsed = productSchemaFor(type).safeParse({ ...raw, stock });
 
   if (!parsed.success) {
     return { status: "invalid", fieldErrors: toFieldErrors(parsed.error) };
@@ -181,7 +274,7 @@ export async function createProductAction(
 
   const data = parsed.data as ParsedProduct;
   const prices = validatePrices(data.price, data.compareAtPrice, store.currency);
-  if (prices.error) {
+  if (!prices.ok) {
     return { status: "invalid", fieldErrors: { price: prices.error } };
   }
 
@@ -196,18 +289,25 @@ export async function createProductAction(
     };
   }
 
+  const built = buildVariantPayload(draft.variants, prices.price, store.currency);
+  if ("error" in built) {
+    return { status: "invalid", fieldErrors: { variantsJson: built.error } };
+  }
+
   const { error } = await supabase.rpc("create_product", {
     p_store_id: store.id,
     p_name: data.name,
     p_slug: data.slug,
     p_description: data.description,
     p_price_amount: prices.price,
-    p_compare_at_amount: prices.compareAt ?? null,
+    p_compare_at_amount: prices.compareAt,
     p_status: data.status,
     p_product_type: type,
     p_tags: normalizeTags(data.tags),
     p_video_url: data.videoUrl || null,
     p_image_ids: data.imageIds,
+    p_options: draft.options,
+    p_variants: built.variants,
     ...typeParams(type, data),
   });
 
@@ -235,7 +335,15 @@ export async function updateProductAction(
   if (!existing) return { status: "error", messageKey: "serverError" };
 
   const type = existing.product_type;
-  const parsed = productSchemaFor(type).safeParse(readForm(formData));
+  const raw = readForm(formData);
+  const draft = readVariantDraft(type, raw);
+  if ("error" in draft) {
+    return { status: "invalid", fieldErrors: { [draft.field]: draft.error } };
+  }
+
+  const stock = draft.options.length > 0 ? variantStockTotal(draft.variants) : raw.stock;
+
+  const parsed = productSchemaFor(type).safeParse({ ...raw, stock });
 
   if (!parsed.success) {
     return { status: "invalid", fieldErrors: toFieldErrors(parsed.error) };
@@ -243,7 +351,7 @@ export async function updateProductAction(
 
   const data = parsed.data as ParsedProduct;
   const prices = validatePrices(data.price, data.compareAtPrice, store.currency);
-  if (prices.error) {
+  if (!prices.ok) {
     return { status: "invalid", fieldErrors: { price: prices.error } };
   }
 
@@ -260,17 +368,24 @@ export async function updateProductAction(
 
   const params = typeParams(type, data);
 
+  const built = buildVariantPayload(draft.variants, prices.price, store.currency);
+  if ("error" in built) {
+    return { status: "invalid", fieldErrors: { variantsJson: built.error } };
+  }
+
   const { error } = await supabase.rpc("update_product", {
     p_product_id: existing.id,
     p_name: data.name,
     p_slug: data.slug,
     p_description: data.description,
     p_price_amount: prices.price,
-    p_compare_at_amount: prices.compareAt ?? null,
+    p_compare_at_amount: prices.compareAt,
     p_status: data.status,
     p_tags: normalizeTags(data.tags),
     p_video_url: data.videoUrl || null,
     p_image_ids: data.imageIds,
+    p_options: draft.options,
+    p_variants: built.variants,
     ...params,
   });
 

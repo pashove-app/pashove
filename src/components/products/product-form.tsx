@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { FileUploader, type FileValue } from "@/components/media/file-uploader";
 import { MediaGalleryField, type GalleryItem } from "@/components/products/media-gallery-field";
 import { ShippingCountriesField } from "@/components/products/shipping-countries-field";
+import { VariantsField, type VariantRow } from "@/components/products/variants-field";
 import { FormNotice, SelectField, TextAreaField, TextField } from "@/components/ui/field";
 import { buttonClass, ButtonLink, Icon, icons, Spinner } from "@/components/ui/primitives";
 import { path } from "@/components/ui/types";
@@ -12,7 +13,11 @@ import type { Dictionary } from "@/i18n/get-dictionary";
 import { useFieldErrors } from "@/lib/forms/use-field-errors";
 import { createProductAction, updateProductAction } from "@/lib/products/actions";
 import type { Product } from "@/lib/products/queries";
-import { formatPriceInput, type ProductType } from "@/lib/products/schema";
+import {
+  formatPriceInput,
+  type ProductOption,
+  type ProductType,
+} from "@/lib/products/schema";
 import { INITIAL_PRODUCT_FORM_STATE } from "@/lib/products/types";
 import { slugify } from "@/lib/slug";
 import { cn } from "@/lib/cn";
@@ -69,6 +74,10 @@ export function ProductForm({
   const { corrected, clear } = useFieldErrors(state);
 
   const [name, setName] = useState(product?.name ?? "");
+  const [price, setPrice] = useState(
+    product ? formatPriceInput(product.price_amount, currency) : "",
+  );
+  const [options, setOptions] = useState<ProductOption[]>(product?.options ?? []);
   const [slug, setSlug] = useState(product?.slug ?? "");
   const [slugTouched, setSlugTouched] = useState(Boolean(product));
   const [status, setStatus] = useState<"draft" | "published">(
@@ -77,6 +86,17 @@ export function ProductForm({
   const [location, setLocation] = useState<"online" | "in_person">(
     product?.service_location ?? "online",
   );
+
+  const initialVariants: VariantRow[] = (product?.variants ?? []).map((variant) => ({
+    values: options.map((option) => variant.option_values[option.name] ?? ""),
+    price:
+      variant.price_amount === product?.price_amount
+        ? null
+        : formatPriceInput(variant.price_amount, currency),
+    stock: String(variant.stock_quantity),
+    sku: variant.sku ?? "",
+    barcode: variant.barcode ?? "",
+  }));
 
   const labels = t.dashboard.products;
   const errors = labels.errors as Record<string, string>;
@@ -156,11 +176,12 @@ export function ProductForm({
           dir="ltr"
           inputMode="decimal"
           autoComplete="off"
-          defaultValue={
-            product ? formatPriceInput(product.price_amount, currency) : undefined
-          }
+          value={price}
           error={fieldError("price")}
-          onChange={() => clear("price")}
+          onChange={(event) => {
+            clear("price");
+            setPrice(event.target.value);
+          }}
         />
 
         <TextField
@@ -228,22 +249,48 @@ export function ProductForm({
 
       {type === "physical" ? (
         <div className="space-y-6">
-          <div className="grid gap-6 sm:grid-cols-2">
-            <TextField
-              name="stock"
-              label={labels.stockLabel}
-              help={labels.stockHelp}
-              dir="ltr"
-              inputMode="numeric"
-              defaultValue={
-                product?.stock_quantity === null || product?.stock_quantity === undefined
-                  ? undefined
-                  : String(product.stock_quantity)
-              }
-              error={fieldError("stock")}
-              onChange={() => clear("stock")}
-            />
+          <VariantsField
+            t={t}
+            options={options}
+            onOptionsChange={setOptions}
+            initialRows={initialVariants}
+            productPrice={price}
+            error={fieldError("optionsJson") ?? fieldError("variantsJson")}
+          />
 
+          {options.length === 0 ? (
+            <div className="grid gap-6 sm:grid-cols-2">
+              <TextField
+                name="stock"
+                label={labels.stockLabel}
+                help={labels.stockHelp}
+                dir="ltr"
+                inputMode="numeric"
+                defaultValue={
+                  product?.stock_quantity === null || product?.stock_quantity === undefined
+                    ? undefined
+                    : String(product.stock_quantity)
+                }
+                error={fieldError("stock")}
+                onChange={() => clear("stock")}
+              />
+
+              <TextField
+                name="weight"
+                label={labels.weightLabel}
+                help={labels.weightHelp}
+                dir="ltr"
+                inputMode="numeric"
+                defaultValue={
+                  product?.weight_grams === null || product?.weight_grams === undefined
+                    ? undefined
+                    : String(product.weight_grams)
+                }
+                error={fieldError("weight")}
+                onChange={() => clear("weight")}
+              />
+            </div>
+          ) : (
             <TextField
               name="weight"
               label={labels.weightLabel}
@@ -258,7 +305,7 @@ export function ProductForm({
               error={fieldError("weight")}
               onChange={() => clear("weight")}
             />
-          </div>
+          )}
 
           <div>
             <p className="text-[0.8125rem] font-medium text-body">

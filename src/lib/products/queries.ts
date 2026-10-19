@@ -1,4 +1,4 @@
-import type { ProductType } from "@/lib/products/schema";
+import type { ProductOption, ProductType } from "@/lib/products/schema";
 import { createClient } from "@/lib/supabase/server";
 
 export type Product = {
@@ -23,6 +23,18 @@ export type Product = {
   published_at: string | null;
   created_at: string;
   updated_at: string;
+  /** Options déclarées : Taille, Couleur… (3 maximum). */
+  options: ProductOption[];
+  /** Variantes ordonnées, générées à partir des options. */
+  variants: {
+    id: string;
+    option_values: Record<string, string>;
+    sku: string | null;
+    barcode: string | null;
+    price_amount: number;
+    stock_quantity: number;
+    position: number;
+  }[];
   /** Images ordonnées ; la première est l'image principale. */
   images: { id: string; object_key: string }[];
   /** Raccourci pour la liste. */
@@ -35,12 +47,15 @@ const COLUMNS = [
   "id, name, slug, description, price_amount, compare_at_amount, status",
   "product_type, stock_quantity, weight_grams, duration_minutes, service_location",
   "tags, video_url, length_mm, width_mm, height_mm, shipping_countries",
-  "published_at, created_at, updated_at",
+  "published_at, created_at, updated_at, options",
+  "variants:product_variants(id, option_values, sku, barcode, price_amount, stock_quantity, position)",
   "images:product_images(position, media:media_assets(id, object_key))",
   "digital_file:media_assets!digital_file_id(id, file_name)",
 ].join(", ");
 
-type Row = Omit<Product, "image" | "images" | "digital_file"> & {
+type Row = Omit<Product, "image" | "images" | "digital_file" | "variants"> & {
+  options?: ProductOption[] | null;
+  variants?: Product["variants"] | null;
   images?: { position: number; media: { id: string; object_key: string } | null }[] | null;
   digital_file?: { id: string; file_name: string | null } | null;
 };
@@ -56,6 +71,10 @@ function toProduct(row: Row): Product {
 
   return {
     ...row,
+    options: Array.isArray(row.options) ? row.options : [],
+    variants: [...(row.variants ?? [])].sort(
+      (left, right) => left.position - right.position,
+    ),
     images: media,
     image: media[0] ?? null,
     digital_file: row.digital_file

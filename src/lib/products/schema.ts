@@ -111,6 +111,157 @@ export const serviceProductSchema = z.object({
   }),
 });
 
+/* ------------------------------------------------------------------ *
+ *  Variantes
+ *
+ *  Le client envoie les options et la matrice en JSON. Tout est revalidé
+ *  ici — structure, limites, cohérence — puis à nouveau en base.
+ * ------------------------------------------------------------------ */
+
+export const MAX_PRODUCT_OPTIONS = 3;
+export const MAX_PRODUCT_VARIANTS = 100;
+
+export type ProductOption = { name: string; values: string[] };
+
+export type VariantInput = {
+  option_values: Record<string, string>;
+  /** Unité majeure ; null ou vide = prix hérité du produit. */
+  price: string | null;
+  stock: string;
+  sku: string;
+  barcode: string;
+};
+
+export type VariantPayload = {
+  option_values: Record<string, string>;
+  price_amount: number;
+  stock_quantity: number;
+  sku: string;
+  barcode: string;
+  position: number;
+};
+
+const OPTION_LIMIT = "productOptionsInvalid";
+const VARIANT_LIMIT = "productVariantsInvalid";
+
+const optionSchema = z.object({
+  name: z.string().trim().min(1, OPTION_LIMIT).max(30, OPTION_LIMIT),
+  values: z
+    .array(z.string().trim().min(1, OPTION_LIMIT).max(30, OPTION_LIMIT))
+    .min(1, OPTION_LIMIT)
+    .max(20, OPTION_LIMIT),
+});
+
+const optionsSchema = z
+  .array(optionSchema)
+  .max(MAX_PRODUCT_OPTIONS, "productOptionsTooMany")
+  .superRefine((options, ctx) => {
+    const names = options.map((option) => option.name.toLocaleLowerCase());
+    if (new Set(names).size !== names.length) {
+      ctx.addIssue({ code: "custom", message: "productOptionDuplicate" });
+    }
+    for (const option of options) {
+      const values = option.values.map((value) => value.toLocaleLowerCase());
+      if (new Set(values).size !== values.length) {
+        ctx.addIssue({ code: "custom", message: "productOptionDuplicate" });
+      }
+    }
+  });
+
+const variantPricePattern = /^\d{1,7}(?:[.,]\d{1,2})?$/;
+
+const variantSchema = z.object({
+  option_values: z.record(z.string(), z.string().trim().max(30, VARIANT_LIMIT)),
+  price: z
+    .string()
+    .trim()
+    .refine(
+      (value) => value === "" || variantPricePattern.test(value),
+      "productVariantPriceInvalid",
+    )
+    .nullable(),
+  stock: z.string().trim().regex(/^\d{1,7}$/, "productVariantStockInvalid"),
+  sku: z.string().trim().max(64, VARIANT_LIMIT),
+  barcode: z.string().trim().max(64, VARIANT_LIMIT),
+});
+
+const variantsSchema = z
+  .array(variantSchema)
+  .max(MAX_PRODUCT_VARIANTS, "productVariantsTooMany");
+
+function jsonArray(raw: string): unknown {
+  try {
+    return JSON.parse(raw || "[]");
+  } catch {
+    return null;
+  }
+}
+
+export function parseProductOptions(
+  raw: string,
+): { options: ProductOption[] } | { error: string } {
+  const value = jsonArray(raw);
+  if (value === null) return { error: OPTION_LIMIT };
+
+  const parsed = optionsSchema.safeParse(value);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? OPTION_LIMIT };
+  }
+
+  return { options: parsed.data };
+}
+
+export function parseProductVariants(
+  raw: string,
+): { variants: VariantInput[] } | { error: string } {
+  const value = jsonArray(raw);
+  if (value === null) return { error: VARIANT_LIMIT };
+
+  const parsed = variantsSchema.safeParse(value);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? VARIANT_LIMIT };
+  }
+
+  return { variants: parsed.data };
+}
+
+/** Chaque variante porte exactement les options du produit, sans doublon. */
+export function checkVariantMatrix(
+  options: ProductOption[],
+  variants: VariantInput[],
+): { error?: string } {
+  if (options.length === 0) {
+    return variants.length === 0 ? {} : { error: VARIANT_LIMIT };
+  }
+
+  if (variants.length === 0) return { error: "productVariantsRequired" };
+
+  const names = options.map((option) => option.name);
+  const expected = [...names].sort();
+  const seen = new Set<string>();
+
+  for (const variant of variants) {
+    const keys = Object.keys(variant.option_values).sort();
+    if (keys.length !== expected.length || keys.some((key, i) => key !== expected[i])) {
+      return { error: VARIANT_LIMIT };
+    }
+
+    const combination = names.map((name) => {
+      const value = variant.option_values[name];
+      const allowed = options.find((option) => option.name === name)?.values ?? [];
+      return allowed.includes(value) ? value : null;
+    });
+
+    if (combination.some((value) => value === null)) return { error: VARIANT_LIMIT };
+
+    const signature = JSON.stringify(combination);
+    if (seen.has(signature)) return { error: VARIANT_LIMIT };
+    seen.add(signature);
+  }
+
+  return {};
+}
+
 export function productSchemaFor(type: ProductType) {
   if (type === "physical") return physicalProductSchema;
   if (type === "digital") return digitalProductSchema;
