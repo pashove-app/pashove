@@ -21,6 +21,12 @@ function field(formData: FormData, key: string): string {
   return typeof value === "string" ? value : "";
 }
 
+function list(formData: FormData, key: string): string[] {
+  return formData
+    .getAll(key)
+    .filter((value): value is string => typeof value === "string");
+}
+
 /** Traduit le code d'erreur PostgreSQL en clé de message du dictionnaire. */
 function messageKeyFor(error: { code?: string }): string {
   if (error.code === "23505") return "productSlugTaken";
@@ -34,16 +40,26 @@ type ParsedProduct = {
   slug: string;
   description: string;
   price: string;
+  compareAtPrice: string;
   status: "draft" | "published";
   tags: string;
   videoUrl: string;
-  imageId: string;
+  imageIds: string[];
   stock?: string;
   weight?: string;
+  length?: string;
+  width?: string;
+  height?: string;
+  shippingAll?: "1" | "0";
+  shippingCountries?: string[];
   fileId?: string;
   duration?: string;
   location?: "online" | "in_person";
 };
+
+function toOptionalInt(value: string | undefined): number | null {
+  return value ? Number(value) : null;
+}
 
 /** Champs propres au type, nulls ailleurs : la base exige un jeu cohérent. */
 function typeParams(type: ProductType, data: ParsedProduct) {
@@ -54,6 +70,11 @@ function typeParams(type: ProductType, data: ParsedProduct) {
       p_duration_minutes: null,
       p_service_location: null,
       p_digital_file_id: null,
+      p_length_mm: toOptionalInt(data.length),
+      p_width_mm: toOptionalInt(data.width),
+      p_height_mm: toOptionalInt(data.height),
+      p_shipping_countries:
+        data.shippingAll === "1" ? [] : (data.shippingCountries ?? []),
     };
   }
 
@@ -64,6 +85,10 @@ function typeParams(type: ProductType, data: ParsedProduct) {
       p_duration_minutes: null,
       p_service_location: null,
       p_digital_file_id: data.fileId ?? null,
+      p_length_mm: null,
+      p_width_mm: null,
+      p_height_mm: null,
+      p_shipping_countries: [],
     };
   }
 
@@ -73,6 +98,10 @@ function typeParams(type: ProductType, data: ParsedProduct) {
     p_duration_minutes: Number(data.duration),
     p_service_location: data.location ?? null,
     p_digital_file_id: null,
+    p_length_mm: null,
+    p_width_mm: null,
+    p_height_mm: null,
+    p_shipping_countries: [],
   };
 }
 
@@ -82,12 +111,18 @@ function readForm(formData: FormData) {
     slug: field(formData, "slug"),
     description: field(formData, "description"),
     price: field(formData, "price"),
+    compareAtPrice: field(formData, "compareAtPrice"),
     status: field(formData, "status"),
     tags: field(formData, "tags"),
     videoUrl: field(formData, "videoUrl"),
-    imageId: field(formData, "productMediaId"),
+    imageIds: list(formData, "imageIds"),
     stock: field(formData, "stock"),
     weight: field(formData, "weight"),
+    length: field(formData, "length"),
+    width: field(formData, "width"),
+    height: field(formData, "height"),
+    shippingAll: field(formData, "shippingAll") === "on" ? "1" : "0",
+    shippingCountries: list(formData, "shippingCountry"),
     fileId: field(formData, "digitalFileId"),
     duration: field(formData, "duration"),
     location: field(formData, "serviceLocation"),
@@ -95,11 +130,29 @@ function readForm(formData: FormData) {
 }
 
 /**
- * Crée un produit et son image en une seule transaction.
+ * Valide les prix. Renvoie une erreur de champ, ou les montants convertis.
  *
- * Le type vient de la route et n'est jamais déduit du contenu du formulaire.
- * `create_product()` valide les médias et applique la RLS.
+ * Le prix comparé, quand il existe, doit rester supérieur au prix de vente :
+ * un prix « barré » plus bas n'aurait aucun sens.
  */
+function validatePrices(
+  priceInput: string,
+  compareInput: string,
+  currency: string,
+): { price?: number; compareAt?: number | null; error?: string } {
+  const price = parsePrice(priceInput, currency);
+  if (price === null) return { error: "productPriceInvalid" };
+
+  if (compareInput === "") return { price, compareAt: null };
+
+  const compareAt = parsePrice(compareInput, currency);
+  if (compareAt === null) return { error: "productCompareInvalid" };
+  if (compareAt <= price) return { error: "productCompareTooLow" };
+
+  return { price, compareAt };
+}
+
+/** Crée un produit et sa galerie dans une seule transaction. */
 export async function createProductAction(
   _previous: ProductFormState,
   formData: FormData,
@@ -127,9 +180,20 @@ export async function createProductAction(
   if (!store) return { status: "error", messageKey: "sessionExpired" };
 
   const data = parsed.data as ParsedProduct;
-  const price = parsePrice(data.price, store.currency);
-  if (price === null) {
-    return { status: "invalid", fieldErrors: { price: "productPriceInvalid" } };
+  const prices = validatePrices(data.price, data.compareAtPrice, store.currency);
+  if (prices.error) {
+    return { status: "invalid", fieldErrors: { price: prices.error } };
+  }
+
+  if (
+    type === "physical" &&
+    data.shippingAll !== "1" &&
+    (data.shippingCountries ?? []).length === 0
+  ) {
+    return {
+      status: "invalid",
+      fieldErrors: { shippingCountries: "productCountriesRequired" },
+    };
   }
 
   const { error } = await supabase.rpc("create_product", {
@@ -137,12 +201,13 @@ export async function createProductAction(
     p_name: data.name,
     p_slug: data.slug,
     p_description: data.description,
-    p_price_amount: price,
+    p_price_amount: prices.price,
+    p_compare_at_amount: prices.compareAt ?? null,
     p_status: data.status,
     p_product_type: type,
     p_tags: normalizeTags(data.tags),
     p_video_url: data.videoUrl || null,
-    p_image_ids: [data.imageId],
+    p_image_ids: data.imageIds,
     ...typeParams(type, data),
   });
 
@@ -152,12 +217,7 @@ export async function createProductAction(
   redirect(`/${locale}/app/products?created=1`);
 }
 
-/**
- * Met à jour un produit existant.
- *
- * Le type enregistré fait foi : il n'est pas dans le formulaire. Les médias
- * remplacés sont supprimés du bucket après une mise à jour réussie.
- */
+/** Met à jour un produit existant, galerie comprise. */
 export async function updateProductAction(
   _previous: ProductFormState,
   formData: FormData,
@@ -182,9 +242,20 @@ export async function updateProductAction(
   }
 
   const data = parsed.data as ParsedProduct;
-  const price = parsePrice(data.price, store.currency);
-  if (price === null) {
-    return { status: "invalid", fieldErrors: { price: "productPriceInvalid" } };
+  const prices = validatePrices(data.price, data.compareAtPrice, store.currency);
+  if (prices.error) {
+    return { status: "invalid", fieldErrors: { price: prices.error } };
+  }
+
+  if (
+    type === "physical" &&
+    data.shippingAll !== "1" &&
+    (data.shippingCountries ?? []).length === 0
+  ) {
+    return {
+      status: "invalid",
+      fieldErrors: { shippingCountries: "productCountriesRequired" },
+    };
   }
 
   const params = typeParams(type, data);
@@ -194,19 +265,24 @@ export async function updateProductAction(
     p_name: data.name,
     p_slug: data.slug,
     p_description: data.description,
-    p_price_amount: price,
+    p_price_amount: prices.price,
+    p_compare_at_amount: prices.compareAt ?? null,
     p_status: data.status,
     p_tags: normalizeTags(data.tags),
     p_video_url: data.videoUrl || null,
-    p_image_ids: [data.imageId],
+    p_image_ids: data.imageIds,
     ...params,
   });
 
   if (error) return { status: "error", messageKey: messageKeyFor(error) };
 
-  // Les médias remplacés ne doivent pas rester dans les buckets.
-  if (existing.image && existing.image.id !== data.imageId) {
-    await deleteMediaAsset(supabase, existing.image.id);
+  // Les images retirées de la galerie quittent aussi le bucket.
+  const removedImages = existing.images
+    .map((image) => image.id)
+    .filter((id) => !data.imageIds.includes(id));
+
+  for (const id of removedImages) {
+    await deleteMediaAsset(supabase, id);
   }
 
   const previousFileId = existing.digital_file?.id ?? null;

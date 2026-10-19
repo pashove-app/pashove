@@ -56,7 +56,7 @@ export async function NewProductScreen({
         type={type}
         currency={store.currency}
         storeSlug={store.slug}
-        initialImage={null}
+        initialImages={[]}
         initialFile={null}
       />
     </div>

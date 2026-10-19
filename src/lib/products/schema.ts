@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SUPPORTED_COUNTRY_CODES } from "@/lib/site-content";
 
 /**
  * Règles du produit, partagées par le formulaire et les Server Actions.
@@ -41,6 +42,15 @@ const videoInput = z
 
 const tagsInput = z.string().trim().max(300, "productTagsTooLong");
 
+const compareAtInput = z
+  .string()
+  .trim()
+  .regex(/^\d{1,7}(?:[.,]\d{1,2})?$/, "productCompareInvalid")
+  .or(z.literal(""));
+
+const optionalInteger = (key: string) =>
+  z.string().trim().regex(/^\d{1,7}$/, key).or(z.literal(""));
+
 const integerInput = (key: string) =>
   z.string().trim().min(1, key).regex(/^\d{1,7}$/, key);
 
@@ -62,13 +72,28 @@ const common = {
   status: z.enum(["draft", "published"], { message: "productStatusInvalid" }),
   tags: tagsInput,
   videoUrl: videoInput,
-  imageId: requiredMediaId("productImageRequired"),
+  imageIds: z
+    .array(z.string().regex(UUID_PATTERN, "productImageRequired"))
+    .min(1, "productImageRequired")
+    .max(4, "productImageLimit"),
+  compareAtPrice: compareAtInput,
 };
 
 export const physicalProductSchema = z.object({
   ...common,
   stock: integerInput("productStockInvalid"),
   weight: integerInput("productWeightInvalid"),
+  length: optionalInteger("productDimensionsInvalid"),
+  width: optionalInteger("productDimensionsInvalid"),
+  height: optionalInteger("productDimensionsInvalid"),
+  shippingAll: z.enum(["1", "0"], { message: "productCountriesRequired" }),
+  shippingCountries: z
+    .array(
+      z.enum(SUPPORTED_COUNTRY_CODES as [string, ...string[]], {
+        message: "productCountriesInvalid",
+      }),
+    )
+    .max(20, "productCountriesInvalid"),
 });
 
 export const digitalProductSchema = z.object({

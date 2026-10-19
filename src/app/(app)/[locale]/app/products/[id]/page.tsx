@@ -51,9 +51,10 @@ export default async function EditProductPage({
   const t = await getDictionary(locale);
   const labels = t.dashboard.products;
 
-  const initialImage = product.image
-    ? { id: product.image.id, url: publicUrl(product.image.object_key) }
-    : null;
+  const initialImages = product.images.map((image) => ({
+    id: image.id,
+    url: publicUrl(image.object_key),
+  }));
 
   const initialFile = product.digital_file
     ? { id: product.digital_file.id, name: product.digital_file.name }
@@ -88,7 +89,7 @@ export default async function EditProductPage({
         currency={store.currency}
         storeSlug={store.slug}
         product={product}
-        initialImage={initialImage}
+        initialImages={initialImages}
         initialFile={initialFile}
       />
     </div>

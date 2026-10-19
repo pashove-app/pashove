@@ -2,7 +2,8 @@
 
 import { useActionState, useState } from "react";
 import { FileUploader, type FileValue } from "@/components/media/file-uploader";
-import { MediaUploader, type MediaValue } from "@/components/media/media-uploader";
+import { MediaGalleryField, type GalleryItem } from "@/components/products/media-gallery-field";
+import { ShippingCountriesField } from "@/components/products/shipping-countries-field";
 import { FormNotice, SelectField, TextAreaField, TextField } from "@/components/ui/field";
 import { buttonClass, ButtonLink, Icon, icons, Spinner } from "@/components/ui/primitives";
 import { path } from "@/components/ui/types";
@@ -45,7 +46,7 @@ export function ProductForm({
   currency,
   storeSlug,
   product,
-  initialImage,
+  initialImages,
   initialFile,
 }: {
   t: Dictionary;
@@ -55,7 +56,7 @@ export function ProductForm({
   currency: string;
   storeSlug: string;
   product?: Product;
-  initialImage: MediaValue;
+  initialImages: GalleryItem[];
   initialFile: FileValue;
 }) {
   const isEdit = mode === "edit";
@@ -146,20 +147,39 @@ export function ProductForm({
         onChange={() => clear("description")}
       />
 
-      <TextField
-        name="price"
-        label={labels.priceLabel}
-        help={labels.priceHelp.replace("{currency}", currency)}
-        icon="wallet"
-        dir="ltr"
-        inputMode="decimal"
-        autoComplete="off"
-        defaultValue={
-          product ? formatPriceInput(product.price_amount, currency) : undefined
-        }
-        error={fieldError("price")}
-        onChange={() => clear("price")}
-      />
+      <div className="grid gap-6 sm:grid-cols-2">
+        <TextField
+          name="price"
+          label={labels.priceLabel}
+          help={labels.priceHelp.replace("{currency}", currency)}
+          icon="wallet"
+          dir="ltr"
+          inputMode="decimal"
+          autoComplete="off"
+          defaultValue={
+            product ? formatPriceInput(product.price_amount, currency) : undefined
+          }
+          error={fieldError("price")}
+          onChange={() => clear("price")}
+        />
+
+        <TextField
+          name="compareAtPrice"
+          label={labels.compareAtLabel}
+          help={labels.compareAtHelp}
+          icon="percent"
+          dir="ltr"
+          inputMode="decimal"
+          autoComplete="off"
+          defaultValue={
+            product?.compare_at_amount
+              ? formatPriceInput(product.compare_at_amount, currency)
+              : undefined
+          }
+          error={fieldError("compareAtPrice")}
+          onChange={() => clear("compareAtPrice")}
+        />
+      </div>
 
       <TextField
         name="tags"
@@ -183,60 +203,121 @@ export function ProductForm({
       />
 
       <div>
-        <MediaUploader
-          name="productMediaId"
-          kind="product"
+        <MediaGalleryField
+          name="imageIds"
           label={labels.imageLabel}
           help={labels.imageHelp}
-          initial={initialImage}
+          initial={initialImages}
           labels={{
-            choose: t.settings.uploadChoose,
-            replace: t.settings.uploadReplace,
+            add: labels.galleryAdd,
             remove: t.settings.uploadRemove,
-            drop: t.settings.uploadDrop,
+            makePrimary: labels.galleryMakePrimary,
+            primary: labels.galleryPrimary,
             uploading: t.settings.uploadUploading,
             errorType: t.settings.uploadErrorType,
             errorSize: t.settings.uploadErrorSize,
             errorUpload: t.settings.uploadErrorUpload,
           }}
         />
-        {fieldError("imageId") ? (
+        {fieldError("imageIds") ? (
           <p role="alert" className="mt-2 text-[0.75rem] text-red-500 dark:text-red-400">
-            {fieldError("imageId")}
+            {fieldError("imageIds")}
           </p>
         ) : null}
       </div>
 
       {type === "physical" ? (
-        <div className="grid gap-6 sm:grid-cols-2">
-          <TextField
-            name="stock"
-            label={labels.stockLabel}
-            help={labels.stockHelp}
-            dir="ltr"
-            inputMode="numeric"
-            defaultValue={
-              product?.stock_quantity === null || product?.stock_quantity === undefined
-                ? undefined
-                : String(product.stock_quantity)
-            }
-            error={fieldError("stock")}
-            onChange={() => clear("stock")}
-          />
+        <div className="space-y-6">
+          <div className="grid gap-6 sm:grid-cols-2">
+            <TextField
+              name="stock"
+              label={labels.stockLabel}
+              help={labels.stockHelp}
+              dir="ltr"
+              inputMode="numeric"
+              defaultValue={
+                product?.stock_quantity === null || product?.stock_quantity === undefined
+                  ? undefined
+                  : String(product.stock_quantity)
+              }
+              error={fieldError("stock")}
+              onChange={() => clear("stock")}
+            />
 
-          <TextField
-            name="weight"
-            label={labels.weightLabel}
-            help={labels.weightHelp}
-            dir="ltr"
-            inputMode="numeric"
-            defaultValue={
-              product?.weight_grams === null || product?.weight_grams === undefined
-                ? undefined
-                : String(product.weight_grams)
-            }
-            error={fieldError("weight")}
-            onChange={() => clear("weight")}
+            <TextField
+              name="weight"
+              label={labels.weightLabel}
+              help={labels.weightHelp}
+              dir="ltr"
+              inputMode="numeric"
+              defaultValue={
+                product?.weight_grams === null || product?.weight_grams === undefined
+                  ? undefined
+                  : String(product.weight_grams)
+              }
+              error={fieldError("weight")}
+              onChange={() => clear("weight")}
+            />
+          </div>
+
+          <div>
+            <p className="text-[0.8125rem] font-medium text-body">
+              {labels.dimensionsLabel}
+            </p>
+            <p className="mt-0.5 text-[0.75rem] text-subtle">
+              {labels.dimensionsHelp}
+            </p>
+
+            <div className="mt-2 grid gap-3 sm:grid-cols-3">
+              <TextField
+                name="length"
+                label={labels.lengthLabel}
+                dir="ltr"
+                inputMode="numeric"
+                defaultValue={
+                  product?.length_mm === null || product?.length_mm === undefined
+                    ? undefined
+                    : String(product.length_mm)
+                }
+                error={fieldError("length")}
+                onChange={() => clear("length")}
+              />
+              <TextField
+                name="width"
+                label={labels.widthLabel}
+                dir="ltr"
+                inputMode="numeric"
+                defaultValue={
+                  product?.width_mm === null || product?.width_mm === undefined
+                    ? undefined
+                    : String(product.width_mm)
+                }
+                error={fieldError("width")}
+                onChange={() => clear("width")}
+              />
+              <TextField
+                name="height"
+                label={labels.heightLabel}
+                dir="ltr"
+                inputMode="numeric"
+                defaultValue={
+                  product?.height_mm === null || product?.height_mm === undefined
+                    ? undefined
+                    : String(product.height_mm)
+                }
+                error={fieldError("height")}
+                onChange={() => clear("height")}
+              />
+            </div>
+          </div>
+
+          <ShippingCountriesField
+            t={t}
+            label={labels.countriesLabel}
+            help={labels.countriesHelp}
+            allLabel={labels.countriesAll}
+            initial={product?.shipping_countries ?? []}
+            error={fieldError("shippingCountries")}
           />
         </div>
       ) : null}
