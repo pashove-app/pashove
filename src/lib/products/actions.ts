@@ -192,6 +192,7 @@ function buildVariantPayload(
     if (price === null) return { error: "productVariantPriceInvalid" };
 
     payload.push({
+      id: variant.id,
       option_values: variant.option_values,
       price_amount: price,
       stock_quantity: Number(variant.stock),

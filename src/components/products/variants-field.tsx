@@ -11,6 +11,8 @@ import {
 } from "@/lib/products/schema";
 
 export type VariantRow = {
+  /** Identifiant existant, conservé d'un enregistrement à l'autre. */
+  id: string | null;
   values: string[];
   /** null = prix hérité du produit. */
   price: string | null;
@@ -21,7 +23,7 @@ export type VariantRow = {
 
 type RowState = Omit<VariantRow, "values">;
 
-const EMPTY_ROW: RowState = { price: null, stock: "0", sku: "", barcode: "" };
+const EMPTY_ROW: RowState = { id: null, price: null, stock: "0", sku: "", barcode: "" };
 const SEPARATOR = "\u001f";
 
 const keyOf = (values: string[]) => values.join(SEPARATOR);
@@ -80,6 +82,7 @@ export function VariantsField({
     const initial: Record<string, RowState> = {};
     for (const row of initialRows) {
       initial[keyOf(row.values)] = {
+        id: row.id,
         price: row.price,
         stock: row.stock,
         sku: row.sku,
@@ -113,6 +116,7 @@ export function VariantsField({
         const row = rows[keyOf(values)] ?? EMPTY_ROW;
 
         return {
+          id: row.id,
           option_values: Object.fromEntries(
             options.map((option, index) => [option.name.trim(), values[index]]),
           ),

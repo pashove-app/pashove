@@ -88,6 +88,7 @@ export function ProductForm({
   );
 
   const initialVariants: VariantRow[] = (product?.variants ?? []).map((variant) => ({
+    id: variant.id,
     values: options.map((option) => variant.option_values[option.name] ?? ""),
     price:
       variant.price_amount === product?.price_amount

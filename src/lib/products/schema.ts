@@ -124,6 +124,8 @@ export const MAX_PRODUCT_VARIANTS = 100;
 export type ProductOption = { name: string; values: string[] };
 
 export type VariantInput = {
+  /** Identifiant existant ; null pour une nouvelle combinaison. */
+  id: string | null;
   option_values: Record<string, string>;
   /** Unité majeure ; null ou vide = prix hérité du produit. */
   price: string | null;
@@ -133,6 +135,7 @@ export type VariantInput = {
 };
 
 export type VariantPayload = {
+  id: string | null;
   option_values: Record<string, string>;
   price_amount: number;
   stock_quantity: number;
@@ -171,6 +174,12 @@ const optionsSchema = z
 const variantPricePattern = /^\d{1,7}(?:[.,]\d{1,2})?$/;
 
 const variantSchema = z.object({
+  id: z
+    .string()
+    .trim()
+    .regex(UUID_PATTERN, VARIANT_LIMIT)
+    .nullish()
+    .transform((value) => value ?? null),
   option_values: z.record(z.string(), z.string().trim().max(30, VARIANT_LIMIT)),
   price: z
     .string()
