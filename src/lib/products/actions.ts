@@ -410,3 +410,73 @@ export async function updateProductAction(
   revalidatePath("/", "layout");
   redirect(`/${locale}/app/products?updated=1`);
 }
+
+/** Bascule un produit entre brouillon et publié depuis la liste. */
+export async function toggleProductStatusAction(formData: FormData): Promise<void> {
+  const locale = field(formData, "locale") || "fr";
+  const productId = field(formData, "productId");
+
+  if (!isSupabaseConfigured() || !productId) return;
+
+  const supabase = await createClient();
+  const store = await currentStore();
+  if (!store) redirect(`/${locale}/auth/login`);
+
+  const product = await getProduct(productId, store.id);
+  if (!product) return;
+
+  const status = product.status === "published" ? "draft" : "published";
+
+  await supabase
+    .from("products")
+    .update({
+      status,
+      published_at:
+        status === "published"
+          ? (product.published_at ?? new Date().toISOString())
+          : product.published_at,
+    })
+    .eq("id", product.id)
+    .eq("store_id", store.id);
+
+  revalidatePath("/", "layout");
+}
+
+/**
+ * Supprime un produit, ses variantes et ses médias.
+ *
+ * Le produit part d'abord (les variantes et la galerie tombent en cascade),
+ * puis les objets du bucket sont retirés à partir des identifiants relevés
+ * avant la suppression.
+ */
+export async function deleteProductAction(formData: FormData): Promise<void> {
+  const locale = field(formData, "locale") || "fr";
+  const productId = field(formData, "productId");
+
+  if (!isSupabaseConfigured() || !productId) return;
+
+  const supabase = await createClient();
+  const store = await currentStore();
+  if (!store) redirect(`/${locale}/auth/login`);
+
+  const product = await getProduct(productId, store.id);
+  if (!product) return;
+
+  const mediaIds = product.images.map((image) => image.id);
+  if (product.digital_file) mediaIds.push(product.digital_file.id);
+
+  const { error } = await supabase
+    .from("products")
+    .delete()
+    .eq("id", product.id)
+    .eq("store_id", store.id);
+
+  if (error) return;
+
+  for (const id of mediaIds) {
+    await deleteMediaAsset(supabase, id);
+  }
+
+  revalidatePath("/", "layout");
+  redirect(`/${locale}/app/products?deleted=1`);
+}

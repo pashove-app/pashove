@@ -53,6 +53,19 @@ const COLUMNS = [
   "digital_file:media_assets!digital_file_id(id, file_name)",
 ].join(", ");
 
+/**
+ * Colonnes de la liste : tout sauf les variantes, potentiellement nombreuses
+ * et inutiles au tableau. L'édition charge le jeu complet.
+ */
+const LIST_COLUMNS = [
+  "id, name, slug, description, price_amount, compare_at_amount, status",
+  "product_type, stock_quantity, weight_grams, duration_minutes, service_location",
+  "tags, video_url, length_mm, width_mm, height_mm, shipping_countries",
+  "published_at, created_at, updated_at, options",
+  "images:product_images(position, media:media_assets(id, object_key))",
+  "digital_file:media_assets!digital_file_id(id, file_name)",
+].join(", ");
+
 type Row = Omit<Product, "image" | "images" | "digital_file" | "variants"> & {
   options?: ProductOption[] | null;
   variants?: Product["variants"] | null;
@@ -83,22 +96,91 @@ function toProduct(row: Row): Product {
   };
 }
 
+export type ProductStatusFilter = "all" | "published" | "draft" | "out_of_stock";
+
+export type ProductFilters = {
+  q?: string;
+  status?: ProductStatusFilter;
+  tag?: string;
+};
+
 /**
  * Les produits d'une boutique, du plus récent au plus ancien.
  *
  * Le filtre `store_id` est indispensable : la politique publique laisse aussi
  * voir les produits publiés des autres boutiques à un utilisateur connecté.
  */
-export async function listProducts(storeId: string): Promise<Product[]> {
+export async function listProducts(
+  storeId: string,
+  filters: ProductFilters = {},
+): Promise<Product[]> {
   const supabase = await createClient();
 
-  const { data } = await supabase
+  let query = supabase
     .from("products")
-    .select(COLUMNS)
-    .eq("store_id", storeId)
-    .order("created_at", { ascending: false });
+    .select(LIST_COLUMNS)
+    .eq("store_id", storeId);
+
+  const search = filters.q?.trim().slice(0, 80);
+  if (search) {
+    // Les jokers LIKE saisis par le marchand restent des caractères.
+    const escaped = search.replace(/[\\%_]/g, (match) => `\\${match}`);
+    query = query.ilike("name", `%${escaped}%`);
+  }
+
+  if (filters.status === "published") query = query.eq("status", "published");
+  if (filters.status === "draft") query = query.eq("status", "draft");
+  if (filters.status === "out_of_stock") {
+    query = query.eq("product_type", "physical").lte("stock_quantity", 0);
+  }
+
+  if (filters.tag) query = query.contains("tags", [filters.tag]);
+
+  const { data } = await query.order("created_at", { ascending: false });
 
   return ((data ?? []) as unknown as Row[]).map(toProduct);
+}
+
+export type ProductCounts = {
+  all: number;
+  published: number;
+  draft: number;
+  outOfStock: number;
+};
+
+/** Compteurs des onglets de la liste. */
+export async function productCounts(storeId: string): Promise<ProductCounts> {
+  const supabase = await createClient();
+
+  const [all, published, draft, outOfStock] = await Promise.all([
+    supabase
+      .from("products")
+      .select("id", { count: "exact", head: true })
+      .eq("store_id", storeId),
+    supabase
+      .from("products")
+      .select("id", { count: "exact", head: true })
+      .eq("store_id", storeId)
+      .eq("status", "published"),
+    supabase
+      .from("products")
+      .select("id", { count: "exact", head: true })
+      .eq("store_id", storeId)
+      .eq("status", "draft"),
+    supabase
+      .from("products")
+      .select("id", { count: "exact", head: true })
+      .eq("store_id", storeId)
+      .eq("product_type", "physical")
+      .lte("stock_quantity", 0),
+  ]);
+
+  return {
+    all: all.count ?? 0,
+    published: published.count ?? 0,
+    draft: draft.count ?? 0,
+    outOfStock: outOfStock.count ?? 0,
+  };
 }
 
 /** Un produit précis, à condition qu'il appartienne à la boutique. */
