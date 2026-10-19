@@ -1169,16 +1169,37 @@ const fr = {
 
   dashboard: {
     nav: {
-      home: "Accueil",
+      home: "Tableau de bord",
       orders: "Commandes",
       products: "Produits",
       customers: "Clients",
-      growth: "Croissance",
+      marketing: "Marketing",
       discounts: "Réductions",
-      content: "Contenu",
-      analytics: "Analyses",
       onlineStore: "Boutique en ligne",
+      salesChannels: "Canaux de vente",
+      partners: "Partenaires",
+      gifts: "Cadeaux",
+      analytics: "Analyses",
+      finance: "Finance",
       settings: "Paramètres",
+      apps: "Applications",
+      support: "Support",
+    },
+    navGroups: {
+      store: "Boutique",
+      insight: "Pilotage",
+    },
+    sidebar: {
+      profileCta: "Voir mon profil",
+      planTitle: "Version gratuite",
+      planText: "10 % par vente",
+      collapse: "Réduire le menu",
+      expand: "Déployer le menu",
+    },
+    bottomNav: {
+      home: "Accueil",
+      sales: "Ventes",
+      menu: "Menu",
     },
     topbar: {
       search: "Rechercher",

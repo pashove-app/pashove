@@ -16,8 +16,8 @@ export default async function Page({
     <UnderConstruction
       t={t}
       locale={locale}
-      section={t.dashboard.nav.growth}
-      icon="bolt"
+      section={t.dashboard.nav.support}
+      icon="chat"
     />
   );
 }

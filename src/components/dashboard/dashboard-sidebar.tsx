@@ -1,14 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { PashoveLogo } from "@/components/brand/pashove-logo";
-import {
-  NAV_MAIN,
-  NAV_SETTINGS,
-  NAV_STORE,
-  type NavItem,
-} from "@/components/dashboard/nav";
+import { DashboardNavList } from "@/components/dashboard/dashboard-nav";
+import { SidebarPlanCard } from "@/components/dashboard/sidebar-plan-card";
+import { SidebarProfileCard } from "@/components/dashboard/sidebar-profile-card";
+import type { Merchant } from "@/components/dashboard/types";
 import { Icon, icons } from "@/components/ui/primitives";
 import { path } from "@/components/ui/types";
 import type { Locale } from "@/i18n/config";
@@ -16,97 +13,79 @@ import type { Dictionary } from "@/i18n/get-dictionary";
 import { cn } from "@/lib/cn";
 
 /**
- * Navigation marchande.
+ * Navigation desktop, sur une surface de marque.
  *
- * Fixe à partir de `lg`, tiroir superposé en dessous. L'élément actif se
- * déduit du chemin réel : aucun état à synchroniser.
+ * Le bleu nuit reste identique dans les deux thèmes : c'est l'ancre visuelle de
+ * l'espace marchand, pas une surface d'interface qui doit suivre le mode clair.
+ * Repliable en colonne d'icônes ; le choix est mémorisé côté serveur.
  */
 export function DashboardSidebar({
   t,
   locale,
-  open,
-  onClose,
+  merchant,
+  collapsed,
+  onToggle,
 }: {
   t: Dictionary;
   locale: Locale;
-  open: boolean;
-  onClose: () => void;
+  merchant: Merchant;
+  collapsed: boolean;
+  onToggle: () => void;
 }) {
-  const pathname = usePathname();
-
-  function isActive(href: string) {
-    const target = path(locale, href);
-    return href === "/app"
-      ? pathname === target
-      : pathname === target || pathname.startsWith(`${target}/`);
-  }
-
-  function renderItem(item: NavItem) {
-    return (
-      <li key={item.key}>
-        <Link
-          href={path(locale, item.href)}
-          onClick={onClose}
-          aria-current={isActive(item.href) ? "page" : undefined}
-          className={cn(
-            "flex items-center gap-3 rounded-lg px-3 py-2.5 text-[0.8125rem] transition-colors",
-            isActive(item.href)
-              ? "bg-surface font-medium text-fg shadow-[0_1px_2px_rgba(0,0,0,0.22)]"
-              : "text-muted hover:bg-hairline hover:text-fg",
-          )}
-        >
-          <Icon
-            path={icons[item.icon]}
-            className="h-[1.125rem] w-[1.125rem] shrink-0"
-            strokeWidth={1.8}
-          />
-          <span className="truncate">{t.dashboard.nav[item.key]}</span>
-        </Link>
-      </li>
-    );
-  }
-
   return (
-    <>
-      {open ? (
-        <div
-          role="presentation"
-          onClick={onClose}
-          className="fixed inset-0 z-30 bg-black/50 lg:hidden"
-        />
-      ) : null}
-
-      <aside
+    <aside
+      className={cn(
+        "sticky top-0 hidden h-dvh shrink-0 flex-col border-e border-white/10 bg-[#0a1330] transition-[width] duration-200 lg:flex",
+        collapsed ? "w-[4.75rem]" : "w-[16.5rem]",
+      )}
+    >
+      <div
         className={cn(
-          "fixed inset-y-0 start-0 z-40 flex w-72 flex-col border-e border-border bg-bg-soft transition-transform duration-200",
-          "lg:sticky lg:top-16 lg:z-0 lg:h-[calc(100dvh-4rem)] lg:w-64 lg:translate-x-0",
-          open
-            ? "translate-x-0"
-            : "max-lg:-translate-x-full max-lg:rtl:translate-x-full",
+          "flex items-center px-3 pt-3",
+          collapsed ? "justify-center" : "justify-between",
         )}
       >
-        <div className="flex items-center justify-between px-4 py-4 lg:hidden">
-          <PashoveLogo />
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={t.dashboard.topbar.close}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted transition-colors hover:bg-hairline hover:text-fg"
-          >
-            <Icon path={icons.close} className="h-5 w-5" strokeWidth={1.9} />
-          </button>
-        </div>
+        {collapsed ? null : (
+          <Link href={path(locale, "/app")} className="ps-1">
+            <PashoveLogo className="text-white" />
+          </Link>
+        )}
 
-        <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 pb-4 pt-3 lg:pt-5">
-          <ul className="space-y-0.5">{NAV_MAIN.map(renderItem)}</ul>
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-label={
+            collapsed ? t.dashboard.sidebar.expand : t.dashboard.sidebar.collapse
+          }
+          title={collapsed ? t.dashboard.sidebar.expand : t.dashboard.sidebar.collapse}
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 text-white/60 transition-colors hover:bg-white/[0.08] hover:text-white"
+        >
+          <Icon
+            path={icons.arrowRight}
+            className={cn(
+              "h-4 w-4",
+              collapsed ? "rtl:rotate-180" : "rotate-180 rtl:rotate-0",
+            )}
+          />
+        </button>
+      </div>
 
-          <div className="my-3 border-t border-border" />
+      <div className="px-3 pt-4">
+        <SidebarProfileCard
+          t={t}
+          locale={locale}
+          merchant={merchant}
+          collapsed={collapsed}
+        />
+      </div>
 
-          <ul className="space-y-0.5">{renderItem(NAV_STORE)}</ul>
+      <div className="mt-3 min-h-0 flex-1 overflow-y-auto px-3 pb-2">
+        <DashboardNavList t={t} locale={locale} collapsed={collapsed} />
+      </div>
 
-          <ul className="mt-auto space-y-0.5 pt-6">{renderItem(NAV_SETTINGS)}</ul>
-        </nav>
-      </aside>
-    </>
+      <div className="px-3 pb-4">
+        <SidebarPlanCard t={t} collapsed={collapsed} />
+      </div>
+    </aside>
   );
 }

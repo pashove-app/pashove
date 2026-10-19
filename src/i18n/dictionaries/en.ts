@@ -1119,16 +1119,37 @@ const en: Dictionary = {
 
   dashboard: {
     nav: {
-      home: "Home",
+      home: "Dashboard",
       orders: "Orders",
       products: "Products",
       customers: "Customers",
-      growth: "Growth",
+      marketing: "Marketing",
       discounts: "Discounts",
-      content: "Content",
-      analytics: "Analytics",
       onlineStore: "Online store",
+      salesChannels: "Sales channels",
+      partners: "Partners",
+      gifts: "Gifts",
+      analytics: "Analytics",
+      finance: "Finance",
       settings: "Settings",
+      apps: "Apps",
+      support: "Support",
+    },
+    navGroups: {
+      store: "Store",
+      insight: "Insight",
+    },
+    sidebar: {
+      profileCta: "View my profile",
+      planTitle: "Free plan",
+      planText: "10% per sale",
+      collapse: "Collapse menu",
+      expand: "Expand menu",
+    },
+    bottomNav: {
+      home: "Home",
+      sales: "Sales",
+      menu: "Menu",
     },
     topbar: {
       search: "Search",

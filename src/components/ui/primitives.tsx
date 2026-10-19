@@ -317,6 +317,14 @@ export const icons = {
   check: <path d="m4.5 12.5 5 5 10-11" />,
   bolt: <path d="M13.5 2 4 13.5h6L10.5 22 20 10.5h-6L13.5 2Z" />,
   menu: <path d="M4 7h16M4 12h16M4 17h16" />,
+  grid: (
+    <>
+      <rect x="4" y="4" width="6.5" height="6.5" rx="1.4" />
+      <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.4" />
+      <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.4" />
+      <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.4" />
+    </>
+  ),
   close: <path d="m6 6 12 12M18 6 6 18" />,
   home: (
     <>

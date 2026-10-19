@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
@@ -51,14 +52,18 @@ export default async function DashboardLayout({
   const profile = await readProfile();
   const t = await getDictionary(locale);
 
+  // Le repli de la sidebar est un choix d'affichage, pas une donnée métier :
+  // un cookie suffit, et le serveur le connaît dès le premier rendu — donc pas
+  // de saut visuel à l'hydratation.
+  const collapsed =
+    (await cookies()).get("pashove-sidebar")?.value === "1";
+
   return (
     <DashboardShell
       t={t}
       locale={locale}
-      merchant={{
-        name: profile?.full_name?.trim() || user.email || "Pashove",
-        storeName: store.name,
-      }}
+      merchant={{ name: profile?.full_name?.trim() || user.email || "Pashove" }}
+      defaultCollapsed={collapsed}
     >
       {children}
     </DashboardShell>

@@ -1,22 +1,27 @@
 import type { IconKey } from "@/components/ui/primitives";
 
 /**
- * Source unique de la navigation marchande.
+ * Source unique de la navigation marchande — section 200 du plan directeur.
  *
- * La sidebar et la palette de commandes lisent la même liste : une section
- * ajoutée ici apparaît aux deux endroits, sans risque d'oubli.
+ * La sidebar, la feuille mobile et la palette de commandes lisent la même
+ * liste : une section ajoutée ici apparaît aux trois endroits.
  */
 export type NavKey =
   | "home"
   | "orders"
   | "products"
   | "customers"
-  | "growth"
+  | "marketing"
   | "discounts"
-  | "content"
-  | "analytics"
   | "onlineStore"
-  | "settings";
+  | "salesChannels"
+  | "partners"
+  | "gifts"
+  | "analytics"
+  | "finance"
+  | "settings"
+  | "apps"
+  | "support";
 
 export type NavItem = {
   key: NavKey;
@@ -25,27 +30,57 @@ export type NavItem = {
   icon: IconKey;
 };
 
-export const NAV_MAIN: NavItem[] = [
-  { key: "home", href: "/app", icon: "home" },
-  { key: "orders", href: "/app/orders", icon: "box" },
-  { key: "products", href: "/app/products", icon: "tag" },
-  { key: "customers", href: "/app/customers", icon: "users" },
-  { key: "growth", href: "/app/growth", icon: "bolt" },
-  { key: "discounts", href: "/app/discounts", icon: "percent" },
-  { key: "content", href: "/app/content", icon: "chat" },
-  { key: "analytics", href: "/app/analytics", icon: "chart" },
+export type NavGroup = {
+  /** Clé de libellé ; absente pour le premier groupe, qui n'en a pas besoin. */
+  labelKey?: "store" | "insight";
+  items: NavItem[];
+};
+
+export const NAV_GROUPS: NavGroup[] = [
+  {
+    items: [
+      { key: "home", href: "/app", icon: "home" },
+      { key: "orders", href: "/app/orders", icon: "box" },
+      { key: "products", href: "/app/products", icon: "tag" },
+      { key: "customers", href: "/app/customers", icon: "users" },
+      { key: "marketing", href: "/app/marketing", icon: "bolt" },
+      { key: "discounts", href: "/app/discounts", icon: "percent" },
+    ],
+  },
+  {
+    labelKey: "store",
+    items: [
+      { key: "onlineStore", href: "/app/online-store", icon: "store" },
+      { key: "salesChannels", href: "/app/sales-channels", icon: "globe" },
+      { key: "partners", href: "/app/partners", icon: "route" },
+      { key: "gifts", href: "/app/gifts", icon: "gift" },
+    ],
+  },
+  {
+    labelKey: "insight",
+    items: [
+      { key: "analytics", href: "/app/analytics", icon: "chart" },
+      { key: "finance", href: "/app/finance", icon: "wallet" },
+    ],
+  },
 ];
 
-export const NAV_STORE: NavItem = {
-  key: "onlineStore",
-  href: "/app/online-store",
-  icon: "store",
-};
+/** Réglages et services : rendus en bas de la navigation, après un trait. */
+export const NAV_SYSTEM: NavItem[] = [
+  { key: "settings", href: "/app/settings", icon: "settings" },
+  { key: "apps", href: "/app/apps", icon: "grid" },
+  { key: "support", href: "/app/support", icon: "chat" },
+];
 
-export const NAV_SETTINGS: NavItem = {
-  key: "settings",
-  href: "/app/settings",
-  icon: "settings",
-};
+export const NAV_ALL: NavItem[] = [
+  ...NAV_GROUPS.flatMap((group) => group.items),
+  ...NAV_SYSTEM,
+];
 
-export const NAV_ALL: NavItem[] = [...NAV_MAIN, NAV_STORE, NAV_SETTINGS];
+/** Barre mobile. Le cinquième emplacement est le bouton « Menu ». */
+export const BOTTOM_NAV: NavItem[] = [
+  { key: "home", href: "/app", icon: "home" },
+  { key: "products", href: "/app/products", icon: "tag" },
+  { key: "orders", href: "/app/orders", icon: "box" },
+  { key: "customers", href: "/app/customers", icon: "users" },
+];
