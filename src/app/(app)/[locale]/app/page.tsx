@@ -8,6 +8,7 @@ import { Icon, icons } from "@/components/ui/primitives";
 import { LOCALE_META, resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { formatMoney } from "@/lib/money";
+import { countProducts } from "@/lib/products/queries";
 import { readProfile } from "@/lib/profile/queries";
 import { currentStore } from "@/lib/stores/queries";
 import { createClient } from "@/lib/supabase/server";
@@ -60,6 +61,7 @@ export default async function DashboardHomePage({
     "—";
 
   const revenue = formatMoney(0, store.currency, LOCALE_META[locale].tag);
+  const productsCount = await countProducts();
 
   return (
     <div className="mx-auto w-full max-w-5xl">
@@ -87,7 +89,7 @@ export default async function DashboardHomePage({
       <WelcomeBanner t={t} locale={locale} firstName={firstName} />
 
       <div className="mt-5">
-        <KpiGrid t={t} locale={locale} revenue={revenue} />
+        <KpiGrid t={t} locale={locale} revenue={revenue} products={String(productsCount)} />
       </div>
 
       <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">

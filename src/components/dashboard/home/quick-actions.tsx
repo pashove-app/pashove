@@ -25,7 +25,7 @@ export function QuickActions({
           label={t.dashboard.home.addCustomer}
         />
         <ActionLink
-          href={path(locale, "/app/products")}
+          href={path(locale, "/app/products/new")}
           icon="plus"
           label={t.dashboard.home.newProduct}
         />

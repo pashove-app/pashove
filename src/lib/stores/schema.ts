@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { SUPPORTED_COUNTRY_CODES } from "@/lib/site-content";
+import { slugify as sharedSlugify } from "@/lib/slug";
 
 /**
  * Règles de la boutique, partagées par le formulaire et la Server Action.
@@ -118,14 +119,7 @@ export const SLUG_MAX = 30;
  * dicter au téléphone sans hésitation.
  */
 export function slugify(value: string): string {
-  return value
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+/, "")
-    .slice(0, SLUG_MAX)
-    .replace(/-+$/, "");
+  return sharedSlugify(value, SLUG_MAX);
 }
 
 /** Domaine public des boutiques, tant que le sous-domaine n'est pas branché. */

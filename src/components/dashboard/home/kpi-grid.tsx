@@ -14,11 +14,14 @@ export function KpiGrid({
   t,
   locale,
   revenue,
+  products,
 }: {
   t: Dictionary;
   locale: Locale;
   /** Montant déjà mis en forme sur le serveur. */
   revenue: string;
+  /** Nombre réel de produits de la boutique. */
+  products: string;
 }) {
   const items: {
     key: "revenue" | "orders" | "customers" | "products";
@@ -29,7 +32,7 @@ export function KpiGrid({
     { key: "revenue", href: "/app/finance", icon: "wallet", value: revenue },
     { key: "orders", href: "/app/orders", icon: "box", value: "0" },
     { key: "customers", href: "/app/customers", icon: "users", value: "0" },
-    { key: "products", href: "/app/products", icon: "tag", value: "0" },
+    { key: "products", href: "/app/products", icon: "tag", value: products },
   ];
 
   return (
