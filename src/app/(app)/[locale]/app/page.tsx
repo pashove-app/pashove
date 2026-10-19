@@ -1,24 +1,37 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { ButtonLink, Icon, icons } from "@/components/ui/primitives";
-import { path } from "@/components/ui/types";
-import { resolveLocale } from "@/i18n/config";
-import { getDictionary, type Dictionary } from "@/i18n/get-dictionary";
+import { KpiGrid } from "@/components/dashboard/home/kpi-grid";
+import { QuickActions } from "@/components/dashboard/home/quick-actions";
+import { RevenuePanel } from "@/components/dashboard/home/revenue-panel";
+import { WelcomeBanner } from "@/components/dashboard/home/welcome-banner";
+import { Icon, icons } from "@/components/ui/primitives";
+import { LOCALE_META, resolveLocale } from "@/i18n/config";
+import { getDictionary } from "@/i18n/get-dictionary";
+import { formatMoney } from "@/lib/money";
+import { readProfile } from "@/lib/profile/queries";
 import { currentStore } from "@/lib/stores/queries";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata: Metadata = {
-  title: "Espace marchand",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale: raw } = await params;
+  const locale = resolveLocale(raw);
+  const t = await getDictionary(locale);
+
+  return { title: t.dashboard.nav.home };
+}
 
 /**
  * Accueil du dashboard.
  *
- * En attendant les cartes d'action du prochain lot, il résume la boutique et
- * mène aux deux écrans réellement disponibles : les réglages et la sécurité.
+ * Le bandeau, quatre chiffres, le panneau des revenus et les raccourcis. Les
+ * valeurs sont réelles : sans commandes ni produits, elles valent zéro. Le
+ * graphique le dit au lieu de simuler une courbe.
  */
-export default async function WorkspacePage({
+export default async function DashboardHomePage({
   params,
   searchParams,
 }: {
@@ -32,6 +45,8 @@ export default async function WorkspacePage({
   const store = await currentStore();
   if (!store) redirect(`/${locale}/onboarding/store`);
 
+  const profile = await readProfile();
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -39,12 +54,19 @@ export default async function WorkspacePage({
 
   const t = await getDictionary(locale);
 
+  const firstName =
+    (profile?.full_name ?? "").trim().split(/\s+/)[0] ||
+    user?.email?.split("@")[0] ||
+    "—";
+
+  const revenue = formatMoney(0, store.currency, LOCALE_META[locale].tag);
+
   return (
-    <div className="mx-auto w-full max-w-4xl">
+    <div className="mx-auto w-full max-w-5xl">
       {published ? (
         <div
           role="status"
-          className="mb-8 flex animate-rise items-start gap-3 rounded-2xl border border-emerald-400/25 bg-emerald-400/[0.07] p-4 motion-reduce:animate-none"
+          className="mb-5 flex animate-rise items-start gap-3 rounded-2xl border border-emerald-400/25 bg-emerald-400/[0.07] p-4 motion-reduce:animate-none"
         >
           <Icon
             path={icons.check}
@@ -62,74 +84,16 @@ export default async function WorkspacePage({
         </div>
       ) : null}
 
-      <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-emerald-600 dark:text-emerald-300">
-        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-        {t.auth.workspaceTitle}
-      </span>
+      <WelcomeBanner t={t} locale={locale} firstName={firstName} />
 
-      <h1 className="mt-4 text-[1.9rem] font-medium tracking-[-0.03em] text-fg sm:text-[2.4rem]">
-        {store.name}
-      </h1>
-
-      <p className="mt-3 max-w-xl text-[0.9375rem] leading-relaxed text-muted">
-        {t.auth.workspaceText}
-      </p>
-
-      <dl className="mt-10 max-w-lg divide-y divide-border rounded-2xl border border-border bg-surface">
-        <Row label={t.auth.workspaceSignedInAs} value={user?.email ?? "—"} />
-        <Row label={t.onboarding.slugLabel} value={store.slug} mono />
-        <Row
-          label={t.onboarding.countryLabel}
-          value={
-            t.countries_names[store.country as keyof Dictionary["countries_names"]] ??
-            store.country
-          }
-        />
-        <Row label={t.onboarding.currencyLabel} value={store.currency} mono />
-      </dl>
-
-      <div className="mt-6 flex flex-wrap gap-3">
-        <ButtonLink href={path(locale, "/app/settings/store")} variant="outline">
-          <Icon path={icons.store} className="h-4 w-4" />
-          {t.settings.storeTitle}
-        </ButtonLink>
-
-        <ButtonLink href={path(locale, "/auth/security")} variant="outline">
-          <Icon path={icons.shield} className="h-4 w-4" />
-          {t.auth.securityTitle}
-        </ButtonLink>
+      <div className="mt-5">
+        <KpiGrid t={t} locale={locale} revenue={revenue} />
       </div>
 
-      <p className="mt-8 flex items-start gap-2.5 text-[0.8125rem] text-subtle">
-        <Icon path={icons.shield} className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-        {t.footer.secureLine}
-      </p>
-    </div>
-  );
-}
-
-function Row({
-  label,
-  value,
-  mono = false,
-}: {
-  label: string;
-  value: string;
-  mono?: boolean;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-4 px-4 py-3.5">
-      <dt className="text-[0.8125rem] text-subtle">{label}</dt>
-      <dd
-        dir="ltr"
-        className={
-          mono
-            ? "min-w-0 truncate font-mono text-[0.75rem] text-body"
-            : "min-w-0 truncate text-[0.8125rem] text-body"
-        }
-      >
-        {value}
-      </dd>
+      <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <RevenuePanel t={t} amount={revenue} />
+        <QuickActions t={t} locale={locale} />
+      </div>
     </div>
   );
 }
