@@ -8,6 +8,10 @@ import type { NextConfig } from "next";
 const publicMediaUrl = process.env.R2_PUBLIC_URL;
 
 const nextConfig: NextConfig = {
+  experimental: {
+    agentUpgrade: "security",
+  },
+
   images: publicMediaUrl
     ? {
         remotePatterns: [
