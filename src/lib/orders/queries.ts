@@ -210,6 +210,7 @@ export type OrderDetail = {
   shipping_address: string;
   shipping_extra: string | null;
   notes: string | null;
+  tracking_number: string | null;
   created_at: string;
   confirmed_at: string | null;
   cancelled_at: string | null;
@@ -260,7 +261,7 @@ export async function getOrder(
         "subtotal_amount, shipping_amount, total_amount",
         "customer_name, customer_email, customer_phone",
         "shipping_country, shipping_city, shipping_address, shipping_extra",
-        "notes, created_at, confirmed_at, cancelled_at",
+        "notes, tracking_number, created_at, confirmed_at, cancelled_at",
         "order_items(id, product_name, variant_label, sku, image_key, product_type, unit_price, quantity, line_total)",
         "order_events(id, type, payload, created_at)",
         "payments(provider, status, amount, currency, created_at)",

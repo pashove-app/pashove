@@ -5,7 +5,17 @@ import { path } from "@/components/ui/types";
 import { LOCALE_META, type Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import { formatMoney } from "@/lib/money";
-import type { OrderSummary } from "@/lib/orders/queries";
+import { quickAdvanceAction } from "@/lib/orders/actions";
+import type { OrderStatus, OrderSummary } from "@/lib/orders/queries";
+
+const QUICK: Partial<Record<OrderStatus, string>> = {
+  pending: "quickConfirm",
+  confirmed: "quickPrepare",
+  shipped: "quickDeliver",
+};
+
+const QUICK_BUTTON =
+  "inline-flex h-8 items-center justify-center rounded-lg border border-border px-2.5 text-[0.75rem] font-medium text-subtle transition-colors hover:border-border-strong hover:text-fg";
 
 /** Liste des commandes : tableau desktop, cartes mobile. */
 export function OrderList({
@@ -90,14 +100,17 @@ export function OrderList({
                 <OrderStatusBadge status={order.status} t={t} />
               </td>
 
-              <td className="px-5 py-3 text-end">
-                <Link
-                  href={path(locale, `/app/orders/${order.id}`)}
-                  aria-label={labels.seeOrder}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-faint transition-colors hover:bg-hairline hover:text-fg"
-                >
-                  <Icon path={icons.arrowRight} className="h-4 w-4 rtl:rotate-180" strokeWidth={2} />
-                </Link>
+              <td className="px-5 py-3">
+                <div className="flex items-center justify-end gap-1.5">
+                  <QuickAction order={order} labels={labels} locale={locale} />
+                  <Link
+                    href={path(locale, `/app/orders/${order.id}`)}
+                    aria-label={labels.seeOrder}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-faint transition-colors hover:bg-hairline hover:text-fg"
+                  >
+                    <Icon path={icons.arrowRight} className="h-4 w-4 rtl:rotate-180" strokeWidth={2} />
+                  </Link>
+                </div>
               </td>
             </tr>
           ))}
@@ -133,9 +146,54 @@ export function OrderList({
                 </p>
               </div>
             </Link>
+
+            {order.status === "processing" ||
+            order.status === "pending" ||
+            order.status === "confirmed" ||
+            order.status === "shipped" ? (
+              <div className="border-t border-hairline px-4 py-2.5">
+                <QuickAction order={order} labels={labels} locale={locale} />
+              </div>
+            ) : null}
           </li>
         ))}
       </ul>
     </div>
+  );
+}
+
+function QuickAction({
+  order,
+  labels,
+  locale,
+}: {
+  order: OrderSummary;
+  labels: Dictionary["dashboard"]["orders"];
+  locale: Locale;
+}) {
+  if (order.status === "processing") {
+    return (
+      <Link
+        href={path(locale, `/app/orders/${order.id}`)}
+        className={QUICK_BUTTON}
+      >
+        {labels.quickShip}
+      </Link>
+    );
+  }
+
+  const key = QUICK[order.status];
+  if (!key) return null;
+
+  return (
+    <form action={quickAdvanceAction}>
+      <input type="hidden" name="orderId" value={order.id} />
+      <button
+        type="submit"
+        className={QUICK_BUTTON}
+      >
+        {labels[key as keyof Dictionary["dashboard"]["orders"]]}
+      </button>
+    </form>
   );
 }

@@ -5,6 +5,7 @@ import {
   OrderStatusBadge,
   PaymentStatus,
 } from "@/components/orders/order-status-badge";
+import { OrderActions } from "@/components/orders/order-actions";
 import { Icon, icons } from "@/components/ui/primitives";
 import { path } from "@/components/ui/types";
 import { LOCALE_META, type Locale } from "@/i18n/config";
@@ -86,6 +87,14 @@ export function OrderDetail({
       <p className="mt-1 text-[0.8125rem] text-subtle">
         {labels.placedOn.replace("{date}", date(order.created_at, true))}
       </p>
+
+      <OrderActions
+        orderId={order.id}
+        status={order.status}
+        paymentStatus={order.payment_status}
+        paymentMethod={order.payment_method}
+        labels={labels}
+      />
 
       <div className="mt-7 grid gap-6 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start">
         <div className="space-y-6">
@@ -245,6 +254,14 @@ export function OrderDetail({
               <p>
                 {order.shipping_city} · {country}
               </p>
+              {order.tracking_number ? (
+                <p className="mt-2 text-[0.75rem] text-subtle">
+                  {labels.trackingDisplay} :{" "}
+                  <span dir="ltr" className="font-medium text-body">
+                    {order.tracking_number}
+                  </span>
+                </p>
+              ) : null}
             </address>
           </section>
 
