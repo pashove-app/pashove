@@ -6,8 +6,9 @@ import { StorefrontContact } from "@/components/storefront/storefront-contact";
 import { StorefrontHeader } from "@/components/storefront/storefront-header";
 import { StorefrontHero } from "@/components/storefront/storefront-hero";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
-import { isLocale } from "@/i18n/config";
+import { LOCALE_META, isLocale } from "@/i18n/config";
 import { getDictionary, interpolate } from "@/i18n/get-dictionary";
+import { listStoreProducts } from "@/lib/storefront/products";
 import { loadStorefront } from "@/lib/storefront/queries";
 
 /**
@@ -68,13 +69,22 @@ export default async function StorefrontPage({
   if (status === "suspended") return <StorefrontClosed t={t} />;
   if (!store) notFound();
 
+  const products = await listStoreProducts(store.id);
+
   return (
     <StorefrontShell footerLabel={t.storefront.poweredBy}>
       <StorefrontHeader store={store} />
 
       <main className="pb-4">
         <StorefrontHero store={store} />
-        <ProductGrid t={t} />
+        <ProductGrid
+          t={t}
+          locale={locale}
+          slug={slug}
+          products={products}
+          currency={store.currency}
+          localeTag={LOCALE_META[locale].tag}
+        />
         <StorefrontContact t={t} store={store} />
       </main>
     </StorefrontShell>

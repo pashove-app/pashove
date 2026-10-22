@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { CartButton } from "@/components/storefront/cart-provider";
 import { StoreMonogram } from "@/components/storefront/store-monogram";
 import { publicUrl } from "@/lib/r2/media";
 import type { PublicStore } from "@/lib/storefront/queries";
@@ -24,9 +25,11 @@ export function StorefrontHeader({ store }: { store: PublicStore }) {
         <StoreMonogram name={store.name} size="sm" />
       )}
 
-      <span className="min-w-0 truncate text-[1.0625rem] font-medium tracking-[-0.02em] text-fg">
+      <span className="min-w-0 flex-1 truncate text-[1.0625rem] font-medium tracking-[-0.02em] text-fg">
         {store.name}
       </span>
+
+      <CartButton />
     </header>
   );
 }
