@@ -191,3 +191,96 @@ export async function getOrderHeader(
 
   return (data as OrderHeader | null) ?? null;
 }
+
+export type OrderDetail = {
+  id: string;
+  number: number;
+  status: OrderStatus;
+  payment_status: OrderPaymentStatus;
+  payment_method: "cod";
+  currency: string;
+  subtotal_amount: number;
+  shipping_amount: number;
+  total_amount: number;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+  shipping_country: string;
+  shipping_city: string;
+  shipping_address: string;
+  shipping_extra: string | null;
+  notes: string | null;
+  created_at: string;
+  confirmed_at: string | null;
+  cancelled_at: string | null;
+  items: {
+    id: string;
+    product_name: string;
+    variant_label: string | null;
+    sku: string | null;
+    image_key: string | null;
+    product_type: "physical" | "digital" | "service";
+    unit_price: number;
+    quantity: number;
+    line_total: number;
+  }[];
+  events: {
+    id: string;
+    type: string;
+    payload: Record<string, unknown>;
+    created_at: string;
+  }[];
+  payment: {
+    provider: string;
+    status: string;
+    amount: number;
+    currency: string;
+    created_at: string;
+  } | null;
+};
+
+type DetailRow = Omit<OrderDetail, "items" | "events" | "payment"> & {
+  order_items?: OrderDetail["items"] | null;
+  order_events?: OrderDetail["events"] | null;
+  payments?: NonNullable<OrderDetail["payment"]>[] | null;
+};
+
+/** Une commande complète, avec ses instantanés, son paiement et son journal. */
+export async function getOrder(
+  id: string,
+  storeId: string,
+): Promise<OrderDetail | null> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("orders")
+    .select(
+      [
+        "id, number, status, payment_status, payment_method, currency",
+        "subtotal_amount, shipping_amount, total_amount",
+        "customer_name, customer_email, customer_phone",
+        "shipping_country, shipping_city, shipping_address, shipping_extra",
+        "notes, created_at, confirmed_at, cancelled_at",
+        "order_items(id, product_name, variant_label, sku, image_key, product_type, unit_price, quantity, line_total)",
+        "order_events(id, type, payload, created_at)",
+        "payments(provider, status, amount, currency, created_at)",
+      ].join(", "),
+    )
+    .eq("id", id)
+    .eq("store_id", storeId)
+    .maybeSingle();
+
+  if (!data) return null;
+
+  const row = data as unknown as DetailRow;
+
+  return {
+    ...row,
+    items: row.order_items ?? [],
+    events: [...(row.order_events ?? [])].sort(
+      (left, right) =>
+        new Date(left.created_at).getTime() - new Date(right.created_at).getTime(),
+    ),
+    payment: row.payments?.[0] ?? null,
+  };
+}

@@ -28,6 +28,10 @@ const STATUS_STYLE: Record<OrderStatus, string> = {
   cancelled: "border-border-soft bg-hairline text-subtle",
 };
 
+export function orderStatusLabel(status: OrderStatus, t: Dictionary): string {
+  return t.dashboard.orders[STATUS_KEY[status]];
+}
+
 export function OrderStatusBadge({
   status,
   t,
