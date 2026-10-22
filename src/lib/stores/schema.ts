@@ -106,6 +106,12 @@ export const storeSettingsSchema = z.object({
     .refine((value) => value === "" || value.length >= 6, "contactPhoneInvalid"),
   logoMediaId: optionalMediaId,
   bannerMediaId: optionalMediaId,
+  shippingFlat: z
+    .string()
+    .trim()
+    .regex(/^\d{1,7}(?:[.,]\d{1,2})?$/, "shippingInvalid")
+    .or(z.literal("")),
+  codEnabled: z.enum(["1", "0"], { message: "serverError" }),
 });
 
 /** Nombre maximal de caractères de l'identifiant, repris par le formulaire. */

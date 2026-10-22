@@ -2,13 +2,14 @@
 
 import { useActionState, type ReactNode } from "react";
 import { MediaUploader, type MediaValue } from "@/components/media/media-uploader";
-import { FormNotice, TextAreaField, TextField } from "@/components/ui/field";
+import { Checkbox, FormNotice, TextAreaField, TextField } from "@/components/ui/field";
 import { buttonClass, Icon, icons, Spinner } from "@/components/ui/primitives";
 import type { SectionProps } from "@/components/ui/types";
 import { useFieldErrors } from "@/lib/forms/use-field-errors";
 import { saveStoreSettingsAction } from "@/lib/stores/actions";
 import type { Store } from "@/lib/stores/queries";
 import { INITIAL_STORE_SETTINGS_STATE } from "@/lib/stores/types";
+import { formatPriceInput } from "@/lib/products/schema";
 
 /**
  * Réglages de la vitrine.
@@ -137,6 +138,31 @@ export function StoreSettingsForm({
             {mediaError}
           </p>
         ) : null}
+      </Card>
+
+      <Card title={t.settings.shippingTitle} text={t.settings.shippingText}>
+        <TextField
+          name="shippingFlat"
+          label={t.settings.shippingFlatLabel}
+          help={t.settings.shippingFlatHelp.replace("{currency}", store.currency)}
+          dir="ltr"
+          inputMode="decimal"
+          autoComplete="off"
+          defaultValue={formatPriceInput(store.shipping_flat_amount, store.currency)}
+          error={fieldError("shippingFlat")}
+          onChange={() => clear("shippingFlat")}
+        />
+
+        <div>
+          <Checkbox
+            name="codEnabled"
+            defaultChecked={store.cod_enabled}
+            label={t.settings.codLabel}
+          />
+          <p className="mt-1 ps-8 text-[0.75rem] leading-relaxed text-subtle">
+            {t.settings.codHelp}
+          </p>
+        </div>
       </Card>
 
       {state.status === "unconfigured" ? (

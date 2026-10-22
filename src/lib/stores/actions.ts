@@ -7,6 +7,7 @@ import { deleteMediaAsset } from "@/lib/media/assets";
 import { currentOnboardingStep, onboardingPath } from "@/lib/onboarding/steps";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { currentStore } from "@/lib/stores/queries";
+import { parsePrice } from "@/lib/products/schema";
 import { createStoreSchema, sellingSchema, storeSettingsSchema } from "@/lib/stores/schema";
 import type { StoreFormState, StoreSettingsState } from "@/lib/stores/types";
 import { toFieldErrors } from "@/lib/validation";
@@ -186,6 +187,8 @@ export async function saveStoreSettingsAction(
     contactPhone: field(formData, "contactPhone"),
     logoMediaId: field(formData, "logoMediaId"),
     bannerMediaId: field(formData, "bannerMediaId"),
+    shippingFlat: field(formData, "shippingFlat"),
+    codEnabled: field(formData, "codEnabled") === "on" ? "1" : "0",
   });
 
   if (!parsed.success) {
@@ -205,6 +208,18 @@ export async function saveStoreSettingsAction(
   const logoMediaId = parsed.data.logoMediaId || null;
   const bannerMediaId = parsed.data.bannerMediaId || null;
 
+  const shippingFlat =
+    parsed.data.shippingFlat === ""
+      ? 0
+      : parsePrice(parsed.data.shippingFlat, store.currency);
+
+  if (shippingFlat === null) {
+    return {
+      status: "invalid",
+      fieldErrors: { shippingFlat: "shippingInvalid" },
+    };
+  }
+
   const { error } = await supabase
     .from("stores")
     .update({
@@ -213,6 +228,8 @@ export async function saveStoreSettingsAction(
       contact_phone: blankToNull(parsed.data.contactPhone),
       logo_media_id: logoMediaId,
       banner_media_id: bannerMediaId,
+      shipping_flat_amount: shippingFlat,
+      cod_enabled: parsed.data.codEnabled === "1",
     })
     .eq("id", store.id);
 

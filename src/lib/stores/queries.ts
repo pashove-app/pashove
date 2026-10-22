@@ -17,6 +17,10 @@ export type Store = {
   contact_phone: string | null;
   logo_media_id: string | null;
   banner_media_id: string | null;
+  /** Frais fixes de livraison, en unité mineure. 0 = offerte. */
+  shipping_flat_amount: number;
+  /** Paiement à la livraison proposé au checkout. */
+  cod_enabled: boolean;
   /** Clé R2 de l'image, lue par jointure — l'URL publique s'en déduit. */
   logo: { object_key: string } | null;
   banner: { object_key: string } | null;
@@ -26,7 +30,7 @@ export type Store = {
 const COLUMNS = [
   "id, name, slug, country, currency, category, status, product_types",
   "description, contact_email, contact_phone",
-  "logo_media_id, banner_media_id",
+  "logo_media_id, banner_media_id, shipping_flat_amount, cod_enabled",
   "logo:media_assets!logo_media_id(object_key)",
   "banner:media_assets!banner_media_id(object_key)",
   "created_at",
