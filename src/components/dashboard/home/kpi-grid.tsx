@@ -31,7 +31,7 @@ export function KpiGrid({
   }[] = [
     { key: "revenue", href: "/app/finance", icon: "wallet", value: revenue },
     { key: "orders", href: "/app/orders", icon: "box", value: "0" },
-    { key: "customers", href: "/app/customers", icon: "users", value: "0" },
+    { key: "customers", href: "/app/clients", icon: "users", value: "0" },
     { key: "products", href: "/app/products", icon: "tag", value: products },
   ];
 

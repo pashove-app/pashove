@@ -20,7 +20,7 @@ export function QuickActions({
 
       <div className="mt-4 space-y-2.5">
         <ActionLink
-          href={path(locale, "/app/customers")}
+          href={path(locale, "/app/clients")}
           icon="users"
           label={t.dashboard.home.addCustomer}
         />

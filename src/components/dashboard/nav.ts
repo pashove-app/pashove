@@ -42,7 +42,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { key: "home", href: "/app", icon: "home" },
       { key: "orders", href: "/app/orders", icon: "box" },
       { key: "products", href: "/app/products", icon: "tag" },
-      { key: "customers", href: "/app/customers", icon: "users" },
+      { key: "customers", href: "/app/clients", icon: "users" },
       { key: "marketing", href: "/app/marketing", icon: "bolt" },
       { key: "discounts", href: "/app/discounts", icon: "percent" },
     ],
@@ -82,5 +82,5 @@ export const BOTTOM_NAV: NavItem[] = [
   { key: "home", href: "/app", icon: "home" },
   { key: "products", href: "/app/products", icon: "tag" },
   { key: "orders", href: "/app/orders", icon: "box" },
-  { key: "customers", href: "/app/customers", icon: "users" },
+  { key: "customers", href: "/app/clients", icon: "users" },
 ];
