@@ -7,6 +7,8 @@ export type PublicStore = {
   name: string;
   slug: string;
   description: string | null;
+  hero_title: string | null;
+  hero_subtitle: string | null;
   logo: { object_key: string } | null;
   banner: { object_key: string } | null;
   contact_email: string | null;
@@ -21,7 +23,7 @@ export type PublicStore = {
 export type StorefrontStatus = "active" | "suspended" | "missing";
 
 const COLUMNS = [
-  "id, name, slug, description",
+  "id, name, slug, description, hero_title, hero_subtitle",
   "logo:media_assets!logo_media_id(object_key)",
   "banner:media_assets!banner_media_id(object_key)",
   "contact_email, contact_phone, country, currency, category",

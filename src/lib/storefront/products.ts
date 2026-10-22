@@ -97,3 +97,21 @@ export type PricedStoreProduct = Omit<StoreProduct, "variants"> & {
     compareAtLabel: string | null;
   })[];
 };
+
+/** Les produits publiés qui portent une étiquette donnée. */
+export async function listStoreProductsByTag(
+  storeId: string,
+  tag: string,
+): Promise<StoreProduct[]> {
+  const supabase = createPublicClient();
+
+  const { data } = await supabase
+    .from("products")
+    .select(COLUMNS)
+    .eq("store_id", storeId)
+    .eq("status", "published")
+    .contains("tags", [tag])
+    .order("created_at", { ascending: false });
+
+  return ((data ?? []) as unknown as Row[]).map(toProduct);
+}

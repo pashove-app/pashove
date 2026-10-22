@@ -90,6 +90,8 @@ const optionalMediaId = z
   );
 
 export const storeSettingsSchema = z.object({
+  heroTitle: z.string().trim().max(80, "heroTitleTooLong"),
+  heroSubtitle: z.string().trim().max(160, "heroSubtitleTooLong"),
   description: z.string().trim().max(500, "descriptionTooLong"),
   contactEmail: z
     .string()

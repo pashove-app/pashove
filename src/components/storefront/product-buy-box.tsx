@@ -228,18 +228,20 @@ export function ProductBuyBox({
         </p>
       ) : null}
 
-      <div className="mt-6 space-y-2 border-t border-hairline pt-4 text-[0.8125rem] text-muted">
-        <p className="flex items-center gap-2">
-          <Icon path={icons.box} className="h-4 w-4 shrink-0 text-faint" strokeWidth={1.7} />
-          {product.shippingLabel}
-        </p>
-        {physical && codEnabled ? (
+      {physical ? (
+        <div className="mt-6 space-y-2 border-t border-hairline pt-4 text-[0.8125rem] text-muted">
           <p className="flex items-center gap-2">
-            <Icon path={icons.wallet} className="h-4 w-4 shrink-0 text-faint" strokeWidth={1.7} />
-            {labels.codInfo}
+            <Icon path={icons.box} className="h-4 w-4 shrink-0 text-faint" strokeWidth={1.7} />
+            {product.shippingLabel}
           </p>
-        ) : null}
-      </div>
+          {codEnabled ? (
+            <p className="flex items-center gap-2">
+              <Icon path={icons.wallet} className="h-4 w-4 shrink-0 text-faint" strokeWidth={1.7} />
+              {labels.codInfo}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

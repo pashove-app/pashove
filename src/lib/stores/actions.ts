@@ -182,6 +182,8 @@ export async function saveStoreSettingsAction(
   const locale = field(formData, "locale") || "fr";
 
   const parsed = storeSettingsSchema.safeParse({
+    heroTitle: field(formData, "heroTitle"),
+    heroSubtitle: field(formData, "heroSubtitle"),
     description: field(formData, "description"),
     contactEmail: field(formData, "contactEmail"),
     contactPhone: field(formData, "contactPhone"),
@@ -223,6 +225,8 @@ export async function saveStoreSettingsAction(
   const { error } = await supabase
     .from("stores")
     .update({
+      hero_title: blankToNull(parsed.data.heroTitle),
+      hero_subtitle: blankToNull(parsed.data.heroSubtitle),
       description: blankToNull(parsed.data.description),
       contact_email: blankToNull(parsed.data.contactEmail),
       contact_phone: blankToNull(parsed.data.contactPhone),

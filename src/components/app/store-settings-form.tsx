@@ -56,6 +56,26 @@ export function StoreSettingsForm({
       <input type="hidden" name="locale" value={locale} />
 
       <Card title={t.settings.presentationTitle} text={t.settings.presentationText}>
+        <TextField
+          name="heroTitle"
+          label={t.settings.heroTitleLabel}
+          help={t.settings.heroTitleHelp}
+          maxLength={80}
+          defaultValue={store.hero_title ?? ""}
+          error={fieldError("heroTitle")}
+          onChange={() => clear("heroTitle")}
+        />
+
+        <TextField
+          name="heroSubtitle"
+          label={t.settings.heroSubtitleLabel}
+          help={t.settings.heroSubtitleHelp}
+          maxLength={160}
+          defaultValue={store.hero_subtitle ?? ""}
+          error={fieldError("heroSubtitle")}
+          onChange={() => clear("heroSubtitle")}
+        />
+
         <TextAreaField
           name="description"
           label={t.settings.descriptionLabel}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CartPage } from "@/components/storefront/cart-page";
+import { Container } from "@/components/storefront/container";
 import { StorefrontClosed } from "@/components/storefront/storefront-closed";
 import { StorefrontHeader } from "@/components/storefront/storefront-header";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
@@ -41,10 +42,12 @@ export default async function CartRoute({
   if (!store) notFound();
 
   return (
-    <StorefrontShell footerLabel={t.storefront.poweredBy}>
-      <StorefrontHeader store={store} />
+    <StorefrontShell store={store} locale={locale} t={t}>
+      <StorefrontHeader store={store} locale={locale} t={t} />
       <main>
-        <CartPage />
+        <Container>
+          <CartPage />
+        </Container>
       </main>
     </StorefrontShell>
   );

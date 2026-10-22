@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Container } from "@/components/storefront/container";
 import { StorefrontClosed } from "@/components/storefront/storefront-closed";
 import { StorefrontHeader } from "@/components/storefront/storefront-header";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
@@ -31,9 +32,10 @@ export default async function CheckoutRoute({
   if (!store) notFound();
 
   return (
-    <StorefrontShell footerLabel={t.storefront.poweredBy}>
-      <StorefrontHeader store={store} />
+    <StorefrontShell store={store} locale={locale} t={t}>
+      <StorefrontHeader store={store} locale={locale} t={t} />
       <main className="py-16">
+        <Container>
         <div className="mx-auto max-w-md rounded-3xl border border-border bg-surface p-8 text-center">
           <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-hairline text-accent">
             <Icon path={icons.lock} className="h-6 w-6" strokeWidth={1.7} />
@@ -51,6 +53,7 @@ export default async function CheckoutRoute({
             {t.storefront.viewCart}
           </Link>
         </div>
+        </Container>
       </main>
     </StorefrontShell>
   );

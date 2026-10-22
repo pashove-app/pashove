@@ -1,13 +1,18 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { CollectionsStrip } from "@/components/storefront/collections-strip";
+import { Container } from "@/components/storefront/container";
 import { ProductGrid } from "@/components/storefront/product-grid";
+import { Reveal } from "@/components/storefront/reveal";
 import { StorefrontClosed } from "@/components/storefront/storefront-closed";
-import { StorefrontContact } from "@/components/storefront/storefront-contact";
 import { StorefrontHeader } from "@/components/storefront/storefront-header";
 import { StorefrontHero } from "@/components/storefront/storefront-hero";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
+import { TrustStrip } from "@/components/storefront/trust-strip";
 import { LOCALE_META, isLocale } from "@/i18n/config";
 import { getDictionary, interpolate } from "@/i18n/get-dictionary";
+import { publicUrl } from "@/lib/r2/media";
+import { buildTagCollections } from "@/lib/storefront/collections";
 import { listStoreProducts } from "@/lib/storefront/products";
 import { loadStorefront } from "@/lib/storefront/queries";
 
@@ -36,11 +41,12 @@ export async function generateMetadata({
   }
 
   const description =
+    store.hero_subtitle?.trim() ||
     store.description?.trim() ||
     interpolate(t.storefront.metaFallback, { name: store.name });
 
   return {
-    title: store.name,
+    title: store.hero_title ? `${store.hero_title} · ${store.name}` : store.name,
     description,
     alternates: { canonical: `/${locale}/store/${store.slug}` },
     openGraph: {
@@ -70,22 +76,44 @@ export default async function StorefrontPage({
   if (!store) notFound();
 
   const products = await listStoreProducts(store.id);
+  const collections = buildTagCollections(products);
+  const bannerUrl = store.banner ? publicUrl(store.banner.object_key) : null;
 
   return (
-    <StorefrontShell footerLabel={t.storefront.poweredBy}>
-      <StorefrontHeader store={store} />
+    <StorefrontShell store={store} locale={locale} t={t}>
+      <StorefrontHeader store={store} locale={locale} t={t} />
 
-      <main className="pb-4">
-        <StorefrontHero store={store} />
-        <ProductGrid
-          t={t}
-          locale={locale}
-          slug={slug}
-          products={products}
-          currency={store.currency}
-          localeTag={LOCALE_META[locale].tag}
+      <main>
+        <StorefrontHero
+          store={store}
+          bannerUrl={bannerUrl}
+          labels={t.storefront}
+          hasCollections={collections.length > 0}
         />
-        <StorefrontContact t={t} store={store} />
+
+        <TrustStrip store={store} locale={locale} t={t} />
+
+        <Container className="mt-16 space-y-16 sm:mt-20 sm:space-y-24">
+          <Reveal>
+            <CollectionsStrip
+              collections={collections}
+              labels={t.storefront}
+              locale={locale}
+              slug={slug}
+            />
+          </Reveal>
+
+          <Reveal>
+            <ProductGrid
+              t={t}
+              locale={locale}
+              slug={slug}
+              products={products.slice(0, 8)}
+              currency={store.currency}
+              localeTag={LOCALE_META[locale].tag}
+            />
+          </Reveal>
+        </Container>
       </main>
     </StorefrontShell>
   );

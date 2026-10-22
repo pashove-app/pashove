@@ -11,6 +11,8 @@ export type Store = {
   status: "draft" | "active" | "suspended";
   product_types: string[];
   description: string | null;
+  hero_title: string | null;
+  hero_subtitle: string | null;
   logo_url: string | null;
   banner_url: string | null;
   contact_email: string | null;
@@ -29,7 +31,7 @@ export type Store = {
 
 const COLUMNS = [
   "id, name, slug, country, currency, category, status, product_types",
-  "description, contact_email, contact_phone",
+  "description, hero_title, hero_subtitle, contact_email, contact_phone",
   "logo_media_id, banner_media_id, shipping_flat_amount, cod_enabled",
   "logo:media_assets!logo_media_id(object_key)",
   "banner:media_assets!banner_media_id(object_key)",

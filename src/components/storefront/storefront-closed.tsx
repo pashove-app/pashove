@@ -1,4 +1,3 @@
-import { StorefrontFooter } from "@/components/storefront/storefront-shell";
 import { Icon, icons } from "@/components/ui/primitives";
 import type { Dictionary } from "@/i18n/get-dictionary";
 
@@ -27,7 +26,14 @@ export function StorefrontClosed({ t }: { t: Dictionary }) {
         </div>
       </main>
 
-      <StorefrontFooter label={t.storefront.poweredBy} />
+      <footer className="border-t border-border py-6 text-center">
+        <a
+          href="https://pashove.com"
+          className="text-[0.6875rem] text-faint transition-colors hover:text-muted"
+        >
+          {t.storefront.poweredBy}
+        </a>
+      </footer>
     </div>
   );
 }

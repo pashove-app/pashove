@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductBuyBox } from "@/components/storefront/product-buy-box";
 import { ProductGallery } from "@/components/storefront/product-gallery";
+import { Container } from "@/components/storefront/container";
 import { StorefrontClosed } from "@/components/storefront/storefront-closed";
 import { StorefrontHeader } from "@/components/storefront/storefront-header";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
@@ -107,10 +108,11 @@ export default async function ProductPage({
   const images = product.images.map((image) => publicUrl(image.object_key));
 
   return (
-    <StorefrontShell footerLabel={t.storefront.poweredBy}>
-      <StorefrontHeader store={store} />
+    <StorefrontShell store={store} locale={locale} t={t}>
+      <StorefrontHeader store={store} locale={locale} t={t} />
 
-      <main className="pb-10 pt-5">
+      <Container>
+        <main className="pb-10 pt-6">
         <Link
           href={path(locale, `/store/${slug}`)}
           className="inline-flex items-center gap-1.5 text-[0.8125rem] font-medium text-subtle transition-colors hover:text-fg"
@@ -164,7 +166,8 @@ export default async function ProductPage({
             ) : null}
           </section>
         ) : null}
-      </main>
+        </main>
+      </Container>
     </StorefrontShell>
   );
 }
