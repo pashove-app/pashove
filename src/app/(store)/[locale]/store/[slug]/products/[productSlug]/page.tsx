@@ -1,26 +1,33 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Container } from "@/components/storefront/container";
 import { ProductBuyBox } from "@/components/storefront/product-buy-box";
 import { ProductGallery } from "@/components/storefront/product-gallery";
-import { Container } from "@/components/storefront/container";
+import { ProductGrid } from "@/components/storefront/product-grid";
+import { ProductTabs, type ProductTab } from "@/components/storefront/product-tabs";
+import { Reveal } from "@/components/storefront/reveal";
 import { StorefrontClosed } from "@/components/storefront/storefront-closed";
 import { StorefrontHeader } from "@/components/storefront/storefront-header";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
 import { Icon, icons } from "@/components/ui/primitives";
 import { path } from "@/components/ui/types";
 import { LOCALE_META, isLocale } from "@/i18n/config";
-import { getDictionary } from "@/i18n/get-dictionary";
+import { getDictionary, type Dictionary } from "@/i18n/get-dictionary";
 import { formatMoney } from "@/lib/money";
 import { publicUrl } from "@/lib/r2/media";
 import {
   getStoreProduct,
+  listStoreProducts,
   type PricedStoreProduct,
 } from "@/lib/storefront/products";
 import { loadStorefront } from "@/lib/storefront/queries";
 
-/** La fiche est mise en cache brièvement : le panier, lui, relit le stock. */
 export const revalidate = 30;
+
+const percentOff = (price: number, compare: number | null): number | null =>
+  compare && compare > price ? Math.round((1 - price / compare) * 100) : null;
 
 export async function generateMetadata({
   params,
@@ -41,8 +48,7 @@ export async function generateMetadata({
   }
 
   const description =
-    product.description?.slice(0, 160) ??
-    `${product.name} — ${store.name}`;
+    product.description?.slice(0, 160) ?? `${product.name} — ${store.name}`;
   const image = product.images[0]
     ? publicUrl(product.images[0].object_key)
     : undefined;
@@ -80,6 +86,7 @@ export default async function ProductPage({
   const product = await getStoreProduct(store.id, productSlug);
   if (!product) notFound();
 
+  const labels = t.storefront;
   const localeTag = LOCALE_META[locale].tag;
   const price = (amount: number) => formatMoney(amount, store.currency, localeTag);
 
@@ -90,83 +97,208 @@ export default async function ProductPage({
       product.compare_at_amount && product.compare_at_amount > product.price_amount
         ? price(product.compare_at_amount)
         : null,
+    discountPercent: percentOff(product.price_amount, product.compare_at_amount),
     shippingLabel:
       store.shipping_flat_amount === 0
-        ? t.storefront.freeShipping
-        : `${t.storefront.shipping} : ${price(store.shipping_flat_amount)}`,
+        ? labels.freeShipping
+        : `${labels.shipping} : ${price(store.shipping_flat_amount)}`,
     variants: product.variants.map((variant) => ({
       ...variant,
       priceLabel: price(variant.price_amount),
       compareAtLabel:
-        product.compare_at_amount &&
-        product.compare_at_amount > variant.price_amount
+        product.compare_at_amount && product.compare_at_amount > variant.price_amount
           ? price(product.compare_at_amount)
           : null,
+      discountPercent: percentOff(variant.price_amount, product.compare_at_amount),
     })),
   };
 
   const images = product.images.map((image) => publicUrl(image.object_key));
+  const editorialImage = images[1] ?? images[0] ?? null;
+
+  const typeLabel =
+    product.product_type === "digital"
+      ? t.dashboard.products.typeBadgeDigital
+      : product.product_type === "service"
+        ? t.dashboard.products.typeBadgeService
+        : null;
+
+  const shippingCountries =
+    product.shipping_countries.length === 0
+      ? labels.shipsEverywhere
+      : labels.shipsTo.replace(
+          "{countries}",
+          product.shipping_countries
+            .map(
+              (code) =>
+                t.countries_names[code as keyof Dictionary["countries_names"]] ??
+                code,
+            )
+            .join(", "),
+        );
+
+  const all = await listStoreProducts(store.id);
+  const productTags = new Set(product.tags);
+  const related = all
+    .filter((entry) => entry.id !== product.id)
+    .map((entry) => ({
+      entry,
+      score: entry.tags.filter((tag) => productTags.has(tag)).length,
+    }))
+    .sort((left, right) => right.score - left.score)
+    .slice(0, 4)
+    .map((item) => item.entry);
+
+  const physical = product.product_type === "physical";
+
+  const tabs: ProductTab[] = [
+    {
+      id: "details",
+      label: labels.detailsTab,
+      content: (
+        <div>
+          <p className="whitespace-pre-line text-[0.9375rem] leading-relaxed text-muted">
+            {product.description || labels.noDescription}
+          </p>
+          {product.tags.length > 0 ? (
+            <div className="mt-5 flex flex-wrap gap-1.5">
+              {product.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full border border-border px-2.5 py-1 text-[0.6875rem] text-subtle"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ),
+    },
+    {
+      id: "shipping",
+      label: labels.shippingTab,
+      content: physical ? (
+        <ul className="space-y-2.5 text-[0.875rem] text-muted">
+          <li>{priced.shippingLabel}</li>
+          {store.cod_enabled ? <li>{labels.codInfo}</li> : null}
+          <li>{shippingCountries}</li>
+        </ul>
+      ) : (
+        <div>
+          <p className="text-[0.875rem] font-medium text-fg">{labels.onlineSoon}</p>
+          <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-muted">
+            {labels.onlineSoonText}
+          </p>
+        </div>
+      ),
+    },
+    {
+      id: "specs",
+      label: labels.specsTab,
+      content: (
+        <dl className="grid gap-3 sm:grid-cols-2">
+          <div className="flex items-baseline justify-between gap-4 border-b border-hairline pb-2">
+            <dt className="text-[0.8125rem] text-subtle">{labels.specType}</dt>
+            <dd className="text-[0.8125rem] font-medium text-fg">
+              {typeLabel ?? t.dashboard.products.typeBadgePhysical}
+            </dd>
+          </div>
+          <div className="flex items-baseline justify-between gap-4 border-b border-hairline pb-2">
+            <dt className="text-[0.8125rem] text-subtle">{labels.specStock}</dt>
+            <dd className="text-[0.8125rem] font-medium text-fg">
+              {physical ? (product.stock_quantity ?? 0) : "—"}
+            </dd>
+          </div>
+          <div className="flex items-baseline justify-between gap-4 border-b border-hairline pb-2">
+            <dt className="text-[0.8125rem] text-subtle">{labels.specVariants}</dt>
+            <dd className="text-[0.8125rem] font-medium text-fg">
+              {product.variants.length || "—"}
+            </dd>
+          </div>
+          <div className="flex items-baseline justify-between gap-4 border-b border-hairline pb-2">
+            <dt className="text-[0.8125rem] text-subtle">{labels.specReference}</dt>
+            <dd dir="ltr" className="text-[0.8125rem] font-medium text-fg">
+              {product.variants.find((variant) => variant.sku)?.sku ?? "—"}
+            </dd>
+          </div>
+        </dl>
+      ),
+    },
+  ];
 
   return (
     <StorefrontShell store={store} locale={locale} t={t}>
       <StorefrontHeader store={store} locale={locale} t={t} />
 
-      <Container>
-        <main className="pb-10 pt-6">
+      <Container className="pb-10 pt-6">
         <Link
           href={path(locale, `/store/${slug}`)}
           className="inline-flex items-center gap-1.5 text-[0.8125rem] font-medium text-subtle transition-colors hover:text-fg"
         >
           <Icon path={icons.arrowRight} className="h-4 w-4 rotate-180 rtl:rotate-0" strokeWidth={2} />
-          {store.name}
+          {labels.backToShop}
         </Link>
 
-        <div className="mt-5 grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-12">
-          <ProductGallery images={images} name={product.name} />
+        <div className="mt-5 grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14">
+          <Reveal>
+            <ProductGallery images={images} name={product.name} />
+          </Reveal>
 
-          <div className="lg:pt-2">
-            {product.product_type !== "physical" ? (
+          <Reveal delay={0.08} className="lg:sticky lg:top-24 lg:self-start">
+            {typeLabel ? (
               <span className="mb-3 inline-flex rounded-full border border-hairline-strong bg-hairline px-2.5 py-1 text-[0.6875rem] font-medium text-subtle">
-                {product.product_type === "digital"
-                  ? t.dashboard.products.typeBadgeDigital
-                  : t.dashboard.products.typeBadgeService}
+                {typeLabel}
               </span>
             ) : null}
 
-            <h1 className="text-[1.625rem] font-medium leading-tight tracking-[-0.03em] text-fg sm:text-[2rem]">
+            <h1 className="text-[2rem] font-medium leading-[1.05] tracking-[-0.04em] text-fg sm:text-[2.75rem]">
               {product.name}
             </h1>
 
-            <div className="mt-4">
+            {product.description ? (
+              <p className="mt-4 line-clamp-3 text-[0.9375rem] leading-relaxed text-muted">
+                {product.description}
+              </p>
+            ) : null}
+
+            <div className="mt-6">
               <ProductBuyBox product={priced} codEnabled={store.cod_enabled} />
             </div>
-          </div>
+          </Reveal>
         </div>
 
-        {product.description ? (
-          <section className="mt-12 max-w-3xl border-t border-border pt-8">
-            <h2 className="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-subtle">
-              {t.storefront.descriptionTitle}
-            </h2>
-            <p className="mt-3 whitespace-pre-line text-[0.9375rem] leading-relaxed text-muted">
-              {product.description}
-            </p>
+        <Reveal className="mt-16 grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14">
+          <ProductTabs tabs={tabs} />
 
-            {product.tags.length > 0 ? (
-              <div className="mt-5 flex flex-wrap gap-1.5">
-                {product.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full border border-border px-2.5 py-1 text-[0.6875rem] text-subtle"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            ) : null}
-          </section>
+          {editorialImage ? (
+            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-border bg-hairline">
+              <Image
+                src={editorialImage}
+                alt=""
+                fill
+                sizes="(max-width: 1024px) 100vw, 45vw"
+                className="object-cover"
+              />
+            </div>
+          ) : null}
+        </Reveal>
+
+        {related.length > 0 ? (
+          <Reveal className="mt-16">
+            <ProductGrid
+              t={t}
+              locale={locale}
+              slug={slug}
+              products={related}
+              currency={store.currency}
+              localeTag={localeTag}
+              id="related"
+              title={labels.relatedTitle}
+              eyebrow={labels.featuredEyebrow}
+            />
+          </Reveal>
         ) : null}
-        </main>
       </Container>
     </StorefrontShell>
   );

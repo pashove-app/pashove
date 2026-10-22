@@ -20,7 +20,7 @@ export function ProductGallery({
 
   if (images.length === 0) {
     return (
-      <div className="flex aspect-square items-center justify-center rounded-2xl border border-border bg-surface text-faint">
+      <div className="flex aspect-[4/5] items-center justify-center rounded-2xl border border-border bg-surface text-faint">
         <Icon path={icons.tag} className="h-8 w-8" strokeWidth={1.5} />
       </div>
     );
@@ -56,7 +56,7 @@ export function ProductGallery({
         </div>
       ) : null}
 
-      <div className="relative order-1 aspect-square flex-1 overflow-hidden rounded-2xl border border-border bg-hairline sm:order-2">
+      <div className="relative order-1 aspect-[4/5] flex-1 overflow-hidden rounded-2xl border border-border bg-hairline sm:order-2">
         <Image
           src={images[active]}
           alt={name}

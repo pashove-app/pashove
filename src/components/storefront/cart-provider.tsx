@@ -170,7 +170,7 @@ export function CartButton() {
       onClick={() => setOpen(true)}
       aria-label={labels.cartOpen}
       title={labels.cartOpen}
-      className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-surface text-body transition-colors hover:border-border-strong hover:text-fg"
+      className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-body transition-colors hover:bg-hairline hover:text-fg"
     >
       <Icon path={icons.bag} className="h-[1.125rem] w-[1.125rem]" strokeWidth={1.8} />
       {count > 0 ? (

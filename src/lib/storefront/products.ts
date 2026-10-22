@@ -21,6 +21,7 @@ export type StoreProduct = {
   product_type: "physical" | "digital" | "service";
   stock_quantity: number | null;
   tags: string[];
+  shipping_countries: string[];
   options: ProductOption[];
   images: { object_key: string }[];
   variants: StoreVariant[];
@@ -28,7 +29,7 @@ export type StoreProduct = {
 
 const COLUMNS = [
   "id, name, slug, description, price_amount, compare_at_amount",
-  "product_type, stock_quantity, tags, options",
+  "product_type, stock_quantity, tags, options, shipping_countries",
   "images:product_images(position, media:media_assets(object_key))",
   "variants:product_variants(id, option_values, sku, price_amount, stock_quantity, position)",
 ].join(", ");
@@ -91,10 +92,12 @@ export const getStoreProduct = cache(async (
 export type PricedStoreProduct = Omit<StoreProduct, "variants"> & {
   priceLabel: string;
   compareAtLabel: string | null;
+  discountPercent: number | null;
   shippingLabel: string;
   variants: (StoreVariant & {
     priceLabel: string;
     compareAtLabel: string | null;
+    discountPercent: number | null;
   })[];
 };
 
@@ -112,6 +115,29 @@ export async function listStoreProductsByTag(
     .eq("status", "published")
     .contains("tags", [tag])
     .order("created_at", { ascending: false });
+
+  return ((data ?? []) as unknown as Row[]).map(toProduct);
+}
+
+/** Recherche par nom dans les produits publiés d'une boutique. */
+export async function searchStoreProducts(
+  storeId: string,
+  query: string,
+): Promise<StoreProduct[]> {
+  const search = query.trim().slice(0, 80);
+  if (!search) return [];
+
+  const escaped = search.replace(/[\\%_]/g, (match) => `\\${match}`);
+  const supabase = createPublicClient();
+
+  const { data } = await supabase
+    .from("products")
+    .select(COLUMNS)
+    .eq("store_id", storeId)
+    .eq("status", "published")
+    .ilike("name", `%${escaped}%`)
+    .order("created_at", { ascending: false })
+    .limit(48);
 
   return ((data ?? []) as unknown as Row[]).map(toProduct);
 }

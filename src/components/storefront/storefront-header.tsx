@@ -3,6 +3,8 @@ import Link from "next/link";
 import { AnnouncementBar } from "@/components/storefront/announcement-bar";
 import { CartButton } from "@/components/storefront/cart-provider";
 import { Container } from "@/components/storefront/container";
+import { Icon, icons } from "@/components/ui/primitives";
+import { HeaderSelectors } from "@/components/storefront/header-selectors";
 import { MobileMenu } from "@/components/storefront/mobile-menu";
 import { StoreMonogram } from "@/components/storefront/store-monogram";
 import { LOCALE_META, type Locale } from "@/i18n/config";
@@ -47,15 +49,20 @@ export function StorefrontHeader({
     { href: `${home}#contact`, label: labels.navContact },
   ];
 
+  const iconButton =
+    "flex h-10 w-10 items-center justify-center rounded-xl text-body transition-colors hover:bg-hairline hover:text-fg";
+  const searchHref = path(locale, `/store/${store.slug}/search`);
+  const accountHref = path(locale, `/store/${store.slug}/account`);
+
   return (
     <>
       <AnnouncementBar messages={messages} />
 
       <header className="sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur-xl">
-        <Container className="flex h-16 items-center gap-3">
+        <Container className="grid h-16 grid-cols-[1fr_auto_1fr] items-center gap-3">
           <Link
             href={home}
-            className="flex min-w-0 items-center gap-2.5"
+            className="flex min-w-0 items-center justify-self-start gap-2.5"
             aria-label={store.name}
           >
             {store.logo ? (
@@ -75,7 +82,7 @@ export function StorefrontHeader({
             </span>
           </Link>
 
-          <nav className="ms-6 hidden items-center gap-7 md:flex">
+          <nav className="hidden items-center justify-center gap-7 lg:flex">
             {links.map((link) => (
               <Link
                 key={link.href + link.label}
@@ -87,9 +94,41 @@ export function StorefrontHeader({
             ))}
           </nav>
 
-          <div className="ms-auto flex items-center gap-2">
+          <div className="flex items-center justify-end gap-1">
+            <Link
+              href={searchHref}
+              aria-label={labels.searchTitle}
+              title={labels.searchTitle}
+              className={iconButton}
+            >
+              <Icon path={icons.search} className="h-[1.125rem] w-[1.125rem]" strokeWidth={1.8} />
+            </Link>
+
+            <Link
+              href={accountHref}
+              aria-label={labels.accountTitle}
+              title={labels.accountTitle}
+              className={iconButton}
+            >
+              <Icon path={icons.user} className="h-[1.125rem] w-[1.125rem]" strokeWidth={1.8} />
+            </Link>
+
+            <div className="hidden lg:block">
+              <HeaderSelectors
+                currency={store.currency}
+                locale={locale}
+                labels={labels}
+              />
+            </div>
+
             <CartButton />
-            <MobileMenu links={links} labels={labels} />
+
+            <MobileMenu
+              links={links}
+              labels={labels}
+              currency={store.currency}
+              locale={locale}
+            />
           </div>
         </Container>
       </header>

@@ -88,14 +88,22 @@ export function ProductBuyBox({
 
   return (
     <div>
-      <div className="flex flex-wrap items-baseline gap-2.5">
-        <p className="text-[1.5rem] font-medium tracking-[-0.02em] tabular-nums text-fg">
+      <div className="flex flex-wrap items-center gap-2.5">
+        <p className="text-[1.875rem] font-medium tracking-[-0.03em] tabular-nums text-fg">
           {priceLabel}
         </p>
         {compareAtLabel ? (
-          <p className="text-[0.9375rem] tabular-nums text-faint line-through">
+          <p className="text-[1rem] tabular-nums text-faint line-through">
             {compareAtLabel}
           </p>
+        ) : null}
+        {variant?.discountPercent ?? product.discountPercent ? (
+          <span className="rounded-md bg-fg px-2 py-0.5 text-[0.6875rem] font-semibold text-bg">
+            {labels.discountOff.replace(
+              "{percent}",
+              String(variant?.discountPercent ?? product.discountPercent ?? 0),
+            )}
+          </span>
         ) : null}
       </div>
 
@@ -134,7 +142,7 @@ export function ProductBuyBox({
                       disabled={!available}
                       aria-pressed={active}
                       className={cn(
-                        "min-w-11 rounded-lg border px-3 py-1.5 text-[0.8125rem] font-medium transition-colors",
+                        "min-w-11 rounded-md border px-3.5 py-2 text-[0.8125rem] font-medium transition-colors",
                         active
                           ? "border-fg bg-fg text-bg"
                           : "border-border text-body hover:border-border-strong",
@@ -187,7 +195,7 @@ export function ProductBuyBox({
             className={cn(
               "flex h-12 min-w-[12rem] flex-1 items-center justify-center gap-2 rounded-xl px-5 text-[0.875rem] font-medium transition-colors",
               canAdd && !adding
-                ? "bg-brand-500 text-white hover:bg-brand-600"
+                ? "bg-fg text-bg hover:bg-fg/90"
                 : "cursor-not-allowed bg-hairline text-faint",
             )}
           >

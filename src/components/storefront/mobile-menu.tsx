@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { HeaderSelectors } from "@/components/storefront/header-selectors";
 import { Icon, icons } from "@/components/ui/primitives";
+import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/get-dictionary";
 
 type NavLink = { href: string; label: string };
@@ -12,9 +14,13 @@ type NavLink = { href: string; label: string };
 export function MobileMenu({
   links,
   labels,
+  currency,
+  locale,
 }: {
   links: NavLink[];
   labels: Dictionary["storefront"];
+  currency: string;
+  locale: Locale;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -85,13 +91,24 @@ export function MobileMenu({
               ))}
             </nav>
 
-            <Link
-              href={links[0]?.href ?? "#"}
-              onClick={() => setOpen(false)}
-              className="mt-auto rounded-xl bg-fg px-5 py-3 text-center text-[0.8125rem] font-medium text-bg"
-            >
-              {labels.continueShopping}
-            </Link>
+            <div className="mt-auto">
+              <div className="mb-4 border-t border-hairline pt-4">
+                <HeaderSelectors
+                  currency={currency}
+                  locale={locale}
+                  labels={labels}
+                  compact
+                />
+              </div>
+
+              <Link
+                href={links[0]?.href ?? "#"}
+                onClick={() => setOpen(false)}
+                className="block rounded-xl bg-fg px-5 py-3 text-center text-[0.8125rem] font-medium text-bg"
+              >
+                {labels.continueShopping}
+              </Link>
+            </div>
           </div>
         </div>,
         document.body,
