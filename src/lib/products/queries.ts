@@ -20,6 +20,8 @@ export type Product = {
   width_mm: number | null;
   height_mm: number | null;
   shipping_countries: string[];
+  description_media_id: string | null;
+  description_image: { object_key: string } | null;
   published_at: string | null;
   created_at: string;
   updated_at: string;
@@ -47,6 +49,8 @@ const COLUMNS = [
   "id, name, slug, description, price_amount, compare_at_amount, status",
   "product_type, stock_quantity, weight_grams, duration_minutes, service_location",
   "tags, video_url, length_mm, width_mm, height_mm, shipping_countries",
+  "description_media_id",
+  "description_image:media_assets!description_media_id(object_key)",
   "published_at, created_at, updated_at, options",
   "variants:product_variants(id, option_values, sku, barcode, price_amount, stock_quantity, position)",
   "images:product_images(position, media:media_assets(id, object_key))",
@@ -61,6 +65,8 @@ const LIST_COLUMNS = [
   "id, name, slug, description, price_amount, compare_at_amount, status",
   "product_type, stock_quantity, weight_grams, duration_minutes, service_location",
   "tags, video_url, length_mm, width_mm, height_mm, shipping_countries",
+  "description_media_id",
+  "description_image:media_assets!description_media_id(object_key)",
   "published_at, created_at, updated_at, options",
   "images:product_images(position, media:media_assets(id, object_key))",
   "digital_file:media_assets!digital_file_id(id, file_name)",

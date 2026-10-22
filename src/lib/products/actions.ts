@@ -58,6 +58,7 @@ type ParsedProduct = {
   tags: string;
   videoUrl: string;
   imageIds: string[];
+  descriptionMediaId: string;
   stock?: string;
   weight?: string;
   length?: string;
@@ -131,6 +132,7 @@ function readForm(formData: FormData) {
     tags: field(formData, "tags"),
     videoUrl: field(formData, "videoUrl"),
     imageIds: list(formData, "imageIds"),
+    descriptionMediaId: field(formData, "descriptionMediaId"),
     stock: field(formData, "stock"),
     weight: field(formData, "weight"),
     length: field(formData, "length"),
@@ -309,6 +311,7 @@ export async function createProductAction(
     p_image_ids: data.imageIds,
     p_options: draft.options,
     p_variants: built.variants,
+    p_description_media_id: data.descriptionMediaId || null,
     ...typeParams(type, data),
   });
 
@@ -387,6 +390,7 @@ export async function updateProductAction(
     p_image_ids: data.imageIds,
     p_options: draft.options,
     p_variants: built.variants,
+    p_description_media_id: data.descriptionMediaId || null,
     ...params,
   });
 
@@ -405,6 +409,14 @@ export async function updateProductAction(
   const nextFileId = params.p_digital_file_id ?? null;
   if (previousFileId && previousFileId !== nextFileId) {
     await deleteMediaAsset(supabase, previousFileId);
+  }
+
+  const previousDescriptionId = existing.description_media_id;
+  if (
+    previousDescriptionId &&
+    previousDescriptionId !== (data.descriptionMediaId || null)
+  ) {
+    await deleteMediaAsset(supabase, previousDescriptionId);
   }
 
   revalidatePath("/", "layout");
@@ -464,6 +476,7 @@ export async function deleteProductAction(formData: FormData): Promise<void> {
 
   const mediaIds = product.images.map((image) => image.id);
   if (product.digital_file) mediaIds.push(product.digital_file.id);
+  if (product.description_media_id) mediaIds.push(product.description_media_id);
 
   const { error } = await supabase
     .from("products")

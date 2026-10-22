@@ -45,7 +45,6 @@ export function StorefrontHeader({
   const links = [
     { href: home, label: labels.navHome },
     { href: `${home}#products`, label: labels.navNew },
-    { href: `${home}#collections`, label: labels.navCollections },
     { href: `${home}#contact`, label: labels.navContact },
   ];
 

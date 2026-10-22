@@ -76,6 +76,13 @@ const common = {
     .array(z.string().regex(UUID_PATTERN, "productImageRequired"))
     .min(1, "productImageRequired")
     .max(4, "productImageLimit"),
+  descriptionMediaId: z
+    .string()
+    .trim()
+    .refine(
+      (value) => value === "" || UUID_PATTERN.test(value),
+      "productMediaInvalid",
+    ),
   compareAtPrice: compareAtInput,
 };
 

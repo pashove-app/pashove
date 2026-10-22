@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
+import { useMounted } from "@/components/storefront/use-mounted";
 
 /**
  * Bandeau d'annonce. Les messages viennent des réglages réels de la boutique,
@@ -9,10 +10,11 @@ import { motion, useReducedMotion } from "motion/react";
  */
 export function AnnouncementBar({ messages }: { messages: string[] }) {
   const reduce = useReducedMotion();
+  const mounted = useMounted();
 
   if (messages.length === 0) return null;
 
-  if (reduce || messages.length === 1) {
+  if (messages.length === 1 || (mounted && reduce)) {
     return (
       <div className="bg-fg text-bg">
         <p className="mx-auto flex h-8 max-w-7xl items-center justify-center px-5 text-center text-[0.625rem] font-medium uppercase tracking-[0.16em]">

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { BRAND_GRADIENT, BRAND_GRID } from "@/components/storefront/brand";
 import { Container } from "@/components/storefront/container";
 import type { Dictionary } from "@/i18n/get-dictionary";
@@ -18,20 +18,17 @@ export function StorefrontHero({
   store,
   bannerUrl,
   labels,
-  hasCollections,
 }: {
   store: PublicStore;
   bannerUrl: string | null;
   labels: Dictionary["storefront"];
-  hasCollections: boolean;
 }) {
-  const reduce = useReducedMotion();
   const title = store.hero_title ?? store.name;
   const subtitle = store.hero_subtitle ?? store.description;
 
   const enter = (delay: number) => ({
-    initial: reduce ? false : { opacity: 0, y: 26 },
-    animate: reduce ? undefined : { opacity: 1, y: 0 },
+    initial: { opacity: 0, y: 26 },
+    animate: { opacity: 1, y: 0 },
     transition: { duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] as const },
   });
 
@@ -107,14 +104,7 @@ export function StorefrontHero({
           >
             {labels.heroCta}
           </a>
-          {hasCollections ? (
-            <a
-              href="#collections"
-              className="inline-flex h-12 items-center justify-center rounded-xl border border-white/30 px-6 text-[0.8125rem] font-medium text-white transition-colors hover:bg-white/10"
-            >
-              {labels.navCollections}
-            </a>
-          ) : null}
+
         </motion.div>
       </Container>
     </section>

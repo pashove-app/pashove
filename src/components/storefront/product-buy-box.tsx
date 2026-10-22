@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useCart } from "@/components/storefront/cart-provider";
 import { Icon, icons, Spinner } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
+import { swatchColor } from "@/lib/colors";
 import type { PricedStoreProduct } from "@/lib/storefront/products";
 
 /**
@@ -51,6 +52,10 @@ export function ProductBuyBox({
     : product.compareAtLabel;
 
   const maxQuantity = stock ?? 1;
+
+  function isColorOption(name: string): boolean {
+    return /couleur|colou?r/i.test(name);
+  }
 
   function choose(optionName: string, value: string) {
     setSelected((current) => ({ ...current, [optionName]: value }));
@@ -124,39 +129,78 @@ export function ProductBuyBox({
 
       {hasOptions ? (
         <div className="mt-5 space-y-4">
-          {product.options.map((option) => (
-            <div key={option.name}>
-              <p className="text-[0.75rem] font-medium text-body">
-                {option.name}
-              </p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {option.values.map((value) => {
-                  const active = selected[option.name] === value;
-                  const available = valueAvailable(option.name, value);
+          {product.options.map((option) => {
+            const colorOption = isColorOption(option.name);
+            const current = selected[option.name];
 
-                  return (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => choose(option.name, value)}
-                      disabled={!available}
-                      aria-pressed={active}
-                      className={cn(
-                        "min-w-11 rounded-md border px-3.5 py-2 text-[0.8125rem] font-medium transition-colors",
-                        active
-                          ? "border-fg bg-fg text-bg"
-                          : "border-border text-body hover:border-border-strong",
-                        !available &&
-                          "cursor-not-allowed border-border/60 text-faint line-through opacity-60",
-                      )}
-                    >
-                      {value}
-                    </button>
-                  );
-                })}
+            return (
+              <div key={option.name}>
+                <p className="text-[0.75rem] font-medium text-body">
+                  {option.name}
+                  {colorOption && current ? (
+                    <span className="font-normal text-subtle"> : {current}</span>
+                  ) : null}
+                </p>
+
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {option.values.map((value) => {
+                    const active = selected[option.name] === value;
+                    const available = valueAvailable(option.name, value);
+                    const color = colorOption ? swatchColor(value) : null;
+
+                    if (colorOption) {
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => choose(option.name, value)}
+                          disabled={!available}
+                          aria-pressed={active}
+                          aria-label={value}
+                          title={value}
+                          className={cn(
+                            "relative flex h-8 w-8 items-center justify-center rounded-full border-2 transition-transform",
+                            active
+                              ? "scale-105 border-fg"
+                              : "border-border hover:border-border-strong",
+                            !available && "cursor-not-allowed opacity-40",
+                            !color && "bg-hairline",
+                          )}
+                          style={color ? { backgroundColor: color } : undefined}
+                        >
+                          {!color ? (
+                            <span className="text-[0.625rem] font-medium uppercase text-subtle">
+                              {value.slice(0, 1)}
+                            </span>
+                          ) : null}
+                        </button>
+                      );
+                    }
+
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => choose(option.name, value)}
+                        disabled={!available}
+                        aria-pressed={active}
+                        className={cn(
+                          "min-w-11 rounded-md border px-3.5 py-2 text-[0.8125rem] font-medium transition-colors",
+                          active
+                            ? "border-fg bg-fg text-bg"
+                            : "border-border text-body hover:border-border-strong",
+                          !available &&
+                            "cursor-not-allowed border-border/60 text-faint line-through opacity-60",
+                        )}
+                      >
+                        {value}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : null}
 

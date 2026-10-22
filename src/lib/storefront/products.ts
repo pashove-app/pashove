@@ -23,6 +23,7 @@ export type StoreProduct = {
   tags: string[];
   shipping_countries: string[];
   options: ProductOption[];
+  description_image: { object_key: string } | null;
   images: { object_key: string }[];
   variants: StoreVariant[];
 };
@@ -30,6 +31,7 @@ export type StoreProduct = {
 const COLUMNS = [
   "id, name, slug, description, price_amount, compare_at_amount",
   "product_type, stock_quantity, tags, options, shipping_countries",
+  "description_image:media_assets!description_media_id(object_key)",
   "images:product_images(position, media:media_assets(object_key))",
   "variants:product_variants(id, option_values, sku, price_amount, stock_quantity, position)",
 ].join(", ");
@@ -101,23 +103,6 @@ export type PricedStoreProduct = Omit<StoreProduct, "variants"> & {
   })[];
 };
 
-/** Les produits publiés qui portent une étiquette donnée. */
-export async function listStoreProductsByTag(
-  storeId: string,
-  tag: string,
-): Promise<StoreProduct[]> {
-  const supabase = createPublicClient();
-
-  const { data } = await supabase
-    .from("products")
-    .select(COLUMNS)
-    .eq("store_id", storeId)
-    .eq("status", "published")
-    .contains("tags", [tag])
-    .order("created_at", { ascending: false });
-
-  return ((data ?? []) as unknown as Row[]).map(toProduct);
-}
 
 /** Recherche par nom dans les produits publiés d'une boutique. */
 export async function searchStoreProducts(

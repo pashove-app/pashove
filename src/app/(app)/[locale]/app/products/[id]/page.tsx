@@ -56,6 +56,14 @@ export default async function EditProductPage({
     url: publicUrl(image.object_key),
   }));
 
+  const initialDescriptionImage =
+    product.description_media_id && product.description_image
+      ? {
+          id: product.description_media_id,
+          url: publicUrl(product.description_image.object_key),
+        }
+      : null;
+
   const initialFile = product.digital_file
     ? { id: product.digital_file.id, name: product.digital_file.name }
     : null;
@@ -90,6 +98,7 @@ export default async function EditProductPage({
         storeSlug={store.slug}
         product={product}
         initialImages={initialImages}
+        initialDescriptionImage={initialDescriptionImage}
         initialFile={initialFile}
       />
     </div>

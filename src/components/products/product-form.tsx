@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { FileUploader, type FileValue } from "@/components/media/file-uploader";
+import { MediaUploader, type MediaValue } from "@/components/media/media-uploader";
 import { MediaGalleryField, type GalleryItem } from "@/components/products/media-gallery-field";
 import { ShippingCountriesField } from "@/components/products/shipping-countries-field";
 import { VariantsField, type VariantRow } from "@/components/products/variants-field";
@@ -52,6 +53,7 @@ export function ProductForm({
   storeSlug,
   product,
   initialImages,
+  initialDescriptionImage,
   initialFile,
 }: {
   t: Dictionary;
@@ -62,6 +64,7 @@ export function ProductForm({
   storeSlug: string;
   product?: Product;
   initialImages: GalleryItem[];
+  initialDescriptionImage: MediaValue;
   initialFile: FileValue;
 }) {
   const isEdit = mode === "edit";
@@ -246,6 +249,27 @@ export function ProductForm({
             {fieldError("imageIds")}
           </p>
         ) : null}
+      </div>
+
+      <div>
+        <MediaUploader
+          name="descriptionMediaId"
+          kind="product"
+          wide
+          label={labels.descriptionImageLabel}
+          help={labels.descriptionImageHelp}
+          initial={initialDescriptionImage}
+          labels={{
+            choose: t.settings.uploadChoose,
+            replace: t.settings.uploadReplace,
+            remove: t.settings.uploadRemove,
+            drop: t.settings.uploadDrop,
+            uploading: t.settings.uploadUploading,
+            errorType: t.settings.uploadErrorType,
+            errorSize: t.settings.uploadErrorSize,
+            errorUpload: t.settings.uploadErrorUpload,
+          }}
+        />
       </div>
 
       {type === "physical" ? (

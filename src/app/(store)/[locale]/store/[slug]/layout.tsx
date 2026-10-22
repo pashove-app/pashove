@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
+import { MotionConfig } from "motion/react";
 import { CartProvider } from "@/components/storefront/cart-provider";
+import { WishlistProvider } from "@/components/storefront/wishlist-provider";
 import { LOCALE_META, isLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { readCart } from "@/lib/storefront/cart";
@@ -20,7 +22,7 @@ export default async function StoreLayout({
 
   if (!isLocale(raw)) return children;
 
-  const { status } = await loadStorefront(slug);
+  const { status, store } = await loadStorefront(slug);
   const [t, cart] = await Promise.all([
     getDictionary(raw),
     status === "active"
@@ -31,15 +33,19 @@ export default async function StoreLayout({
   const mediaBase = (process.env.R2_PUBLIC_URL ?? "").replace(/\/+$/, "");
 
   return (
-    <CartProvider
-      slug={slug}
-      locale={raw}
-      initialCart={cart}
-      mediaBase={mediaBase}
-      localeTag={LOCALE_META[raw].tag}
-      labels={t.storefront}
-    >
-      {children}
-    </CartProvider>
+    <MotionConfig reducedMotion="user">
+      <WishlistProvider storeId={store?.id ?? slug}>
+        <CartProvider
+          slug={slug}
+          locale={raw}
+          initialCart={cart}
+          mediaBase={mediaBase}
+          localeTag={LOCALE_META[raw].tag}
+          labels={t.storefront}
+        >
+          {children}
+        </CartProvider>
+      </WishlistProvider>
+    </MotionConfig>
   );
 }

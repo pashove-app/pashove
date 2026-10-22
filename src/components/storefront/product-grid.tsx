@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { QuickAdd } from "@/components/storefront/quick-add";
+import { WishlistButton } from "@/components/storefront/wishlist-button";
 import { Icon, icons } from "@/components/ui/primitives";
 import { path } from "@/components/ui/types";
 import type { Locale } from "@/i18n/config";
@@ -109,6 +110,10 @@ export function ProductGrid({
                       {labels.outOfStock}
                     </span>
                   ) : null}
+
+                  <div className="absolute end-3 top-3 z-10">
+                    <WishlistButton productId={product.id} />
+                  </div>
 
                   <QuickAdd
                     productId={product.id}

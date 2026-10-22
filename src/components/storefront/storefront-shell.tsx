@@ -87,9 +87,6 @@ function StorefrontFooter({
               <Link href={`${home}#products`} className="text-[0.8125rem] text-subtle transition-colors hover:text-fg">
                 {labels.navNew}
               </Link>
-              <Link href={`${home}#collections`} className="text-[0.8125rem] text-subtle transition-colors hover:text-fg">
-                {labels.navCollections}
-              </Link>
               <Link href={path(locale, `/store/${store.slug}/cart`)} className="text-[0.8125rem] text-subtle transition-colors hover:text-fg">
                 {labels.viewCart}
               </Link>

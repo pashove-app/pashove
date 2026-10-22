@@ -11,7 +11,9 @@ import { Reveal } from "@/components/storefront/reveal";
 import { StorefrontClosed } from "@/components/storefront/storefront-closed";
 import { StorefrontHeader } from "@/components/storefront/storefront-header";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
+import { WishlistButton } from "@/components/storefront/wishlist-button";
 import { Icon, icons } from "@/components/ui/primitives";
+import { cn } from "@/lib/cn";
 import { path } from "@/components/ui/types";
 import { LOCALE_META, isLocale } from "@/i18n/config";
 import { getDictionary, type Dictionary } from "@/i18n/get-dictionary";
@@ -114,7 +116,9 @@ export default async function ProductPage({
   };
 
   const images = product.images.map((image) => publicUrl(image.object_key));
-  const editorialImage = images[1] ?? images[0] ?? null;
+  const editorialImage = product.description_image
+    ? publicUrl(product.description_image.object_key)
+    : null;
 
   const typeLabel =
     product.product_type === "digital"
@@ -246,13 +250,19 @@ export default async function ProductPage({
           </Reveal>
 
           <Reveal delay={0.08} className="lg:sticky lg:top-24 lg:self-start">
-            {typeLabel ? (
-              <span className="mb-3 inline-flex rounded-full border border-hairline-strong bg-hairline px-2.5 py-1 text-[0.6875rem] font-medium text-subtle">
-                {typeLabel}
-              </span>
-            ) : null}
+            <div className="flex min-h-12 items-center justify-between gap-3">
+              {typeLabel ? (
+                <span className="inline-flex rounded-full border border-hairline-strong bg-hairline px-2.5 py-1 text-[0.6875rem] font-medium text-subtle">
+                  {typeLabel}
+                </span>
+              ) : (
+                <span />
+              )}
 
-            <h1 className="text-[2rem] font-medium leading-[1.05] tracking-[-0.04em] text-fg sm:text-[2.75rem]">
+              <WishlistButton productId={product.id} variant="square" />
+            </div>
+
+            <h1 className="mt-2 text-[2rem] font-medium leading-[1.05] tracking-[-0.04em] text-fg sm:text-[2.75rem]">
               {product.name}
             </h1>
 
@@ -268,7 +278,13 @@ export default async function ProductPage({
           </Reveal>
         </div>
 
-        <Reveal className="mt-16 grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14">
+        <Reveal
+          className={cn(
+            "mt-16 grid gap-10",
+            editorialImage &&
+              "lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14",
+          )}
+        >
           <ProductTabs tabs={tabs} />
 
           {editorialImage ? (
