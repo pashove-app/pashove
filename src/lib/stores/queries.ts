@@ -41,22 +41,34 @@ const COLUMNS = [
 /**
  * Les boutiques de l'utilisateur connecté.
  *
- * Aucun filtre n'est écrit ici, et c'est délibéré : ce sont les politiques RLS
- * qui restreignent les lignes. Un `where user_id = …` côté application serait
- * contournable ; une politique en base, non. La fonction reste donc utile même
- * dans un contexte où l'identité serait mal établie — elle renverrait zéro ligne.
+ * On part de `store_members`, pas de `stores` : la politique publique de
+ * `stores` rend visibles toutes les boutiques actives (c'est voulu pour la
+ * vitrine), y compris celles d'autres comptes. Lire `stores` directement
+ * ferait donc remonter la boutique active la plus ancienne, quel qu'en soit le
+ * propriétaire. La table des membres, elle, ne renvoie que les siennes — et sa
+ * RLS confirme la même règle en base.
  */
 export async function listStores(): Promise<Store[]> {
   const supabase = await createClient();
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
   const { data } = await supabase
-    .from("stores")
-    .select(COLUMNS)
-    .order("created_at", { ascending: true });
+    .from("store_members")
+    .select(`role, store:stores!store_id(${COLUMNS})`)
+    .eq("user_id", user.id);
 
   // Le client Supabase n'est pas typé : la forme renvoyée est vérifiée par le
   // select ci-dessus, pas par le compilateur.
-  return (data ?? []) as unknown as Store[];
+  const rows = (data ?? []) as unknown as { store: Store | null }[];
+
+  return rows
+    .map((row) => row.store)
+    .filter((store): store is Store => Boolean(store))
+    .sort((left, right) => left.created_at.localeCompare(right.created_at));
 }
 
 /**
