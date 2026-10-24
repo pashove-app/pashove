@@ -127,7 +127,40 @@ export function FinanceOverview({
         ))}
       </div>
 
-      <section className="mt-5 flex items-start gap-3.5 rounded-3xl border border-brand-500/20 bg-brand-500/[0.06] p-5 sm:p-6">
+      <section className="mt-4 flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-border bg-surface p-5 sm:p-6">
+        <div className="flex min-w-0 items-start gap-3.5">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-500/[0.12] text-accent">
+            <Icon path={icons.wallet} className="h-5 w-5" strokeWidth={1.7} />
+          </span>
+          <div>
+            <h2 className="text-[0.9375rem] font-medium text-fg">
+              {labels.payoutsTitle}
+            </h2>
+            <p className="mt-0.5 text-[0.8125rem] leading-relaxed text-subtle">
+              {labels.payoutsSubtitle}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2.5">
+          <ButtonLink
+            href={path(locale, "/app/finance/payouts/new")}
+            size="pill"
+          >
+            <Icon path={icons.plus} className="h-4 w-4" strokeWidth={2.4} />
+            {labels.newPayout}
+          </ButtonLink>
+          <ButtonLink
+            href={path(locale, "/app/finance/payouts")}
+            variant="outline"
+            size="pill"
+          >
+            {labels.payoutHistory}
+          </ButtonLink>
+        </div>
+      </section>
+
+      <section className="mt-4 flex items-start gap-3.5 rounded-3xl border border-brand-500/20 bg-brand-500/[0.06] p-5 sm:p-6">
         <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500/[0.12] text-accent">
           <Icon path={icons.lock} className="h-4 w-4" strokeWidth={1.8} />
         </span>
@@ -196,7 +229,14 @@ export function FinanceOverview({
                         {date(movement.occurred_at)}
                       </td>
                       <td className="px-3 py-3 text-[0.8125rem] font-medium text-body">
-                        {labels[KIND_LABEL[movement.kind]]}
+                        <span className="flex flex-wrap items-center gap-1.5">
+                          {labels[KIND_LABEL[movement.kind]]}
+                          {movement.demo ? (
+                            <span className="rounded-full bg-amber-500/12 px-1.5 py-0.5 text-[0.625rem] font-medium text-amber-600 dark:text-amber-400">
+                              {labels.demoBadge}
+                            </span>
+                          ) : null}
+                        </span>
                       </td>
                       <td className="px-3 py-3 text-[0.8125rem]">
                         {movement.orderNumber && movement.orderId ? (
@@ -234,8 +274,13 @@ export function FinanceOverview({
                   <li key={movement.id} className="p-5">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-[0.875rem] font-medium text-fg">
+                        <p className="flex flex-wrap items-center gap-1.5 text-[0.875rem] font-medium text-fg">
                           {labels[KIND_LABEL[movement.kind]]}
+                          {movement.demo ? (
+                            <span className="rounded-full bg-amber-500/12 px-1.5 py-0.5 text-[0.625rem] font-medium text-amber-600 dark:text-amber-400">
+                              {labels.demoBadge}
+                            </span>
+                          ) : null}
                         </p>
                         <p className="mt-0.5 text-[0.75rem] text-faint">
                           {date(movement.occurred_at)}

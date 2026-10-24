@@ -10,6 +10,7 @@ import {
   normalizePayoutNumber,
 } from "@/lib/finance/crypto";
 import {
+  getPayout,
   getPayoutMethod,
   listPayoutMethods,
 } from "@/lib/finance/queries";
@@ -18,9 +19,11 @@ import {
   payoutPinSchema,
 } from "@/lib/finance/payout-schema";
 import type {
+  PayoutFormState,
   PayoutMethodFormState,
   PayoutPinFormState,
 } from "@/lib/finance/types";
+import { parsePrice } from "@/lib/products/schema";
 import { currentStore } from "@/lib/stores/queries";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { toFieldErrors } from "@/lib/validation";
@@ -272,4 +275,111 @@ export async function setPayoutPinAction(
 
   revalidatePath("/", "layout");
   return { status: "saved", messageKey: "pinSaved" };
+}
+
+/* ------------------------------------------------------------------ *
+ *  Demandes de retrait
+ * ------------------------------------------------------------------ */
+
+function payoutErrorKey(error: { message?: string }): string {
+  const message = error.message ?? "";
+
+  if (message.includes("insufficient_funds")) return "insufficientFunds";
+  if (message.includes("payout_amount_too_low")) return "payoutAmountTooLow";
+  if (message.includes("method_not_found")) return "payoutMethodMissing";
+  if (message.includes("pin_locked")) return "pinLocked";
+  if (message.includes("pin_not_set")) return "pinNotSet";
+  if (message.includes("invalid_idempotency_key")) return "serverError";
+  if (message.includes("not_owner")) return "serverError";
+
+  return "serverError";
+}
+
+/** Réserve le montant et crée une demande de retrait, après vérification du PIN. */
+export async function requestPayoutAction(
+  _previous: PayoutFormState,
+  formData: FormData,
+): Promise<PayoutFormState> {
+  const locale = field(formData, "locale") || "fr";
+  const methodId = field(formData, "methodId");
+  const pin = field(formData, "pin");
+  const idempotencyKey = field(formData, "idempotencyKey");
+
+  if (!isSupabaseConfigured()) return { status: "unconfigured" };
+
+  const supabase = await createClient();
+  const store = await currentStore();
+  if (!store) return { status: "error", messageKey: "sessionExpired" };
+
+  const amount = parsePrice(field(formData, "amount"), store.currency);
+
+  if (amount === null || amount <= 0) {
+    return {
+      status: "invalid",
+      fieldErrors: { amount: "payoutAmountInvalid" },
+    };
+  }
+
+  if (amount < 1000) {
+    return {
+      status: "invalid",
+      fieldErrors: { amount: "payoutAmountTooLow" },
+    };
+  }
+
+  if (!/^[0-9]{4}$/.test(pin)) {
+    return { status: "invalid", fieldErrors: { pin: "pinInvalidFormat" } };
+  }
+
+  if (!methodId) {
+    return {
+      status: "invalid",
+      fieldErrors: { methodId: "payoutMethodMissing" },
+    };
+  }
+
+  const { data, error } = await supabase.rpc("request_payout", {
+    p_store_id: store.id,
+    p_method_id: methodId,
+    p_amount: amount,
+    p_pin: pin,
+    p_idempotency_key: idempotencyKey,
+  });
+
+  if (error) {
+    return { status: "error", messageKey: payoutErrorKey(error) };
+  }
+
+  const result = data as { status?: string } | null;
+
+  if (result?.status === "pin_invalid") {
+    return { status: "invalid", fieldErrors: { pin: "pinInvalid" } };
+  }
+
+  revalidatePath("/", "layout");
+  redirect(`/${locale}/app/finance/payouts?created=1`);
+}
+
+/** Annule une demande encore en attente et libère les fonds réservés. */
+export async function cancelPayoutAction(formData: FormData): Promise<void> {
+  const locale = field(formData, "locale") || "fr";
+  const payoutId = field(formData, "payoutId");
+
+  if (!isSupabaseConfigured() || !payoutId) return;
+
+  const supabase = await createClient();
+  const store = await currentStore();
+  if (!store) redirect(`/${locale}/auth/login`);
+
+  const existing = await getPayout(payoutId, store.id);
+  if (!existing) return;
+
+  const { error } = await supabase.rpc("cancel_payout", {
+    p_payout_id: payoutId,
+  });
+
+  if (error) return;
+
+  revalidatePath("/", "layout");
+  redirect(`/${locale}/app/finance/payouts?cancelled=1`);
 }

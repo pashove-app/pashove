@@ -33,6 +33,8 @@ export type LedgerMovement = {
   /** `charge`, `reversal`, `refund`… selon le mouvement. */
   role: string | null;
   sourceType: string;
+  /** Écriture de démonstration, clairement identifiée dans l'interface. */
+  demo: boolean;
   /** Numéro de commande, quand le mouvement en vient. */
   orderNumber: number | null;
   orderId: string | null;
@@ -94,7 +96,7 @@ type MovementRow = {
   source_type: string;
   source_id: string | null;
   occurred_at: string;
-  metadata: { order_number?: number; role?: string } | null;
+  metadata: { order_number?: number; role?: string; demo?: boolean } | null;
   entries: { direction: "debit" | "credit"; amount: number; currency: string }[];
 };
 
@@ -130,6 +132,7 @@ function toMovement(row: MovementRow): LedgerMovement {
     currency: row.entries[0]?.currency ?? "XOF",
     role: row.metadata?.role ?? null,
     sourceType: row.source_type,
+    demo: row.metadata?.demo === true,
     orderNumber: row.metadata?.order_number ?? null,
     orderId: row.source_type === "order" ? row.source_id : null,
   };
@@ -275,4 +278,57 @@ export async function getPayoutSecurity(
     lockedUntil: row.locked_until,
     pinUpdatedAt: row.pin_updated_at,
   };
+}
+
+export type PayoutStatus =
+  | "requested"
+  | "security_check"
+  | "processing"
+  | "sent"
+  | "completed"
+  | "failed"
+  | "reversed"
+  | "cancelled";
+
+export type PayoutSummary = {
+  id: string;
+  amount: number;
+  currency: string;
+  status: PayoutStatus;
+  provider: string;
+  account_name: string;
+  account_last4: string;
+  requested_at: string;
+  cancelled_at: string | null;
+};
+
+const PAYOUT_COLUMNS =
+  "id, amount, currency, status, provider, account_name, account_last4, requested_at, cancelled_at";
+
+export async function listPayouts(storeId: string): Promise<PayoutSummary[]> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("payouts")
+    .select(PAYOUT_COLUMNS)
+    .eq("store_id", storeId)
+    .order("requested_at", { ascending: false });
+
+  return (data ?? []) as unknown as PayoutSummary[];
+}
+
+export async function getPayout(
+  id: string,
+  storeId: string,
+): Promise<PayoutSummary | null> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("payouts")
+    .select(PAYOUT_COLUMNS)
+    .eq("id", id)
+    .eq("store_id", storeId)
+    .maybeSingle();
+
+  return (data as unknown as PayoutSummary | null) ?? null;
 }

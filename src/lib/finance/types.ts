@@ -15,3 +15,11 @@ export type PayoutPinFormState = {
 };
 
 export const INITIAL_PAYOUT_PIN_STATE: PayoutPinFormState = { status: "idle" };
+
+export type PayoutFormState = {
+  status: "idle" | "invalid" | "error" | "unconfigured" | "saved";
+  fieldErrors?: Record<string, string>;
+  messageKey?: string;
+};
+
+export const INITIAL_PAYOUT_FORM_STATE: PayoutFormState = { status: "idle" };

@@ -220,7 +220,14 @@ export function LedgerJournal({
                       {date(movement.occurred_at)}
                     </td>
                     <td className="px-4 py-3 text-[0.8125rem] font-medium text-body">
-                      {labels[KIND_LABEL[movement.kind]]}
+                      <span className="flex flex-wrap items-center gap-1.5">
+                        {labels[KIND_LABEL[movement.kind]]}
+                        {movement.demo ? (
+                          <span className="rounded-full bg-amber-500/12 px-1.5 py-0.5 text-[0.625rem] font-medium text-amber-600 dark:text-amber-400">
+                            {labels.demoBadge}
+                          </span>
+                        ) : null}
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-[0.8125rem]">
                       <Source movement={movement} labels={labels} locale={locale} />
@@ -252,8 +259,13 @@ export function LedgerJournal({
                 <li key={movement.id} className="p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-[0.875rem] font-medium text-fg">
+                      <p className="flex flex-wrap items-center gap-1.5 text-[0.875rem] font-medium text-fg">
                         {labels[KIND_LABEL[movement.kind]]}
+                        {movement.demo ? (
+                          <span className="rounded-full bg-amber-500/12 px-1.5 py-0.5 text-[0.625rem] font-medium text-amber-600 dark:text-amber-400">
+                            {labels.demoBadge}
+                          </span>
+                        ) : null}
                       </p>
                       <p className="mt-0.5 text-[0.75rem] text-faint">
                         {date(movement.occurred_at)}
@@ -343,7 +355,9 @@ function Source({
         ? labels.sourceOrder
         : movement.sourceType === "manual"
           ? labels.sourceManual
-          : movement.sourceType}
+          : movement.sourceType === "payment"
+            ? labels.sourcePayment
+            : movement.sourceType}
     </span>
   );
 }
