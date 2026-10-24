@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FinanceHero } from "@/components/finance/finance-hero";
 import { ButtonLink, Icon, icons, type IconKey } from "@/components/ui/primitives";
 import { path } from "@/components/ui/types";
 import { LOCALE_META, type Locale } from "@/i18n/config";
@@ -89,33 +90,7 @@ export function FinanceOverview({
 
   return (
     <div className="mx-auto w-full max-w-5xl">
-      <div>
-        <h1 className="text-[1.75rem] font-medium tracking-[-0.03em] text-fg sm:text-[2rem]">
-          {labels.title}
-        </h1>
-        <p className="mt-1.5 max-w-xl text-[0.9375rem] leading-relaxed text-muted">
-          {labels.subtitle}
-        </p>
-
-        <div className="mt-5 flex flex-wrap gap-2.5">
-          <ButtonLink
-            href={path(locale, "/app/finance/methods")}
-            variant="outline"
-            size="pill"
-          >
-            <Icon path={icons.wallet} className="h-[1.125rem] w-[1.125rem]" strokeWidth={1.8} />
-            {labels.methodsLink}
-          </ButtonLink>
-          <ButtonLink
-            href={path(locale, "/app/finance/security")}
-            variant="outline"
-            size="pill"
-          >
-            <Icon path={icons.lock} className="h-[1.125rem] w-[1.125rem]" strokeWidth={1.8} />
-            {labels.securityLink}
-          </ButtonLink>
-        </div>
-      </div>
+      <FinanceHero t={t} locale={locale} />
 
       <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((card) => (
