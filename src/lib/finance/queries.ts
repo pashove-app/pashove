@@ -174,3 +174,105 @@ export async function listLedgerTransactions(
     total: count ?? 0,
   };
 }
+
+export type PayoutMethod = {
+  id: string;
+  country: string;
+  provider: string;
+  account_name: string;
+  account_last4: string;
+  is_default: boolean;
+  created_at: string;
+};
+
+const METHOD_COLUMNS =
+  "id, country, provider, account_name, account_last4, is_default, created_at";
+
+/** Méthodes actives, la méthode par défaut d'abord. */
+export async function listPayoutMethods(
+  storeId: string,
+): Promise<PayoutMethod[]> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("payout_methods")
+    .select(METHOD_COLUMNS)
+    .eq("store_id", storeId)
+    .is("archived_at", null)
+    .order("is_default", { ascending: false })
+    .order("created_at", { ascending: true });
+
+  return (data ?? []) as unknown as PayoutMethod[];
+}
+
+export async function getPayoutMethod(
+  id: string,
+  storeId: string,
+): Promise<PayoutMethod | null> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("payout_methods")
+    .select(METHOD_COLUMNS)
+    .eq("id", id)
+    .eq("store_id", storeId)
+    .is("archived_at", null)
+    .maybeSingle();
+
+  return (data as unknown as PayoutMethod | null) ?? null;
+}
+
+/** Chiffré, réservé au serveur au moment d'un virement (F4). */
+export async function getPayoutMethodSecret(
+  id: string,
+  storeId: string,
+): Promise<{ id: string; provider: string; account_number_encrypted: string } | null> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("payout_methods")
+    .select("id, provider, account_number_encrypted")
+    .eq("id", id)
+    .eq("store_id", storeId)
+    .is("archived_at", null)
+    .maybeSingle();
+
+  return (
+    (data as unknown as {
+      id: string;
+      provider: string;
+      account_number_encrypted: string;
+    } | null) ?? null
+  );
+}
+
+export type PayoutSecurity = {
+  hasPin: boolean;
+  lockedUntil: string | null;
+  pinUpdatedAt: string | null;
+};
+
+type SecurityRow = {
+  has_pin: boolean;
+  locked_until: string | null;
+  pin_updated_at: string | null;
+};
+
+export async function getPayoutSecurity(
+  storeId: string,
+): Promise<PayoutSecurity> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("store_security_status", {
+    p_store_id: storeId,
+  });
+
+  const row = (data as SecurityRow[] | null)?.[0];
+
+  if (error || !row) return { hasPin: false, lockedUntil: null, pinUpdatedAt: null };
+
+  return {
+    hasPin: row.has_pin,
+    lockedUntil: row.locked_until,
+    pinUpdatedAt: row.pin_updated_at,
+  };
+}

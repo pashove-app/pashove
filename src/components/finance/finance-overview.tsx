@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Icon, icons, type IconKey } from "@/components/ui/primitives";
+import { ButtonLink, Icon, icons, type IconKey } from "@/components/ui/primitives";
 import { path } from "@/components/ui/types";
 import { LOCALE_META, type Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/get-dictionary";
@@ -7,10 +7,12 @@ import type { LedgerKind, LedgerMovement, StoreBalances } from "@/lib/finance/qu
 import { signedAmount } from "@/lib/finance/display";
 import { formatMoney } from "@/lib/money";
 
-const KIND_LABEL: Record<
-  LedgerKind,
-  keyof Dictionary["dashboard"]["finance"]
-> = {
+type FinanceLabelKey = Exclude<
+  keyof Dictionary["dashboard"]["finance"],
+  "errors"
+>;
+
+const KIND_LABEL: Record<LedgerKind, FinanceLabelKey> = {
   cod_sale: "kindCodSale",
   commission: "kindCommission",
   online_capture: "kindOnlineCapture",
@@ -96,6 +98,25 @@ export function FinanceOverview({
         <p className="mt-1.5 max-w-xl text-[0.9375rem] leading-relaxed text-muted">
           {labels.subtitle}
         </p>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <ButtonLink
+            href={path(locale, "/app/finance/methods")}
+            variant="outline"
+            size="sm"
+          >
+            <Icon path={icons.wallet} className="h-4 w-4" strokeWidth={1.8} />
+            {labels.methodsLink}
+          </ButtonLink>
+          <ButtonLink
+            href={path(locale, "/app/finance/security")}
+            variant="outline"
+            size="sm"
+          >
+            <Icon path={icons.lock} className="h-4 w-4" strokeWidth={1.8} />
+            {labels.securityLink}
+          </ButtonLink>
+        </div>
       </div>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

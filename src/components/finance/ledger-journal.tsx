@@ -12,10 +12,12 @@ import type {
 import { signedAmount } from "@/lib/finance/display";
 import { formatMoney } from "@/lib/money";
 
-const KIND_LABEL: Record<
-  LedgerMovement["kind"],
-  keyof Dictionary["dashboard"]["finance"]
-> = {
+type FinanceLabelKey = Exclude<
+  keyof Dictionary["dashboard"]["finance"],
+  "errors"
+>;
+
+const KIND_LABEL: Record<LedgerMovement["kind"], FinanceLabelKey> = {
   cod_sale: "kindCodSale",
   commission: "kindCommission",
   online_capture: "kindOnlineCapture",
