@@ -8,6 +8,7 @@ import {
   advanceOrderAction,
   cancelOrderAction,
   markOrderPaidAction,
+  refundOrderAction,
   type OrderActionState,
 } from "@/lib/orders/actions";
 import type {
@@ -68,9 +69,14 @@ export function OrderActions({
     cancelOrderAction,
     INITIAL_ORDER_ACTION_STATE,
   );
+  const [refundState, refund, refunding] = useActionState(
+    refundOrderAction,
+    INITIAL_ORDER_ACTION_STATE,
+  );
 
   const [shipOpen, setShipOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [refundOpen, setRefundOpen] = useState(false);
 
   const nextKey = NEXT[status];
   const canPay =
@@ -80,6 +86,10 @@ export function OrderActions({
   const canCancel =
     (status === "pending" || status === "confirmed" || status === "processing") &&
     paymentStatus !== "paid";
+  const canRefund =
+    paymentMethod === "cod" &&
+    paymentStatus === "paid" &&
+    status !== "cancelled";
 
   const active =
     advanceState.status !== "idle"
@@ -88,12 +98,14 @@ export function OrderActions({
         ? paidState
         : cancelState.status !== "idle"
           ? cancelState
-          : null;
+          : refundState.status !== "idle"
+            ? refundState
+            : null;
 
   const message = active ? messageOf(active, labels) : null;
   const isError = active?.status === "error";
 
-  if (!nextKey && !canPay && !canCancel && !message) return null;
+  if (!nextKey && !canPay && !canCancel && !canRefund && !message) return null;
 
   return (
     <section className="mt-6 rounded-2xl border border-border bg-surface p-5">
@@ -140,6 +152,16 @@ export function OrderActions({
             className={cn(BUTTON, DANGER)}
           >
             {labels.cancelButton}
+          </button>
+        ) : null}
+
+        {canRefund ? (
+          <button
+            type="button"
+            onClick={() => setRefundOpen(true)}
+            className={cn(BUTTON, DANGER)}
+          >
+            {labels.refundButton}
           </button>
         ) : null}
       </div>
@@ -211,6 +233,36 @@ export function OrderActions({
               className={cn(BUTTON, OUTLINE)}
             >
               {labels.cancelNo}
+            </button>
+          </form>
+        </div>
+      ) : null}
+
+      {refundOpen && canRefund ? (
+        <div className="mt-4 rounded-xl border border-red-400/30 bg-red-400/[0.06] p-4">
+          <p className="text-[0.8125rem] font-medium text-red-600 dark:text-red-400">
+            {labels.refundConfirmTitle}
+          </p>
+          <p className="mt-1 text-[0.75rem] leading-relaxed text-muted">
+            {labels.refundConfirmText}
+          </p>
+
+          <form action={refund} className="mt-3 flex flex-wrap gap-2">
+            <input type="hidden" name="orderId" value={orderId} />
+            <button
+              type="submit"
+              disabled={refunding}
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-red-600 px-3.5 text-[0.75rem] font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-60"
+            >
+              {refunding ? <Spinner /> : null}
+              {labels.refundYes}
+            </button>
+            <button
+              type="button"
+              onClick={() => setRefundOpen(false)}
+              className={cn(BUTTON, OUTLINE)}
+            >
+              {labels.refundNo}
             </button>
           </form>
         </div>

@@ -30,10 +30,26 @@ export type LedgerMovement = {
   occurred_at: string;
   amount: number;
   currency: string;
+  /** `charge`, `reversal`, `refund`… selon le mouvement. */
+  role: string | null;
+  sourceType: string;
   /** Numéro de commande, quand le mouvement en vient. */
   orderNumber: number | null;
   orderId: string | null;
 };
+
+export type LedgerFilter = "all" | "cod_sale" | "commission" | "refund";
+
+export type LedgerPeriod = "7" | "30" | "90" | "all";
+
+/** Date de début d'une période, calculée côté serveur. */
+export function ledgerSince(period: LedgerPeriod): string | null {
+  if (period === "all") return null;
+
+  const since = new Date();
+  since.setUTCDate(since.getUTCDate() - Number(period));
+  return since.toISOString();
+}
 
 type BalanceRow = { code: string; currency: string; balance: number };
 
@@ -78,7 +94,7 @@ type MovementRow = {
   source_type: string;
   source_id: string | null;
   occurred_at: string;
-  metadata: { order_number?: number } | null;
+  metadata: { order_number?: number; role?: string } | null;
   entries: { direction: "debit" | "credit"; amount: number; currency: string }[];
 };
 
@@ -98,19 +114,63 @@ export async function listRecentLedger(
     .order("occurred_at", { ascending: false })
     .limit(limit);
 
-  return ((data ?? []) as unknown as MovementRow[]).map((row) => {
-    const amount = row.entries
-      .filter((entry) => entry.direction === "debit")
-      .reduce((total, entry) => total + entry.amount, 0);
+  return ((data ?? []) as unknown as MovementRow[]).map(toMovement);
+}
 
-    return {
-      id: row.id,
-      kind: row.kind,
-      occurred_at: row.occurred_at,
-      amount,
-      currency: row.entries[0]?.currency ?? "XOF",
-      orderNumber: row.metadata?.order_number ?? null,
-      orderId: row.source_type === "order" ? row.source_id : null,
-    };
-  });
+function toMovement(row: MovementRow): LedgerMovement {
+  const amount = row.entries
+    .filter((entry) => entry.direction === "debit")
+    .reduce((total, entry) => total + entry.amount, 0);
+
+  return {
+    id: row.id,
+    kind: row.kind,
+    occurred_at: row.occurred_at,
+    amount,
+    currency: row.entries[0]?.currency ?? "XOF",
+    role: row.metadata?.role ?? null,
+    sourceType: row.source_type,
+    orderNumber: row.metadata?.order_number ?? null,
+    orderId: row.source_type === "order" ? row.source_id : null,
+  };
+}
+
+/**
+ * Journal paginé, filtrable par type et par période.
+ *
+ * La source reste lisible dans chaque ligne ; les filtres ne font que réduire
+ * l'ensemble, jamais recalculer un montant côté client.
+ */
+export async function listLedgerTransactions(
+  storeId: string,
+  options: {
+    kind: LedgerFilter;
+    since: string | null;
+    page: number;
+    pageSize?: number;
+  },
+): Promise<{ items: LedgerMovement[]; total: number }> {
+  const supabase = await createClient();
+  const pageSize = options.pageSize ?? 20;
+  const from = Math.max(options.page - 1, 0) * pageSize;
+
+  let query = supabase
+    .from("ledger_transactions")
+    .select(
+      "id, kind, source_type, source_id, occurred_at, metadata, entries:ledger_entries(direction, amount, currency)",
+      { count: "exact" },
+    )
+    .eq("store_id", storeId);
+
+  if (options.kind !== "all") query = query.eq("kind", options.kind);
+  if (options.since) query = query.gte("occurred_at", options.since);
+
+  const { data, count } = await query
+    .order("occurred_at", { ascending: false })
+    .range(from, from + pageSize - 1);
+
+  return {
+    items: ((data ?? []) as unknown as MovementRow[]).map(toMovement),
+    total: count ?? 0,
+  };
 }

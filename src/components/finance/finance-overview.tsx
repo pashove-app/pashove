@@ -4,6 +4,7 @@ import { path } from "@/components/ui/types";
 import { LOCALE_META, type Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import type { LedgerKind, LedgerMovement, StoreBalances } from "@/lib/finance/queries";
+import { signedAmount } from "@/lib/finance/display";
 import { formatMoney } from "@/lib/money";
 
 const KIND_LABEL: Record<
@@ -54,7 +55,7 @@ export function FinanceOverview({
     help: string;
     amount: number;
     icon: IconKey;
-    tone: "brand" | "neutral" | "cash";
+    tone: "brand" | "neutral" | "cash" | "debt";
   }[] = [
     {
       label: labels.availableLabel,
@@ -77,6 +78,13 @@ export function FinanceOverview({
       icon: "bag",
       tone: "cash",
     },
+    {
+      label: labels.commissionLabel,
+      help: labels.commissionHelp,
+      amount: balances.commissionDue,
+      icon: "percent",
+      tone: "debt",
+    },
   ];
 
   return (
@@ -90,7 +98,7 @@ export function FinanceOverview({
         </p>
       </div>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-3">
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((card) => (
           <section
             key={card.label}
@@ -106,7 +114,9 @@ export function FinanceOverview({
                     ? "text-accent"
                     : card.tone === "cash"
                       ? "text-emerald-600 dark:text-emerald-400"
-                      : "text-faint"
+                      : card.tone === "debt"
+                        ? "text-amber-600 dark:text-amber-400"
+                        : "text-faint"
                 }
               >
                 <Icon path={icons[card.icon]} className="h-4 w-4" strokeWidth={1.8} />
@@ -140,7 +150,16 @@ export function FinanceOverview({
           <h2 className="text-[0.9375rem] font-medium text-fg">
             {labels.movementsTitle}
           </h2>
-          <span className="font-mono text-[0.6875rem] text-faint">/{storeSlug}</span>
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-[0.6875rem] text-faint">/{storeSlug}</span>
+            <Link
+              href={path(locale, "/app/finance/transactions")}
+              className="inline-flex items-center gap-1 text-[0.75rem] font-medium text-accent transition-colors hover:text-accent-soft"
+            >
+              {labels.viewJournal}
+              <Icon path={icons.arrowRight} className="h-3.5 w-3.5 rtl:rotate-180" strokeWidth={2} />
+            </Link>
+          </div>
         </div>
 
         {movements.length === 0 ? (
@@ -173,64 +192,86 @@ export function FinanceOverview({
               </thead>
 
               <tbody>
-                {movements.map((movement) => (
-                  <tr
-                    key={movement.id}
-                    className="border-b border-hairline last:border-0"
-                  >
-                    <td className="px-5 py-3 text-[0.8125rem] text-muted">
-                      {date(movement.occurred_at)}
-                    </td>
-                    <td className="px-3 py-3 text-[0.8125rem] font-medium text-body">
-                      {labels[KIND_LABEL[movement.kind]]}
-                    </td>
-                    <td className="px-3 py-3 text-[0.8125rem]">
-                      {movement.orderNumber && movement.orderId ? (
-                        <Link
-                          href={path(locale, `/app/orders/${movement.orderId}`)}
-                          className="font-medium text-accent transition-colors hover:text-accent-soft"
-                        >
-                          #{movement.orderNumber}
-                        </Link>
-                      ) : (
-                        <span className="text-faint">—</span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3 text-end text-[0.875rem] font-medium tabular-nums text-fg">
-                      {money(movement.amount)}
-                    </td>
-                  </tr>
-                ))}
+                {movements.map((movement) => {
+                  const signed = signedAmount(movement);
+
+                  return (
+                    <tr
+                      key={movement.id}
+                      className="border-b border-hairline last:border-0"
+                    >
+                      <td className="px-5 py-3 text-[0.8125rem] text-muted">
+                        {date(movement.occurred_at)}
+                      </td>
+                      <td className="px-3 py-3 text-[0.8125rem] font-medium text-body">
+                        {labels[KIND_LABEL[movement.kind]]}
+                      </td>
+                      <td className="px-3 py-3 text-[0.8125rem]">
+                        {movement.orderNumber && movement.orderId ? (
+                          <Link
+                            href={path(locale, `/app/orders/${movement.orderId}`)}
+                            className="font-medium text-accent transition-colors hover:text-accent-soft"
+                          >
+                            #{movement.orderNumber}
+                          </Link>
+                        ) : (
+                          <span className="text-faint">—</span>
+                        )}
+                      </td>
+                      <td
+                        className={
+                          signed < 0
+                            ? "px-5 py-3 text-end text-[0.875rem] font-medium tabular-nums text-amber-600 dark:text-amber-400"
+                            : "px-5 py-3 text-end text-[0.875rem] font-medium tabular-nums text-emerald-600 dark:text-emerald-400"
+                        }
+                      >
+                        {signed < 0 ? "−" : "+"}
+                        {money(Math.abs(signed))}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
 
             <ul className="divide-y divide-hairline sm:hidden">
-              {movements.map((movement) => (
-                <li key={movement.id} className="p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-[0.875rem] font-medium text-fg">
-                        {labels[KIND_LABEL[movement.kind]]}
-                      </p>
-                      <p className="mt-0.5 text-[0.75rem] text-faint">
-                        {date(movement.occurred_at)}
+              {movements.map((movement) => {
+                const signed = signedAmount(movement);
+
+                return (
+                  <li key={movement.id} className="p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-[0.875rem] font-medium text-fg">
+                          {labels[KIND_LABEL[movement.kind]]}
+                        </p>
+                        <p className="mt-0.5 text-[0.75rem] text-faint">
+                          {date(movement.occurred_at)}
+                        </p>
+                      </div>
+                      <p
+                        className={
+                          signed < 0
+                            ? "text-[0.875rem] font-medium tabular-nums text-amber-600 dark:text-amber-400"
+                            : "text-[0.875rem] font-medium tabular-nums text-emerald-600 dark:text-emerald-400"
+                        }
+                      >
+                        {signed < 0 ? "−" : "+"}
+                        {money(Math.abs(signed))}
                       </p>
                     </div>
-                    <p className="text-[0.875rem] font-medium tabular-nums text-fg">
-                      {money(movement.amount)}
-                    </p>
-                  </div>
 
-                  {movement.orderNumber && movement.orderId ? (
-                    <Link
-                      href={path(locale, `/app/orders/${movement.orderId}`)}
-                      className="mt-1.5 inline-block text-[0.75rem] font-medium text-accent"
-                    >
-                      #{movement.orderNumber}
-                    </Link>
-                  ) : null}
-                </li>
-              ))}
+                    {movement.orderNumber && movement.orderId ? (
+                      <Link
+                        href={path(locale, `/app/orders/${movement.orderId}`)}
+                        className="mt-1.5 inline-block text-[0.75rem] font-medium text-accent"
+                      >
+                        #{movement.orderNumber}
+                      </Link>
+                    ) : null}
+                  </li>
+                );
+              })}
             </ul>
           </>
         )}

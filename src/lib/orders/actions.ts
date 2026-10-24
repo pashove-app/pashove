@@ -23,6 +23,7 @@ function messageKeyFor(error: { message?: string }): string {
   if (message.includes("payment_not_pending")) return "errorPaymentNotPending";
   if (message.includes("cancel_not_allowed")) return "errorCancelNotAllowed";
   if (message.includes("refund_required")) return "errorRefundRequired";
+  if (message.includes("refund_not_allowed")) return "errorRefundNotAllowed";
   if (message.includes("tracking_too_long")) return "errorTrackingTooLong";
   if (message.includes("order_unavailable")) return "errorOrderNotFound";
 
@@ -118,6 +119,35 @@ export async function cancelOrderAction(
 
   refresh();
   return { status: "saved", messageKey: "orderCancelled" };
+}
+
+/** Remboursement intégral d'une commande COD payée, par écritures compensatoires. */
+export async function refundOrderAction(
+  _previous: OrderActionState,
+  formData: FormData,
+): Promise<OrderActionState> {
+  const orderId = field(formData, "orderId");
+
+  if (!orderId || !UUID_PATTERN.test(orderId)) {
+    return { status: "error", messageKey: "errorOrderNotFound" };
+  }
+
+  if (!isSupabaseConfigured()) {
+    return { status: "error", messageKey: "errorActionFailed" };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("refund_cod_order", {
+    p_order_id: orderId,
+    p_reason: null,
+  });
+
+  if (error) {
+    return { status: "error", messageKey: messageKeyFor(error) };
+  }
+
+  refresh();
+  return { status: "saved", messageKey: "refundDone" };
 }
 
 /** Action rapide depuis la liste : avance d'une étape, sans suivi. */

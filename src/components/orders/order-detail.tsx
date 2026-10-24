@@ -52,6 +52,9 @@ export function OrderDetail({
 
   const eventText = (event: OrderDetailData["events"][number]): string => {
     if (event.type === "created") return labels.eventCreated;
+    if (event.type === "refunded") return labels.eventRefunded;
+    if (event.type === "cancelled") return labels.orderCancelled;
+    if (event.type === "payment_collected") return labels.paymentCollected;
     if (event.type === "status_changed") {
       const from = event.payload.from;
       const to = event.payload.to;
