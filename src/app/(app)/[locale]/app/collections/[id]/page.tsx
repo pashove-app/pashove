@@ -8,6 +8,7 @@ import {
   listCollectionProducts,
 } from "@/lib/collections/queries";
 import { currentStore } from "@/lib/stores/queries";
+import { publicUrl } from "@/lib/r2/media";
 
 export async function generateMetadata({
   params,
@@ -48,6 +49,14 @@ export default async function EditCollectionPage({
   const t = await getDictionary(locale);
 
   return (
-    <CollectionForm t={t} locale={locale} initial={collection} products={products} />
+    <CollectionForm
+      t={t}
+      locale={locale}
+      initial={collection}
+      products={products}
+      initialCoverUrl={
+        collection.image?.object_key ? publicUrl(collection.image.object_key) : null
+      }
+    />
   );
 }

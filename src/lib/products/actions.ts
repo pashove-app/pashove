@@ -484,7 +484,14 @@ export async function deleteProductAction(formData: FormData): Promise<void> {
     .eq("id", product.id)
     .eq("store_id", store.id);
 
-  if (error) return;
+  if (error) {
+    // Un produit présent dans un paquet ne se supprime pas : le marchand doit
+    // d'abord le retirer du paquet. La contrainte de clé étrangère le garantit.
+    if (error.code === "23503") {
+      redirect(`/${locale}/app/products?error=in_bundle`);
+    }
+    return;
+  }
 
   for (const id of mediaIds) {
     await deleteMediaAsset(supabase, id);

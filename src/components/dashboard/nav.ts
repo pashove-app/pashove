@@ -11,6 +11,7 @@ export type NavKey =
   | "orders"
   | "products"
   | "collections"
+  | "bundles"
   | "customers"
   | "marketing"
   | "discounts"
@@ -44,6 +45,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { key: "orders", href: "/app/orders", icon: "box" },
       { key: "products", href: "/app/products", icon: "tag" },
       { key: "collections", href: "/app/collections", icon: "layers" },
+      { key: "bundles", href: "/app/bundles", icon: "bundle" },
       { key: "customers", href: "/app/clients", icon: "users" },
       { key: "marketing", href: "/app/marketing", icon: "bolt" },
       { key: "discounts", href: "/app/discounts", icon: "percent" },

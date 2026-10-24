@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import {
-  CollectionCoverField,
-  type CollectionCover,
-} from "@/components/collections/collection-cover-field";
+  CoverImageField,
+  type CoverImage,
+} from "@/components/media/cover-image-field";
 import { CollectionProductPicker } from "@/components/collections/collection-product-picker";
 import { TextAreaField, TextField } from "@/components/ui/field";
 import { Icon, icons, Spinner, buttonClass } from "@/components/ui/primitives";
@@ -22,7 +22,6 @@ import {
   type CollectionFormState,
 } from "@/lib/collections/types";
 import { cn } from "@/lib/cn";
-import { publicUrl } from "@/lib/r2/media";
 
 /** Minuscules, chiffres et tirets — l'identifiant public d'une collection. */
 function slugify(value: string): string {
@@ -47,11 +46,14 @@ export function CollectionForm({
   locale,
   initial,
   products,
+  initialCoverUrl,
 }: {
   t: Dictionary;
   locale: Locale;
   initial: CollectionDetail | null;
   products: CollectionProductOption[];
+  /** URL calculée côté serveur : `R2_PUBLIC_URL` n'existe pas dans le client. */
+  initialCoverUrl: string | null;
 }) {
   const labels = t.dashboard.collections;
 
@@ -68,13 +70,18 @@ export function CollectionForm({
     initial?.is_published ? "published" : "draft",
   );
   const [selected, setSelected] = useState<string[]>(initial?.productIds ?? []);
-  const [cover, setCover] = useState<CollectionCover>(
-    initial?.image?.object_key
-      ? { id: initial.image_media_id as string, url: publicUrl(initial.image.object_key) }
+  const [cover, setCover] = useState<CoverImage>(
+    initial?.image_media_id && initialCoverUrl
+      ? { id: initial.image_media_id, url: initialCoverUrl }
       : null,
   );
 
-  const fieldError = (key: string) => state.fieldErrors?.[key];
+  const fieldError = (key: string) => {
+    const messageKey = state.fieldErrors?.[key];
+    return messageKey
+      ? labels.errors[messageKey as keyof typeof labels.errors] ?? messageKey
+      : undefined;
+  };
 
   const serverMessage = state.messageKey
     ? labels.errors[state.messageKey as keyof typeof labels.errors]
@@ -162,13 +169,11 @@ export function CollectionForm({
           </section>
 
           <section className="rounded-2xl border border-border bg-surface p-5">
-            <CollectionCoverField
+            <CoverImageField
               labels={labels}
               value={cover}
               onChange={setCover}
-              error={
-                fieldError("imageMediaId") ? labels.errors.collectionMediaInvalid : undefined
-              }
+              error={fieldError("imageMediaId")}
             />
           </section>
 

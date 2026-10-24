@@ -3,24 +3,36 @@
 import Image from "next/image";
 import { useId, useRef, useState } from "react";
 import { Icon, icons, Spinner } from "@/components/ui/primitives";
-import type { Dictionary } from "@/i18n/get-dictionary";
 import { uploadWithPresign } from "@/lib/media/upload-client";
 import { MAX_IMAGE_BYTES } from "@/lib/r2/media";
 
-export type CollectionCover = { id: string; url: string } | null;
+/** Champs de libellé communs aux couvertures (collection, paquet). */
+export type CoverLabels = {
+  coverLabel: string;
+  coverHelp: string;
+  coverAdd: string;
+  coverReplace: string;
+  coverRemove: string;
+  uploading: string;
+  coverErrorType: string;
+  coverErrorSize: string;
+  coverErrorUpload: string;
+};
+
+export type CoverImage = { id: string; url: string } | null;
 
 const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 
-/** Image de couverture d'une collection : une seule, avec aperçu. */
-export function CollectionCoverField({
+/** Image de couverture : une seule, avec aperçu et remplacement. */
+export function CoverImageField({
   labels,
   value,
   onChange,
   error,
 }: {
-  labels: Dictionary["dashboard"]["collections"];
-  value: CollectionCover;
-  onChange: (next: CollectionCover) => void;
+  labels: CoverLabels;
+  value: CoverImage;
+  onChange: (next: CoverImage) => void;
   error?: string;
 }) {
   const [busy, setBusy] = useState(false);
@@ -83,6 +95,7 @@ export function CollectionCoverField({
             src={value.url}
             alt=""
             fill
+            loading="eager"
             sizes="(max-width: 1024px) 100vw, 640px"
             className="object-cover"
           />

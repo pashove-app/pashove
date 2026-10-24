@@ -37,5 +37,13 @@ export default async function NewCollectionPage({
     LOCALE_META[locale].tag,
   );
 
-  return <CollectionForm t={t} locale={locale} initial={null} products={products} />;
+  return (
+    <CollectionForm
+      t={t}
+      locale={locale}
+      initial={null}
+      products={products}
+      initialCoverUrl={null}
+    />
+  );
 }

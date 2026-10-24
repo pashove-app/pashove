@@ -44,6 +44,7 @@ export default async function ProductsPage({
     created?: string;
     updated?: string;
     deleted?: string;
+    error?: string;
     q?: string;
     status?: string;
     tag?: string;
@@ -56,6 +57,7 @@ export default async function ProductsPage({
     created,
     updated,
     deleted,
+    error,
     q: rawQuery,
     status: rawStatus,
     tag: rawTag,
@@ -111,6 +113,16 @@ export default async function ProductsPage({
             : updated
               ? t.dashboard.products.updated
               : t.dashboard.products.created}
+        </p>
+      ) : null}
+
+      {error === "in_bundle" ? (
+        <p
+          role="alert"
+          className="mt-5 flex items-start gap-2.5 rounded-xl border border-red-400/25 bg-red-400/[0.07] p-3.5 text-[0.8125rem] leading-relaxed text-red-500 dark:text-red-400"
+        >
+          <Icon path={icons.close} className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.4} />
+          {t.dashboard.products.inBundleError}
         </p>
       ) : null}
 
