@@ -1578,6 +1578,37 @@ const en: Dictionary = {
       },
     },
 
+
+    finance: {
+      title: "Finance",
+      subtitle: "The journal of your payments and balances.",
+      availableLabel: "Available balance",
+      availableHelp: "Withdrawable once online payments are active.",
+      pendingLabel: "Pending",
+      pendingHelp: "Collected online, not yet settled by the provider.",
+      codLabel: "Collected via COD",
+      codHelp: "Cash received directly by you. Not withdrawable.",
+      noticeTitle: "COD sales stay in your cash",
+      noticeText:
+        "Pashove does not hold this money: it does not enter the withdrawable balance. Payouts will only cover online payments, once they are enabled.",
+      movementsTitle: "Recent movements",
+      movementsEmpty: "No movements yet",
+      movementsEmptyHint: "Collected sales will appear here.",
+      columnDate: "Date",
+      columnType: "Movement",
+      columnReference: "Reference",
+      columnAmount: "Amount",
+      kindCodSale: "COD sale",
+      kindCommission: "Commission",
+      kindOnlineCapture: "Online payment",
+      kindSettlement: "Settlement",
+      kindRefund: "Refund",
+      kindPayoutRequest: "Payout requested",
+      kindPayoutPaid: "Payout paid",
+      kindPayoutReleased: "Payout released",
+      kindAdjustment: "Adjustment",
+    },
+
     orders: {
       title: "Orders",
       count: "{count} order",

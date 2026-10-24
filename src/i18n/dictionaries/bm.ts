@@ -1582,6 +1582,37 @@ const bm: Dictionary = {
       },
     },
 
+
+    finance: {
+      title: "Finance",
+      subtitle: "I sɔngɔw ni i balancew ka sɛbɛn.",
+      availableLabel: "Sɔngɔ min bɛ se ka bɔ",
+      availableHelp: "A bɛna bɔ ni ɛntɛrinɛti sɔngɔw daminɛna.",
+      pendingLabel: "A bɛ kɔnɔ",
+      pendingHelp: "Ɛntɛrinɛti la, a ma labɛn fɔlɔ.",
+      codLabel: "COD la min sɔrɔra",
+      codHelp: "Wari min i yɛrɛ sɔrɔra. A tɛ se ka bɔ.",
+      noticeTitle: "COD sɔngɔw bɛ i bolo",
+      noticeText:
+        "Pashove tɛ nin wari mara : a tɛ don sɔngɔ min bɛ se ka bɔ kɔnɔ. Sɔngɔ bɔli bɛna kɛ ɛntɛrinɛti sɔngɔw dɔrɔn fɛ.",
+      movementsTitle: "Mouvements laban",
+      movementsEmpty: "Mouvement tɛ yen fɔlɔ",
+      movementsEmptyHint: "Sɔngɔ min sɔrɔra bɛna jira yan.",
+      columnDate: "Don",
+      columnType: "Mouvement",
+      columnReference: "Référence",
+      columnAmount: "Sɔngɔ",
+      kindCodSale: "COD feere",
+      kindCommission: "Komisiyɔn",
+      kindOnlineCapture: "Ɛntɛrinɛti sɔngɔ",
+      kindSettlement: "Règlement",
+      kindRefund: "Remboursement",
+      kindPayoutRequest: "Bɔli ɲininen",
+      kindPayoutPaid: "Bɔli sara",
+      kindPayoutReleased: "Bɔli bɔra",
+      kindAdjustment: "Ajustement",
+    },
+
     orders: {
       title: "Komande",
       count: "Komande {count}",

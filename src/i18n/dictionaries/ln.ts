@@ -1587,6 +1587,37 @@ const ln: Dictionary = {
       },
     },
 
+
+    finance: {
+      title: "Finance",
+      subtitle: "Ledger ya ba mbongo mpe ba balance na yo.",
+      availableLabel: "Balance ya kobimisa",
+      availableHelp: "Ekoki kobimisama ntango ba paiement en ligne ebandi.",
+      pendingLabel: "Ezali kozela",
+      pendingHelp: "Ezwamí na internet, ezali naino kofutamaka te.",
+      codLabel: "Ezwamí na COD",
+      codHelp: "Mbongo oyo ozwaki moko. Ekoki kobimisama te.",
+      noticeTitle: "Mbongo ya COD ebaki na maboko na yo",
+      noticeText:
+        "Pashove ezali na mbongo oyo te : ekokoti na balance ya kobimisa te. Kobimisa mbongo ekosala kaka na ba paiement en ligne, ntango ebandi.",
+      movementsTitle: "Ba mouvement ya suka",
+      movementsEmpty: "Mouvement moko te",
+      movementsEmptyHint: "Ba vente ezwamí ekomonana awa.",
+      columnDate: "Mokolo",
+      columnType: "Mouvement",
+      columnReference: "Référence",
+      columnAmount: "Mbongo",
+      kindCodSale: "Vente COD",
+      kindCommission: "Commission",
+      kindOnlineCapture: "Paiement en ligne",
+      kindSettlement: "Règlement",
+      kindRefund: "Remboursement",
+      kindPayoutRequest: "Kobimisa mbongo esengami",
+      kindPayoutPaid: "Kobimisa mbongo efutami",
+      kindPayoutReleased: "Kobimisa mbongo ebimisamí",
+      kindAdjustment: "Ajustement",
+    },
+
     orders: {
       title: "Ba commande",
       count: "Commande {count}",

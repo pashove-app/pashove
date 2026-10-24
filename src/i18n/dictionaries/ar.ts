@@ -1569,6 +1569,37 @@ const ar: Dictionary = {
       },
     },
 
+
+    finance: {
+      title: "المالية",
+      subtitle: "سجل مدفوعاتك وأرصدتك.",
+      availableLabel: "الرصيد المتاح",
+      availableHelp: "قابل للسحب بعد تفعيل المدفوعات الإلكترونية.",
+      pendingLabel: "قيد الانتظار",
+      pendingHelp: "محصّل إلكترونيًا، لم تتم تسويته بعد.",
+      codLabel: "المحصّل عند الاستلام",
+      codHelp: "نقد استلمته مباشرة. غير قابل للسحب.",
+      noticeTitle: "مبيعات الدفع عند الاستلام تبقى في صندوقك",
+      noticeText:
+        "باشوف لا تحتفظ بهذا المال: فهو لا يدخل في الرصيد القابل للسحب. عمليات السحب ستشمل المدفوعات الإلكترونية فقط عند تفعيلها.",
+      movementsTitle: "آخر الحركات",
+      movementsEmpty: "لا توجد حركات بعد",
+      movementsEmptyHint: "ستظهر المبيعات المحصّلة هنا.",
+      columnDate: "التاريخ",
+      columnType: "الحركة",
+      columnReference: "المرجع",
+      columnAmount: "المبلغ",
+      kindCodSale: "بيع عند الاستلام",
+      kindCommission: "عمولة",
+      kindOnlineCapture: "دفع إلكتروني",
+      kindSettlement: "تسوية",
+      kindRefund: "استرداد",
+      kindPayoutRequest: "طلب سحب",
+      kindPayoutPaid: "سحب مدفوع",
+      kindPayoutReleased: "سحب محرَّر",
+      kindAdjustment: "تسوية يدوية",
+    },
+
     orders: {
       title: "الطلبات",
       count: "طلب {count}",

@@ -1,0 +1,116 @@
+import { createClient } from "@/lib/supabase/server";
+
+export type StoreBalances = {
+  /** Solde retirable, en unité mineure. */
+  available: number;
+  /** Encaissé en ligne, pas encore réglé. */
+  pending: number;
+  /** Disponible immobilisé par un retrait en cours. */
+  reserved: number;
+  /** Espèces COD reçues par le marchand, jamais retirables. */
+  codCash: number;
+  /** Commission due à Pashove, exprimée en positif. */
+  commissionDue: number;
+};
+
+export type LedgerKind =
+  | "cod_sale"
+  | "commission"
+  | "online_capture"
+  | "settlement"
+  | "refund"
+  | "payout_request"
+  | "payout_paid"
+  | "payout_released"
+  | "adjustment";
+
+export type LedgerMovement = {
+  id: string;
+  kind: LedgerKind;
+  occurred_at: string;
+  amount: number;
+  currency: string;
+  /** Numéro de commande, quand le mouvement en vient. */
+  orderNumber: number | null;
+  orderId: string | null;
+};
+
+type BalanceRow = { code: string; currency: string; balance: number };
+
+const EMPTY_BALANCES: StoreBalances = {
+  available: 0,
+  pending: 0,
+  reserved: 0,
+  codCash: 0,
+  commissionDue: 0,
+};
+
+/**
+ * Soldes calculés en base, jamais stockés.
+ *
+ * `commission_due` est un passif : ses crédits rendent le solde signé négatif.
+ * On le renvoie en positif, prêt à être affiché comme une somme à régler.
+ */
+export async function getStoreBalances(storeId: string): Promise<StoreBalances> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("store_balances", {
+    p_store_id: storeId,
+  });
+
+  if (error || !data) return EMPTY_BALANCES;
+
+  const balances = { ...EMPTY_BALANCES };
+
+  for (const row of data as BalanceRow[]) {
+    if (row.code === "available") balances.available = row.balance;
+    if (row.code === "pending") balances.pending = row.balance;
+    if (row.code === "reserved") balances.reserved = row.balance;
+    if (row.code === "cod_cash") balances.codCash = row.balance;
+    if (row.code === "commission_due") balances.commissionDue = -row.balance;
+  }
+
+  return balances;
+}
+
+type MovementRow = {
+  id: string;
+  kind: LedgerKind;
+  source_type: string;
+  source_id: string | null;
+  occurred_at: string;
+  metadata: { order_number?: number } | null;
+  entries: { direction: "debit" | "credit"; amount: number; currency: string }[];
+};
+
+/** Derniers mouvements du journal, du plus récent au plus ancien. */
+export async function listRecentLedger(
+  storeId: string,
+  limit = 8,
+): Promise<LedgerMovement[]> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("ledger_transactions")
+    .select(
+      "id, kind, source_type, source_id, occurred_at, metadata, entries:ledger_entries(direction, amount, currency)",
+    )
+    .eq("store_id", storeId)
+    .order("occurred_at", { ascending: false })
+    .limit(limit);
+
+  return ((data ?? []) as unknown as MovementRow[]).map((row) => {
+    const amount = row.entries
+      .filter((entry) => entry.direction === "debit")
+      .reduce((total, entry) => total + entry.amount, 0);
+
+    return {
+      id: row.id,
+      kind: row.kind,
+      occurred_at: row.occurred_at,
+      amount,
+      currency: row.entries[0]?.currency ?? "XOF",
+      orderNumber: row.metadata?.order_number ?? null,
+      orderId: row.source_type === "order" ? row.source_id : null,
+    };
+  });
+}

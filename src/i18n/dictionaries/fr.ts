@@ -1632,6 +1632,37 @@ const fr = {
       },
     },
 
+
+    finance: {
+      title: "Finance",
+      subtitle: "Le journal de tes encaissements et de tes soldes.",
+      availableLabel: "Solde disponible",
+      availableHelp: "Retirable, une fois les paiements en ligne actifs.",
+      pendingLabel: "En attente",
+      pendingHelp: "Encaissé en ligne, pas encore réglé par le prestataire.",
+      codLabel: "Encaissé en COD",
+      codHelp: "Espèces reçues directement par toi. Non retirables.",
+      noticeTitle: "Les ventes COD restent dans ta caisse",
+      noticeText:
+        "Pashove ne détient pas cet argent : il n'entre pas dans le solde retirable. Les retraits porteront uniquement sur les paiements en ligne, quand ils seront activés.",
+      movementsTitle: "Derniers mouvements",
+      movementsEmpty: "Aucun mouvement pour l'instant",
+      movementsEmptyHint: "Les ventes encaissées apparaîtront ici.",
+      columnDate: "Date",
+      columnType: "Mouvement",
+      columnReference: "Référence",
+      columnAmount: "Montant",
+      kindCodSale: "Vente COD",
+      kindCommission: "Commission",
+      kindOnlineCapture: "Paiement en ligne",
+      kindSettlement: "Règlement",
+      kindRefund: "Remboursement",
+      kindPayoutRequest: "Retrait demandé",
+      kindPayoutPaid: "Retrait payé",
+      kindPayoutReleased: "Retrait libéré",
+      kindAdjustment: "Ajustement",
+    },
+
     orders: {
       title: "Commandes",
       count: "{count} commande",
