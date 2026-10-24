@@ -160,10 +160,10 @@ export function LedgerJournal({
               href={href({ period: option.key, page: 1 })}
               aria-current={active ? "true" : undefined}
               className={cn(
-                "rounded-lg px-2.5 py-1 text-[0.75rem] font-medium transition-colors",
+                "rounded-full px-3.5 py-1.5 text-[0.75rem] font-medium transition-colors",
                 active
                   ? "bg-hairline text-fg"
-                  : "text-faint hover:text-subtle",
+                  : "text-faint hover:bg-hairline/40 hover:text-subtle",
               )}
             >
               {option.label}
@@ -173,7 +173,7 @@ export function LedgerJournal({
       </div>
 
       {items.length === 0 ? (
-        <div className="mt-5 rounded-2xl border border-border bg-surface px-6 py-12 text-center">
+        <div className="mt-5 rounded-3xl border border-border bg-surface px-6 py-14 text-center">
           <p className="text-[0.9375rem] font-medium text-fg">{labels.emptyTitle}</p>
           <p className="mx-auto mt-1 max-w-sm text-[0.8125rem] leading-relaxed text-subtle">
             {labels.emptyText}
@@ -188,7 +188,7 @@ export function LedgerJournal({
           ) : null}
         </div>
       ) : (
-        <div className="mt-5 overflow-hidden rounded-2xl border border-border bg-surface">
+        <div className="mt-5 overflow-hidden rounded-3xl border border-border bg-surface">
           <table className="hidden w-full sm:table">
             <thead>
               <tr className="border-b border-border text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-faint">
@@ -214,7 +214,7 @@ export function LedgerJournal({
                 return (
                   <tr
                     key={movement.id}
-                    className="border-b border-border last:border-0"
+                    className="border-b border-border transition-colors last:border-0 hover:bg-hairline/30"
                   >
                     <td className="px-5 py-3 text-[0.8125rem] text-muted">
                       {date(movement.occurred_at)}
@@ -285,7 +285,7 @@ export function LedgerJournal({
           {page > 1 ? (
             <Link
               href={href({ page: page - 1 })}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border px-3 text-[0.75rem] font-medium text-subtle transition-colors hover:text-fg"
+              className="inline-flex h-10 items-center gap-1.5 rounded-full border border-border px-4 text-[0.75rem] font-medium text-subtle transition-colors hover:border-border-strong hover:text-fg"
             >
               <Icon path={icons.arrowRight} className="h-3.5 w-3.5 rotate-180 rtl:rotate-0" strokeWidth={2} />
               {labels.previous}
@@ -303,7 +303,7 @@ export function LedgerJournal({
           {page < pages ? (
             <Link
               href={href({ page: page + 1 })}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border px-3 text-[0.75rem] font-medium text-subtle transition-colors hover:text-fg"
+              className="inline-flex h-10 items-center gap-1.5 rounded-full border border-border px-4 text-[0.75rem] font-medium text-subtle transition-colors hover:border-border-strong hover:text-fg"
             >
               {labels.next}
               <Icon path={icons.arrowRight} className="h-3.5 w-3.5 rtl:rotate-180" strokeWidth={2} />

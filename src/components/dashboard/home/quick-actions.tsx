@@ -46,7 +46,7 @@ function ActionLink({
   return (
     <Link
       href={href}
-      className="flex items-center gap-2.5 rounded-xl border border-border bg-bg-soft px-4 py-3 text-[0.8125rem] font-medium text-body transition-colors hover:border-border-strong hover:text-fg"
+      className="flex items-center gap-2.5 rounded-full border border-border bg-bg-soft px-4 py-3 text-[0.8125rem] font-medium text-body transition-colors hover:border-border-strong hover:text-fg"
     >
       <Icon path={icons[icon]} className="h-4 w-4 shrink-0 text-accent" strokeWidth={2} />
       <span className="truncate">{label}</span>

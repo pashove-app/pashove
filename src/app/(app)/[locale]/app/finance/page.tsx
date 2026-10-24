@@ -43,7 +43,6 @@ export default async function FinancePage({
       currency={store.currency}
       balances={balances}
       movements={movements}
-      storeSlug={store.slug}
     />
   );
 }

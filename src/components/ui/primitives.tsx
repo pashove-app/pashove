@@ -127,6 +127,7 @@ const BUTTON_BASE =
 
 const BUTTON_SIZES = {
   sm: "h-9 px-4 text-[0.8125rem]",
+  pill: "h-10 px-5 text-[0.8125rem]",
   md: "h-11 px-6 text-sm",
   lg: "h-13 px-7 text-[0.9375rem]",
   xl: "h-14 px-8 text-base",
@@ -495,6 +496,12 @@ export const icons = {
     <path d="M12 3.5 13.9 9.4 19.8 11.3 13.9 13.2 12 19.1 10.1 13.2 4.2 11.3 10.1 9.4 12 3.5Z" />
   ),
   arrowUp: <path d="M12 19V5m-6 6 6-6 6 6" />,
+  list: (
+    <>
+      <path d="M9 6h11M9 12h11M9 18h11" />
+      <path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01" />
+    </>
+  ),
   mail: (
     <>
       <rect x="3" y="5.5" width="18" height="13" rx="2.5" />

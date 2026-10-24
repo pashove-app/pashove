@@ -103,7 +103,7 @@ export function PayoutMethodForm({
       <form
         action={formAction}
         noValidate
-        className="mt-6 space-y-5 rounded-2xl border border-border bg-surface p-5"
+        className="mt-7 space-y-6 rounded-3xl border border-border bg-surface p-6 sm:p-8"
       >
         <input type="hidden" name="locale" value={locale} />
         <input type="hidden" name="methodId" value={initial?.id ?? ""} />
@@ -170,7 +170,7 @@ export function PayoutMethodForm({
           onChange={(event) => setAccountNumber(event.target.value)}
         />
 
-        <div className="rounded-xl border border-border bg-bg-soft px-4 py-3">
+        <div className="rounded-2xl border border-border bg-bg-soft px-4 py-3.5">
           <Checkbox
             name="isDefault"
             checked={isDefault}

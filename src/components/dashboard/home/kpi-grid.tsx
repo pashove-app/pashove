@@ -14,12 +14,16 @@ export function KpiGrid({
   t,
   locale,
   revenue,
+  orders,
+  customers,
   products,
 }: {
   t: Dictionary;
   locale: Locale;
   /** Montant déjà mis en forme sur le serveur. */
   revenue: string;
+  orders: string;
+  customers: string;
   /** Nombre réel de produits de la boutique. */
   products: string;
 }) {
@@ -30,8 +34,8 @@ export function KpiGrid({
     value: string;
   }[] = [
     { key: "revenue", href: "/app/finance", icon: "wallet", value: revenue },
-    { key: "orders", href: "/app/orders", icon: "box", value: "0" },
-    { key: "customers", href: "/app/clients", icon: "users", value: "0" },
+    { key: "orders", href: "/app/orders", icon: "box", value: orders },
+    { key: "customers", href: "/app/clients", icon: "users", value: customers },
     { key: "products", href: "/app/products", icon: "tag", value: products },
   ];
 
@@ -41,7 +45,7 @@ export function KpiGrid({
         <Link
           key={item.key}
           href={path(locale, item.href)}
-          className="group rounded-2xl border border-border bg-surface p-4 transition-colors hover:border-border-strong sm:p-5"
+          className="group rounded-3xl border border-border bg-surface p-5 transition-all hover:border-border-strong hover:shadow-[0_18px_40px_-30px_rgba(0,0,0,0.8)]"
         >
           <div className="flex items-start justify-between">
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-500/[0.12] text-accent">
@@ -58,10 +62,10 @@ export function KpiGrid({
             />
           </div>
 
-          <p className="mt-4 text-[0.75rem] text-subtle">
+          <p className="mt-5 text-[0.75rem] text-subtle">
             {t.dashboard.home.kpi[item.key]}
           </p>
-          <p className="mt-1 truncate text-[1.5rem] font-semibold tracking-[-0.03em] tabular-nums text-fg">
+          <p className="mt-1.5 truncate text-[1.625rem] font-semibold tracking-[-0.035em] tabular-nums text-fg">
             {item.value}
           </p>
         </Link>

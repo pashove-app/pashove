@@ -30,7 +30,7 @@ export function RevenuePanel({
     .replace("{amount}", amount);
 
   return (
-    <section className="rounded-2xl border border-border bg-surface p-5 sm:p-6">
+    <section className="rounded-3xl border border-border bg-surface p-5 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-[0.9375rem] font-medium text-fg">
@@ -70,7 +70,7 @@ export function RevenuePanel({
         {label}
       </p>
 
-      <div className="mt-4 flex min-h-[220px] flex-col items-center justify-center rounded-xl border border-dashed border-border bg-bg-soft/40 px-6 py-10 text-center">
+      <div className="mt-5 flex min-h-[220px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-bg-soft/40 px-6 py-10 text-center">
         <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-500/[0.1] text-accent">
           <Icon path={icons.chart} className="h-5 w-5" strokeWidth={1.8} />
         </span>

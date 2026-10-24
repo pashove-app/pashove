@@ -8,6 +8,8 @@ import { Icon, icons } from "@/components/ui/primitives";
 import { LOCALE_META, resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { formatMoney } from "@/lib/money";
+import { listStoreCustomers } from "@/lib/customers/queries";
+import { orderCounts } from "@/lib/orders/queries";
 import { countProducts } from "@/lib/products/queries";
 import { readProfile } from "@/lib/profile/queries";
 import { currentStore } from "@/lib/stores/queries";
@@ -61,7 +63,11 @@ export default async function DashboardHomePage({
     "—";
 
   const revenue = formatMoney(0, store.currency, LOCALE_META[locale].tag);
-  const productsCount = await countProducts(store.id);
+  const [productsCount, counts, customers] = await Promise.all([
+    countProducts(store.id),
+    orderCounts(store.id, null),
+    listStoreCustomers(store.id),
+  ]);
 
   return (
     <div className="mx-auto w-full max-w-5xl">
@@ -88,11 +94,18 @@ export default async function DashboardHomePage({
 
       <WelcomeBanner t={t} locale={locale} firstName={firstName} />
 
-      <div className="mt-5">
-        <KpiGrid t={t} locale={locale} revenue={revenue} products={String(productsCount)} />
+      <div className="mt-6">
+        <KpiGrid
+          t={t}
+          locale={locale}
+          revenue={revenue}
+          orders={String(counts.all)}
+          customers={String(customers.length)}
+          products={String(productsCount)}
+        />
       </div>
 
-      <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <RevenuePanel t={t} amount={revenue} />
         <QuickActions t={t} locale={locale} />
       </div>

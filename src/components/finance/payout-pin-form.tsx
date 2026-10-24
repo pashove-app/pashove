@@ -46,9 +46,9 @@ export function PayoutPinForm({
         : null;
 
   return (
-    <section className="rounded-2xl border border-border bg-surface p-5">
+    <section className="rounded-3xl border border-border bg-surface p-5 sm:p-6">
       <div className="flex items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-500/[0.12] text-accent">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-500/[0.12] text-accent">
           <Icon path={icons.lock} className="h-5 w-5" strokeWidth={1.8} />
         </span>
 
@@ -56,17 +56,23 @@ export function PayoutPinForm({
           <h2 className="text-[0.9375rem] font-medium text-fg">
             {labels.pinTitle}
           </h2>
-          <p className="mt-0.5 flex items-center gap-1.5 text-[0.75rem] font-medium">
+          <span
+            className={
+              hasPin
+                ? "mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-emerald-500/12 px-2.5 py-0.5 text-[0.6875rem] font-medium text-emerald-600 dark:text-emerald-400"
+                : "mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-amber-500/12 px-2.5 py-0.5 text-[0.6875rem] font-medium text-amber-600 dark:text-amber-400"
+            }
+          >
             <span
+              aria-hidden="true"
               className={
                 hasPin
-                  ? "text-emerald-600 dark:text-emerald-400"
-                  : "text-amber-600 dark:text-amber-400"
+                  ? "h-1.5 w-1.5 rounded-full bg-emerald-500"
+                  : "h-1.5 w-1.5 rounded-full bg-amber-500"
               }
-            >
-              {hasPin ? labels.pinStatusSet : labels.pinStatusMissing}
-            </span>
-          </p>
+            />
+            {hasPin ? labels.pinStatusSet : labels.pinStatusMissing}
+          </span>
           <p className="mt-1 text-[0.75rem] leading-relaxed text-subtle">
             {labels.pinHelp}
           </p>
@@ -79,7 +85,7 @@ export function PayoutPinForm({
         </div>
       </div>
 
-      <form action={formAction} noValidate className="mt-4 space-y-4">
+      <form action={formAction} noValidate className="mt-5 space-y-4">
         <TextField
           name="currentPassword"
           type="password"
@@ -140,7 +146,7 @@ export function PayoutPinForm({
         <button
           type="submit"
           disabled={pending}
-          className={buttonClass({ variant: "primary", size: "sm" })}
+          className={buttonClass({ variant: "primary", size: "pill" })}
         >
           {pending ? <Spinner /> : null}
           {pending

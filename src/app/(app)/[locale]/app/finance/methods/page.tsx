@@ -68,7 +68,7 @@ export default async function PayoutMethodsPage({
           </p>
         </div>
 
-        <ButtonLink href={path(locale, "/app/finance/methods/new")} size="sm">
+        <ButtonLink href={path(locale, "/app/finance/methods/new")} size="pill">
           <Icon path={icons.plus} className="h-4 w-4" strokeWidth={2.4} />
           {labels.addMethod}
         </ButtonLink>
@@ -84,18 +84,18 @@ export default async function PayoutMethodsPage({
         </p>
       ) : null}
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-5 flex flex-wrap gap-2.5">
         <ButtonLink
           href={path(locale, "/app/finance")}
           variant="ghost"
-          size="sm"
+          size="pill"
         >
           {labels.backToFinance}
         </ButtonLink>
         <ButtonLink
           href={path(locale, "/app/finance/security")}
           variant="outline"
-          size="sm"
+          size="pill"
         >
           <Icon path={icons.lock} className="h-4 w-4" strokeWidth={1.8} />
           {labels.securityLink}

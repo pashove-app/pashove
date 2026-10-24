@@ -31,14 +31,12 @@ export function FinanceOverview({
   currency,
   balances,
   movements,
-  storeSlug,
 }: {
   t: Dictionary;
   locale: Locale;
   currency: string;
   balances: StoreBalances;
   movements: LedgerMovement[];
-  storeSlug: string;
 }) {
   const labels = t.dashboard.finance;
   const localeTag = LOCALE_META[locale].tag;
@@ -99,31 +97,31 @@ export function FinanceOverview({
           {labels.subtitle}
         </p>
 
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-5 flex flex-wrap gap-2.5">
           <ButtonLink
             href={path(locale, "/app/finance/methods")}
             variant="outline"
-            size="sm"
+            size="pill"
           >
-            <Icon path={icons.wallet} className="h-4 w-4" strokeWidth={1.8} />
+            <Icon path={icons.wallet} className="h-[1.125rem] w-[1.125rem]" strokeWidth={1.8} />
             {labels.methodsLink}
           </ButtonLink>
           <ButtonLink
             href={path(locale, "/app/finance/security")}
             variant="outline"
-            size="sm"
+            size="pill"
           >
-            <Icon path={icons.lock} className="h-4 w-4" strokeWidth={1.8} />
+            <Icon path={icons.lock} className="h-[1.125rem] w-[1.125rem]" strokeWidth={1.8} />
             {labels.securityLink}
           </ButtonLink>
         </div>
       </div>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((card) => (
           <section
             key={card.label}
-            className="rounded-2xl border border-border bg-surface p-5"
+            className="rounded-3xl border border-border bg-surface p-5 transition-colors hover:border-border-strong sm:p-6"
           >
             <div className="flex items-center justify-between gap-3">
               <p className="text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-faint">
@@ -144,7 +142,7 @@ export function FinanceOverview({
               </span>
             </div>
 
-            <p className="mt-2 truncate text-[1.375rem] font-medium tabular-nums tracking-[-0.02em] text-fg sm:text-[1.5rem]">
+            <p className="mt-2.5 truncate text-[1.5rem] font-semibold tabular-nums tracking-[-0.03em] text-fg sm:text-[1.75rem]">
               {money(card.amount)}
             </p>
             <p className="mt-1.5 text-[0.75rem] leading-relaxed text-subtle">
@@ -154,8 +152,8 @@ export function FinanceOverview({
         ))}
       </div>
 
-      <section className="mt-4 flex items-start gap-3 rounded-2xl border border-brand-500/20 bg-brand-500/[0.06] p-4 sm:p-5">
-        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-500/[0.12] text-accent">
+      <section className="mt-5 flex items-start gap-3.5 rounded-3xl border border-brand-500/20 bg-brand-500/[0.06] p-5 sm:p-6">
+        <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500/[0.12] text-accent">
           <Icon path={icons.lock} className="h-4 w-4" strokeWidth={1.8} />
         </span>
         <div>
@@ -166,21 +164,19 @@ export function FinanceOverview({
         </div>
       </section>
 
-      <section className="mt-5 overflow-hidden rounded-2xl border border-border bg-surface">
-        <div className="flex items-center justify-between gap-3 border-b border-hairline px-5 py-4">
+      <section className="mt-5 overflow-hidden rounded-3xl border border-border bg-surface">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-hairline px-5 py-4 sm:px-6">
           <h2 className="text-[0.9375rem] font-medium text-fg">
             {labels.movementsTitle}
           </h2>
-          <div className="flex items-center gap-3">
-            <span className="font-mono text-[0.6875rem] text-faint">/{storeSlug}</span>
-            <Link
-              href={path(locale, "/app/finance/transactions")}
-              className="inline-flex items-center gap-1 text-[0.75rem] font-medium text-accent transition-colors hover:text-accent-soft"
-            >
-              {labels.viewJournal}
-              <Icon path={icons.arrowRight} className="h-3.5 w-3.5 rtl:rotate-180" strokeWidth={2} />
-            </Link>
-          </div>
+          <ButtonLink
+            href={path(locale, "/app/finance/transactions")}
+            variant="outline"
+            size="sm"
+          >
+            <Icon path={icons.list} className="h-3.5 w-3.5" strokeWidth={2} />
+            {labels.viewJournal}
+          </ButtonLink>
         </div>
 
         {movements.length === 0 ? (
@@ -219,7 +215,7 @@ export function FinanceOverview({
                   return (
                     <tr
                       key={movement.id}
-                      className="border-b border-hairline last:border-0"
+                      className="border-b border-hairline transition-colors last:border-0 hover:bg-hairline/30"
                     >
                       <td className="px-5 py-3 text-[0.8125rem] text-muted">
                         {date(movement.occurred_at)}
@@ -260,7 +256,7 @@ export function FinanceOverview({
                 const signed = signedAmount(movement);
 
                 return (
-                  <li key={movement.id} className="p-4">
+                  <li key={movement.id} className="p-5">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-[0.875rem] font-medium text-fg">

@@ -23,7 +23,7 @@ export function PayoutMethodList({
 
   if (methods.length === 0) {
     return (
-      <div className="mt-6 rounded-2xl border border-border bg-surface px-6 py-12 text-center">
+      <div className="mt-6 rounded-3xl border border-border bg-surface px-6 py-14 text-center">
         <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-500/[0.12] text-accent">
           <Icon path={icons.wallet} className="h-6 w-6" strokeWidth={1.6} />
         </span>
@@ -48,16 +48,16 @@ export function PayoutMethodList({
   }
 
   return (
-    <div className="mt-5 space-y-3">
+    <div className="mt-6 space-y-3.5">
       {methods.map((method) => (
         <section
           key={method.id}
           className={cn(
-            "rounded-2xl border bg-surface p-4 sm:p-5",
+            "rounded-3xl border bg-surface p-5 sm:p-6",
             method.is_default ? "border-brand-500/35" : "border-border",
           )}
         >
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex min-w-0 items-start gap-3">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-500/[0.12] text-accent">
                 <Icon path={icons.wallet} className="h-5 w-5" strokeWidth={1.7} />
@@ -93,12 +93,12 @@ export function PayoutMethodList({
               </div>
             </div>
 
-            <div className="flex shrink-0 items-center gap-1">
+            <div className="flex shrink-0 items-center gap-1.5">
               <Link
                 href={path(locale, `/app/finance/methods/${method.id}`)}
                 aria-label={labels.editMethod}
                 title={labels.editMethod}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-faint transition-colors hover:bg-hairline hover:text-fg"
+                className="flex h-9 w-9 items-center justify-center rounded-full text-faint transition-colors hover:bg-hairline hover:text-fg"
               >
                 <Icon path={icons.pencil} className="h-4 w-4" strokeWidth={1.6} />
               </Link>
@@ -117,8 +117,9 @@ export function PayoutMethodList({
               <input type="hidden" name="methodId" value={method.id} />
               <button
                 type="submit"
-                className="text-[0.75rem] font-medium text-accent transition-colors hover:text-accent-soft"
+                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border px-4 text-[0.75rem] font-medium text-body transition-colors hover:border-brand-500 hover:text-accent"
               >
+                <Icon path={icons.check} className="h-3.5 w-3.5" strokeWidth={2.2} />
                 {labels.setDefault}
               </button>
             </form>
