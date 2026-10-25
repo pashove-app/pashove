@@ -1,5 +1,5 @@
+import { BackLink } from "@/components/ui/back-link";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { KycForm } from "@/components/finance/kyc-form";
 import { ButtonLink, Icon, icons } from "@/components/ui/primitives";
@@ -57,13 +57,7 @@ export default async function KycPage({
 
   return (
     <div className="mx-auto w-full max-w-2xl">
-      <Link
-        href={path(locale, "/app/finance")}
-        className="inline-flex items-center gap-2 text-[0.8125rem] font-medium text-accent transition-colors hover:text-accent-soft"
-      >
-        <Icon path={icons.arrowRight} className="h-4 w-4 rotate-180 rtl:rotate-0" />
-        {labels.backToFinance}
-      </Link>
+      <BackLink href={path(locale, "/app/finance")} label={labels.backToFinance} />
 
       <div className="mt-5">
         <h1 className="text-[1.75rem] font-medium tracking-[-0.03em] text-fg sm:text-[2rem]">

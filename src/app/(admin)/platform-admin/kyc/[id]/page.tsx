@@ -1,8 +1,8 @@
-import Link from "next/link";
+import { BackLink } from "@/components/ui/back-link";
 import { notFound } from "next/navigation";
 import { AdminKycReview } from "@/components/platform/admin-kyc-review";
+import { KycDocumentViewer } from "@/components/platform/kyc-document-viewer";
 import { AdminStatusBadge } from "@/components/platform/admin-status-badge";
-import { Icon, icons } from "@/components/ui/primitives";
 import { getAdminKycCase } from "@/lib/platform/queries";
 import { signDownload } from "@/lib/r2/client";
 
@@ -42,21 +42,9 @@ export default async function AdminKycDetailPage({
         }).format(new Date(value))
       : "—";
 
-  const documents = [
-    { label: "Recto", url: front },
-    { label: "Verso", url: back },
-    { label: "Selfie", url: selfie },
-  ];
-
   return (
     <div className="mx-auto w-full max-w-4xl">
-      <Link
-        href="/platform-admin/kyc"
-        className="inline-flex items-center gap-2 text-[0.8125rem] font-medium text-accent"
-      >
-        <Icon path={icons.arrowRight} className="h-4 w-4 rotate-180" />
-        Retour aux dossiers
-      </Link>
+      <BackLink href="/platform-admin/kyc" label="Retour aux dossiers" />
 
       <div className="mt-5 flex flex-wrap items-end justify-between gap-3">
         <div>
@@ -120,35 +108,13 @@ export default async function AdminKycDetailPage({
 
       <section className="mt-4 rounded-3xl border border-border bg-surface p-5">
         <h2 className="text-[0.9375rem] font-medium text-fg">Documents</h2>
-        <div className="mt-3 grid gap-3 sm:grid-cols-3">
-          {documents.map((document) => (
-            <div key={document.label}>
-              <p className="mb-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.1em] text-faint">
-                {document.label}
-              </p>
-              {document.url ? (
-                <a
-                  href={document.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block overflow-hidden rounded-2xl border border-border"
-                >
-                  {/* Lien signé de courte durée, jamais public. */}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={document.url}
-                    alt={document.label}
-                    className="h-44 w-full object-cover"
-                  />
-                </a>
-              ) : (
-                <div className="flex h-44 items-center justify-center rounded-2xl border border-dashed border-border text-[0.75rem] text-faint">
-                  Non fourni
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+        <KycDocumentViewer
+          documents={[
+            { label: "Recto", url: front },
+            { label: "Verso", url: back },
+            { label: "Selfie", url: selfie },
+          ]}
+        />
       </section>
     </div>
   );

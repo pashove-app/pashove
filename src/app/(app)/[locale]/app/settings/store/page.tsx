@@ -1,8 +1,7 @@
+import { BackLink } from "@/components/ui/back-link";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { StoreSettingsForm } from "@/components/app/store-settings-form";
-import { Icon, icons } from "@/components/ui/primitives";
 import { path } from "@/components/ui/types";
 import { resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
@@ -52,13 +51,7 @@ export default async function StoreSettingsPage({
 
   return (
     <div className="mx-auto w-full max-w-2xl">
-      <Link
-        href={path(locale, "/app/settings")}
-        className="inline-flex items-center gap-2 text-[0.8125rem] font-medium text-accent transition-colors hover:text-accent-soft"
-      >
-        <Icon path={icons.arrowRight} className="h-4 w-4 rotate-180 rtl:rotate-0" />
-        {t.settings.backToApp}
-      </Link>
+      <BackLink href={path(locale, "/app/settings")} label={t.settings.backToApp} />
 
       <h1 className="mt-5 text-[1.75rem] font-medium tracking-[-0.03em] text-fg sm:text-[2rem]">
         {t.settings.storeTitle}

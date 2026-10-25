@@ -1,9 +1,10 @@
 "use client";
 
+import { BackLink } from "@/components/ui/back-link";
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { Checkbox, SelectField, TextField } from "@/components/ui/field";
-import { Icon, icons, Spinner, buttonClass } from "@/components/ui/primitives";
+import { Spinner, buttonClass } from "@/components/ui/primitives";
 import { path } from "@/components/ui/types";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import type { Locale } from "@/i18n/config";
@@ -83,13 +84,10 @@ export function PayoutMethodForm({
 
   return (
     <div className="mx-auto w-full max-w-2xl">
-      <Link
+      <BackLink
         href={path(locale, "/app/finance/methods")}
-        className="inline-flex items-center gap-2 text-[0.8125rem] font-medium text-accent transition-colors hover:text-accent-soft"
-      >
-        <Icon path={icons.arrowRight} className="h-4 w-4 rotate-180 rtl:rotate-0" />
-        {labels.backToMethods}
-      </Link>
+        label={labels.backToMethods}
+      />
 
       <div className="mt-5">
         <h1 className="text-[1.75rem] font-medium tracking-[-0.03em] text-fg sm:text-[2rem]">

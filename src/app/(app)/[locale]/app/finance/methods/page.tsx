@@ -1,3 +1,4 @@
+import { BackLink } from "@/components/ui/back-link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { PayoutMethodList } from "@/components/finance/payout-method-list";
@@ -58,7 +59,9 @@ export default async function PayoutMethodsPage({
 
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <BackLink href={path(locale, "/app/finance")} label={labels.backToFinance} />
+
+      <div className="mt-5 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-[1.75rem] font-medium tracking-[-0.03em] text-fg sm:text-[2rem]">
             {labels.methodsTitle}

@@ -1,5 +1,5 @@
+import { BackLink } from "@/components/ui/back-link";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PayoutList } from "@/components/finance/payout-list";
 import { ButtonLink, Icon, icons } from "@/components/ui/primitives";
@@ -53,13 +53,7 @@ export default async function PayoutsPage({
 
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <Link
-        href={path(locale, "/app/finance")}
-        className="inline-flex items-center gap-2 text-[0.8125rem] font-medium text-accent transition-colors hover:text-accent-soft"
-      >
-        <Icon path={icons.arrowRight} className="h-4 w-4 rotate-180 rtl:rotate-0" />
-        {labels.backToFinance}
-      </Link>
+      <BackLink href={path(locale, "/app/finance")} label={labels.backToFinance} />
 
       <div className="mt-5 flex flex-wrap items-end justify-between gap-4">
         <div>

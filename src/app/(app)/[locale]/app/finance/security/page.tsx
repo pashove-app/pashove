@@ -1,9 +1,8 @@
+import { BackLink } from "@/components/ui/back-link";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PayoutPinForm } from "@/components/finance/payout-pin-form";
 import { TwoFactorCard } from "@/components/finance/two-factor-card";
-import { Icon, icons } from "@/components/ui/primitives";
 import { path } from "@/components/ui/types";
 import { LOCALE_META, resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
@@ -58,13 +57,7 @@ export default async function PayoutSecurityPage({
 
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <Link
-        href={path(locale, "/app/finance")}
-        className="inline-flex items-center gap-2 text-[0.8125rem] font-medium text-accent transition-colors hover:text-accent-soft"
-      >
-        <Icon path={icons.arrowRight} className="h-4 w-4 rotate-180 rtl:rotate-0" />
-        {labels.backToFinance}
-      </Link>
+      <BackLink href={path(locale, "/app/finance")} label={labels.backToFinance} />
 
       <div className="mt-5">
         <h1 className="text-[1.75rem] font-medium tracking-[-0.03em] text-fg sm:text-[2rem]">

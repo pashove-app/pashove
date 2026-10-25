@@ -1,8 +1,8 @@
+import { BackLink } from "@/components/ui/back-link";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdminPayoutActions } from "@/components/platform/admin-payout-actions";
 import { AdminStatusBadge } from "@/components/platform/admin-status-badge";
-import { Icon, icons } from "@/components/ui/primitives";
 import { adminKycForStore, getAdminPayout } from "@/lib/platform/queries";
 import { formatMoney } from "@/lib/money";
 
@@ -28,13 +28,7 @@ export default async function AdminPayoutDetailPage({
 
   return (
     <div className="mx-auto w-full max-w-4xl">
-      <Link
-        href="/platform-admin/payouts"
-        className="inline-flex items-center gap-2 text-[0.8125rem] font-medium text-accent"
-      >
-        <Icon path={icons.arrowRight} className="h-4 w-4 rotate-180" />
-        Retour aux retraits
-      </Link>
+      <BackLink href="/platform-admin/payouts" label="Retour aux retraits" />
 
       <div className="mt-5 flex flex-wrap items-end justify-between gap-3">
         <div>
