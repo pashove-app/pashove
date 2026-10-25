@@ -29,6 +29,19 @@ function cartError(error: { message?: string }): string {
   return "generic";
 }
 
+function discountError(error: { message?: string }): string {
+  const message = error.message ?? "";
+
+  if (message.includes("discount_not_found")) return "discountNotFound";
+  if (message.includes("discount_inactive")) return "discountInactive";
+  if (message.includes("discount_not_started")) return "discountNotStarted";
+  if (message.includes("discount_expired")) return "discountExpired";
+  if (message.includes("discount_exhausted")) return "discountExhausted";
+  if (message.includes("discount_min_subtotal")) return "discountMinSubtotal";
+
+  return "discountApplyError";
+}
+
 export async function addToCartAction(input: {
   slug: string;
   productId: string;
@@ -111,6 +124,53 @@ export async function addBundleToCartAction(input: {
   } catch {
     return { cart: null, error: "cart_unavailable" };
   }
+}
+
+export async function applyDiscountAction(input: {
+  code: string;
+  localeTag: string;
+}): Promise<CartActionResult> {
+  const localeTag =
+    typeof input.localeTag === "string" ? input.localeTag.slice(0, 20) : "fr-FR";
+  const code =
+    typeof input.code === "string" ? input.code.trim().slice(0, 32) : "";
+
+  if (!code) return { cart: null, error: "discountNotFound" };
+
+  const token = await readCartToken();
+  if (!token) return { cart: null, error: "discountApplyError" };
+
+  const supabase = createPublicClient();
+  const { data, error } = await supabase.rpc("cart_apply_discount", {
+    p_token: token,
+    p_code: code,
+  });
+
+  if (error || !data) {
+    return { cart: null, error: discountError(error ?? {}) };
+  }
+
+  return { cart: decorateCart(data as CartPayload, localeTag) };
+}
+
+export async function removeDiscountAction(input: {
+  localeTag: string;
+}): Promise<CartActionResult> {
+  const localeTag =
+    typeof input.localeTag === "string" ? input.localeTag.slice(0, 20) : "fr-FR";
+  const token = await readCartToken();
+  if (!token) return { cart: null, error: "discountApplyError" };
+
+  const supabase = createPublicClient();
+  const { data, error } = await supabase.rpc("cart_remove_discount", {
+    p_token: token,
+  });
+
+  if (error || !data) {
+    return { cart: null, error: discountError(error ?? {}) };
+  }
+
+  return { cart: decorateCart(data as CartPayload, localeTag) };
 }
 
 export async function updateCartItemAction(input: {

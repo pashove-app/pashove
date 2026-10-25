@@ -124,6 +124,12 @@ Après la fin du module Produits :
 - [ ] Panier + checkout (pays → infos → livraison → paiement → revue)
 - [ ] **Couche de paiement abstraite** (interface commune aux fournisseurs)
 - [ ] **Paiement à la livraison (COD)** — premier moyen encaissable, sans PSP
+
+> **Décision reportée au lot DIG1 (téléchargements)** : tant que le COD est le
+> seul paiement, un paquet mixte (produits physiques + numériques) reste payable
+> en espèces. À DIG1, restreindre le COD aux **paniers et paquets 100 %
+> physiques**, pour qu’un client ne puisse pas récupérer la partie numérique
+> sans payer le colis.
 - [ ] **Moteur d'éligibilité des paiements** :
       `(pays, devise, plan marchand, fournisseurs actifs, type produit, risque) → méthodes`
 - [ ] Intégration **Flutterwave** : checkout, sous-comptes, splits, webhooks

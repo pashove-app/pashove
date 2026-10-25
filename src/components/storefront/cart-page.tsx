@@ -6,6 +6,7 @@ import {
   QuantityStepper,
   useCart,
 } from "@/components/storefront/cart-provider";
+import { DiscountField } from "@/components/storefront/discount-field";
 import { Icon, icons } from "@/components/ui/primitives";
 import { path } from "@/components/ui/types";
 
@@ -162,6 +163,8 @@ export function CartPage() {
         <aside className="rounded-2xl border border-border bg-surface p-5 lg:sticky lg:top-6">
           <h2 className="text-[0.9375rem] font-medium text-fg">{labels.summaryTitle}</h2>
 
+          <DiscountField />
+
           <dl className="mt-4 space-y-2 text-[0.875rem]">
             <div className="flex items-center justify-between gap-3">
               <dt className="text-subtle">{labels.subtotal}</dt>
@@ -169,6 +172,17 @@ export function CartPage() {
                 {cart?.subtotalLabel ?? "—"}
               </dd>
             </div>
+            {cart?.discountAmountLabel ? (
+              <div className="flex items-center justify-between gap-3">
+                <dt className="text-subtle">
+                  {labels.discountLabel}
+                  {cart.discount ? ` (${cart.discount.code})` : ""}
+                </dt>
+                <dd className="font-medium tabular-nums text-emerald-600 dark:text-emerald-400">
+                  −{cart.discountAmountLabel}
+                </dd>
+              </div>
+            ) : null}
             <div className="flex items-center justify-between gap-3">
               <dt className="text-subtle">{labels.shipping}</dt>
               <dd className="font-medium tabular-nums text-fg">

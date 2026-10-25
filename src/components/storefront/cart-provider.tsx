@@ -19,7 +19,9 @@ import { cn } from "@/lib/cn";
 import {
   addBundleToCartAction,
   addToCartAction,
+  applyDiscountAction,
   removeCartItemAction,
+  removeDiscountAction,
   updateCartItemAction,
 } from "@/lib/storefront/cart-actions";
 import type { CartItem, CartItemView, CartView } from "@/lib/storefront/cart-types";
@@ -42,6 +44,10 @@ type CartContextValue = {
     bundleId: string,
     quantity: number,
   ) => Promise<{ ok: boolean; error?: string }>;
+  applyDiscount: (
+    code: string,
+  ) => Promise<{ ok: boolean; error?: string }>;
+  removeDiscount: () => Promise<{ ok: boolean; error?: string }>;
   update: (itemId: string, quantity: number) => void;
   remove: (itemId: string) => void;
   slug: string;
@@ -150,6 +156,34 @@ export function CartProvider({
     return { ok: true };
   }
 
+  async function applyDiscount(
+    code: string,
+  ): Promise<{ ok: boolean; error?: string }> {
+    setError(null);
+
+    const result = await applyDiscountAction({ code, localeTag });
+
+    if (!result.cart) {
+      return { ok: false, error: result.error };
+    }
+
+    setCart(result.cart);
+    return { ok: true };
+  }
+
+  async function removeDiscount(): Promise<{ ok: boolean; error?: string }> {
+    setError(null);
+
+    const result = await removeDiscountAction({ localeTag });
+
+    if (!result.cart) {
+      return { ok: false, error: result.error };
+    }
+
+    setCart(result.cart);
+    return { ok: true };
+  }
+
   function update(itemId: string, quantity: number) {
     setError(null);
     startTransition(async () => {
@@ -179,6 +213,8 @@ export function CartProvider({
         error,
         add,
         addBundle,
+        applyDiscount,
+        removeDiscount,
         update,
         remove,
         slug,
@@ -336,6 +372,17 @@ function CartDrawer() {
                     {cart?.subtotalLabel ?? "—"}
                   </dd>
                 </div>
+                {cart?.discountAmountLabel ? (
+                  <div className="flex items-center justify-between gap-3">
+                    <dt className="text-subtle">
+                      {labels.discountLabel}
+                      {cart.discount ? ` (${cart.discount.code})` : ""}
+                    </dt>
+                    <dd className="font-medium tabular-nums text-emerald-600 dark:text-emerald-400">
+                      −{cart.discountAmountLabel}
+                    </dd>
+                  </div>
+                ) : null}
                 <div className="flex items-center justify-between gap-3">
                   <dt className="text-subtle">{labels.shipping}</dt>
                   <dd className="font-medium tabular-nums text-fg">

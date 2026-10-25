@@ -22,6 +22,8 @@ type PublicOrder = {
   paymentMethod: string;
   currency: string;
   subtotal: number;
+  discount: number;
+  discountCode: string | null;
   shipping: number;
   total: number;
   createdAt: string;
@@ -123,6 +125,17 @@ export default async function CheckoutSuccessPage({
                   <dt className="text-subtle">{t.storefront.subtotal}</dt>
                   <dd className="tabular-nums text-body">{money(order.subtotal)}</dd>
                 </div>
+                {order.discount > 0 ? (
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-subtle">
+                      {t.storefront.discountLabel}
+                      {order.discountCode ? ` (${order.discountCode})` : ""}
+                    </dt>
+                    <dd className="tabular-nums text-emerald-600 dark:text-emerald-400">
+                      −{money(order.discount)}
+                    </dd>
+                  </div>
+                ) : null}
                 <div className="flex justify-between gap-3">
                   <dt className="text-subtle">{t.storefront.shipping}</dt>
                   <dd className="tabular-nums text-body">

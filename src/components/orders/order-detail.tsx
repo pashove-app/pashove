@@ -200,6 +200,17 @@ export function OrderDetail({
                 <dt className="text-subtle">{labels.subtotalLabel}</dt>
                 <dd className="font-medium tabular-nums text-fg">{money(order.subtotal_amount)}</dd>
               </div>
+              {order.discount_amount > 0 ? (
+                <div className="flex items-center justify-between gap-3">
+                  <dt className="text-subtle">
+                    {labels.discountLabel}
+                    {order.discount_code ? ` (${order.discount_code})` : ""}
+                  </dt>
+                  <dd className="font-medium tabular-nums text-emerald-600 dark:text-emerald-400">
+                    −{money(order.discount_amount)}
+                  </dd>
+                </div>
+              ) : null}
               <div className="flex items-center justify-between gap-3">
                 <dt className="text-subtle">{labels.shippingLabel}</dt>
                 <dd className="font-medium tabular-nums text-fg">{money(order.shipping_amount)}</dd>

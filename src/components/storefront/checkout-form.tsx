@@ -202,6 +202,17 @@ export function CheckoutForm({
             <dt className="text-subtle">{labels.subtotal}</dt>
             <dd className="tabular-nums text-body">{cart.subtotalLabel}</dd>
           </div>
+          {cart.discountAmountLabel ? (
+            <div className="flex justify-between gap-3">
+              <dt className="text-subtle">
+                {labels.discountLabel}
+                {cart.discount ? ` (${cart.discount.code})` : ""}
+              </dt>
+              <dd className="tabular-nums text-emerald-600 dark:text-emerald-400">
+                −{cart.discountAmountLabel}
+              </dd>
+            </div>
+          ) : null}
           <div className="flex justify-between gap-3">
             <dt className="text-subtle">{labels.shipping}</dt>
             <dd className="tabular-nums text-body">

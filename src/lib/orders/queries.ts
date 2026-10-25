@@ -200,6 +200,8 @@ export type OrderDetail = {
   payment_method: "cod";
   currency: string;
   subtotal_amount: number;
+  discount_amount: number;
+  discount_code: string | null;
   shipping_amount: number;
   total_amount: number;
   customer_name: string;
@@ -264,7 +266,7 @@ export async function getOrder(
     .select(
       [
         "id, number, status, payment_status, payment_method, currency",
-        "subtotal_amount, shipping_amount, total_amount",
+        "subtotal_amount, discount_amount, discount_code, shipping_amount, total_amount",
         "customer_name, customer_email, customer_phone",
         "shipping_country, shipping_city, shipping_address, shipping_extra",
         "notes, tracking_number, created_at, confirmed_at, cancelled_at",

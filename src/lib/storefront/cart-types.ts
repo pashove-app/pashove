@@ -22,6 +22,13 @@ export type CartItem = {
   lineTotal: number;
 };
 
+export type CartDiscount = {
+  code: string;
+  kind: "percent" | "fixed";
+  value: number;
+  amount: number;
+};
+
 export type CartPayload = {
   id: string;
   storeId: string;
@@ -29,6 +36,8 @@ export type CartPayload = {
   currency: string;
   codEligible: boolean;
   subtotal: number;
+  discountAmount: number;
+  discount: CartDiscount | null;
   shipping: number;
   total: number;
   items: CartItem[];
@@ -49,6 +58,7 @@ export type CartItemView = CartItem & {
 export type CartView = Omit<CartPayload, "items"> & {
   items: CartItemView[];
   subtotalLabel: string;
+  discountAmountLabel: string | null;
   shippingLabel: string;
   totalLabel: string;
 };

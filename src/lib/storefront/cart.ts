@@ -18,6 +18,8 @@ export function decorateCart(cart: CartPayload, localeTag: string): CartView {
   return {
     ...cart,
     subtotalLabel: price(cart.subtotal),
+    discountAmountLabel:
+      cart.discountAmount > 0 ? price(cart.discountAmount) : null,
     shippingLabel: cart.shipping === 0 ? "" : price(cart.shipping),
     totalLabel: price(cart.total),
     items: cart.items.map((item) => ({
