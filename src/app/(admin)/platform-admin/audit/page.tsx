@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminHero } from "@/components/platform/admin-hero";
 import { BackLink } from "@/components/ui/back-link";
 import { Icon, icons } from "@/components/ui/primitives";
 import { listAudit } from "@/lib/platform/queries";
@@ -38,13 +39,8 @@ export default async function AuditPage({
     <div>
       <BackLink href="/platform-admin" label="Retour à l'administration" />
 
-      <div className="mt-5">
-        <h1 className="text-[1.75rem] font-semibold tracking-[-0.03em] text-fg sm:text-[2rem]">
-          Journal d’audit
-        </h1>
-        <p className="mt-1.5 text-[0.9375rem] text-muted">
-          Les actions sensibles, qui les a faites et quand.
-        </p>
+      <div className="mt-4">
+        <AdminHero subtitle="Les actions sensibles, qui les a faites et quand : KYC, retraits et décisions de l’équipe." />
       </div>
 
       {entries.length === 0 ? (
@@ -70,7 +66,7 @@ export default async function AuditPage({
             </thead>
             <tbody>
               {entries.map((entry) => (
-                <tr key={entry.id} className="border-b border-border last:border-0">
+                <tr key={entry.id} className="border-b border-border transition-colors last:border-0 hover:bg-hairline/30">
                   <td className="px-5 py-3 text-[0.75rem] text-muted">
                     {new Intl.DateTimeFormat("fr-FR", {
                       dateStyle: "short",

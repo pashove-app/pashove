@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminHero } from "@/components/platform/admin-hero";
 import { AdminStatusBadge } from "@/components/platform/admin-status-badge";
 import { ButtonLink, Icon, icons } from "@/components/ui/primitives";
 import { listAdminKycCases } from "@/lib/platform/queries";
@@ -11,19 +12,16 @@ export default async function AdminKycPage() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-[1.75rem] font-semibold tracking-[-0.03em] text-fg sm:text-[2rem]">
-            Vérifications d’identité
-          </h1>
-          <p className="mt-1.5 text-[0.9375rem] text-muted">
-            {pending.length} dossier{pending.length === 1 ? "" : "s"} à traiter.
-          </p>
-        </div>
-        <ButtonLink href="/platform-admin" variant="outline" size="pill">
+      <AdminHero subtitle="Les dossiers d'identité des marchands, leurs documents privés et les décisions de conformité.">
+        <ButtonLink href="/platform-admin" variant="light" size="pill">
+          <Icon path={icons.chart} className="h-4 w-4" strokeWidth={1.8} />
           Vue d’ensemble
         </ButtonLink>
-      </div>
+      </AdminHero>
+
+      <p className="mt-5 text-[0.875rem] text-muted">
+        {pending.length} dossier{pending.length === 1 ? "" : "s"} à traiter.
+      </p>
 
       {cases.length === 0 ? (
         <div className="mt-7 rounded-3xl border border-border bg-surface px-6 py-14 text-center">
@@ -51,7 +49,7 @@ export default async function AdminKycPage() {
             </thead>
             <tbody>
               {cases.map((item) => (
-                <tr key={item.id} className="border-b border-border last:border-0">
+                <tr key={item.id} className="border-b border-border transition-colors last:border-0 hover:bg-hairline/30">
                   <td className="px-5 py-3">
                     <p className="text-[0.875rem] font-medium text-fg">
                       {item.store?.name ?? "Boutique"}

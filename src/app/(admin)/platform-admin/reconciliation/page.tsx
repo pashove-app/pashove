@@ -1,3 +1,4 @@
+import { AdminHero } from "@/components/platform/admin-hero";
 import { BackLink } from "@/components/ui/back-link";
 import { Icon, icons } from "@/components/ui/primitives";
 import { getReconciliation } from "@/lib/platform/queries";
@@ -11,15 +12,8 @@ export default async function ReconciliationPage() {
     <div>
       <BackLink href="/platform-admin" label="Retour à l'administration" />
 
-      <div className="mt-5">
-        <h1 className="text-[1.75rem] font-semibold tracking-[-0.03em] text-fg sm:text-[2rem]">
-          Réconciliation
-        </h1>
-        <p className="mt-1.5 max-w-2xl text-[0.9375rem] leading-relaxed text-muted">
-          Vue théorique construite à partir du ledger : fonds marchands non
-          retirés, montants réservés et commissions restant à régler. Aucun
-          relevé PSP n’est encore branché.
-        </p>
+      <div className="mt-4">
+        <AdminHero subtitle="Vue théorique construite à partir du ledger : fonds marchands non retirés, montants réservés et commissions restant à régler. Aucun relevé PSP n’est encore branché." />
       </div>
 
       {rows.length === 0 ? (
@@ -88,7 +82,7 @@ export default async function ReconciliationPage() {
                       {group.map((row) => (
                         <tr
                           key={row.store_id}
-                          className="border-b border-border last:border-0"
+                          className="border-b border-border transition-colors last:border-0 hover:bg-hairline/30"
                         >
                           <td className="px-5 py-3">
                             <p className="text-[0.875rem] font-medium text-fg">

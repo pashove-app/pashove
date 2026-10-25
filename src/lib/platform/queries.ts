@@ -105,12 +105,14 @@ export async function getAdminPayout(id: string): Promise<AdminPayout | null> {
 export type AdminCounts = {
   kycPending: number;
   payoutsPending: number;
+  stores: number;
+  auditActions: number;
 };
 
 export async function adminCounts(): Promise<AdminCounts> {
   const supabase = await createClient();
 
-  const [kyc, payouts] = await Promise.all([
+  const [kyc, payouts, stores, audit] = await Promise.all([
     supabase
       .from("kyc_cases")
       .select("id", { count: "exact", head: true })
@@ -119,11 +121,17 @@ export async function adminCounts(): Promise<AdminCounts> {
       .from("payouts")
       .select("id", { count: "exact", head: true })
       .in("status", ["requested", "security_check"]),
+    supabase.from("stores").select("id", { count: "exact", head: true }),
+    supabase
+      .from("platform_audit_log")
+      .select("id", { count: "exact", head: true }),
   ]);
 
   return {
     kycPending: kyc.count ?? 0,
     payoutsPending: payouts.count ?? 0,
+    stores: stores.count ?? 0,
+    auditActions: audit.count ?? 0,
   };
 }
 
