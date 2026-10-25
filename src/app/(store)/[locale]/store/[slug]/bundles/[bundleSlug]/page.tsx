@@ -95,42 +95,53 @@ export default async function BundlePage({
               </div>
             ) : null}
 
-            <div className="rounded-3xl border border-border bg-surface p-6 sm:p-8">
-              <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-subtle">
-                {t.storefront.bundlesTitle}
-              </p>
-              <h1 className="mt-2 text-[1.875rem] font-medium tracking-[-0.035em] text-fg sm:text-[2.5rem]">
-                {bundle.name}
-              </h1>
-              {bundle.description ? (
-                <p className="mt-3 text-[0.9375rem] leading-relaxed text-muted">
-                  {bundle.description}
-                </p>
-              ) : null}
-
-              <div className="mt-5 flex flex-wrap items-end gap-3">
-                <p className="text-[1.75rem] font-semibold tabular-nums text-fg">
-                  {bundle.priceLabel}
-                </p>
-                <p className="pb-1 text-[0.9375rem] tabular-nums text-faint line-through">
-                  {bundle.sumLabel}
-                </p>
-                <span className="mb-1 rounded-full bg-emerald-500/12 px-2.5 py-1 text-[0.6875rem] font-semibold text-emerald-600 dark:text-emerald-400">
-                  {t.storefront.bundleSave.replace("{amount}", bundle.savingsLabel)}
+            <div className="relative overflow-hidden rounded-3xl border border-border bg-surface p-6 sm:p-8">
+              {coverUrl ? null : (
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -end-8 -top-8 hidden text-brand-500/[0.09] sm:block"
+                >
+                  <Icon path={icons.bundle} className="h-56 w-56" strokeWidth={0.7} />
                 </span>
-              </div>
+              )}
 
-              <button
-                type="button"
-                disabled
-                className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border border-border bg-hairline text-[0.875rem] font-medium text-faint sm:w-auto sm:px-8"
-              >
-                <Icon path={icons.lock} className="h-4 w-4" strokeWidth={1.9} />
-                {t.storefront.bundleSoon}
-              </button>
-              <p className="mt-2 text-center text-[0.75rem] text-faint">
-                {t.storefront.bundleSoonText}
-              </p>
+              <div className="relative">
+                <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-subtle">
+                  {t.storefront.bundlesTitle}
+                </p>
+                <h1 className="mt-2 text-[1.875rem] font-medium tracking-[-0.035em] text-fg sm:text-[2.5rem]">
+                  {bundle.name}
+                </h1>
+                {bundle.description ? (
+                  <p className="mt-3 max-w-xl text-[0.9375rem] leading-relaxed text-muted">
+                    {bundle.description}
+                  </p>
+                ) : null}
+
+                <div className="mt-5 flex flex-wrap items-end gap-3">
+                  <p className="text-[1.75rem] font-semibold tabular-nums text-fg">
+                    {bundle.priceLabel}
+                  </p>
+                  <p className="pb-1 text-[0.9375rem] tabular-nums text-faint line-through">
+                    {bundle.sumLabel}
+                  </p>
+                  <span className="mb-1 rounded-full bg-emerald-500/12 px-2.5 py-1 text-[0.6875rem] font-semibold text-emerald-600 dark:text-emerald-400">
+                    {t.storefront.bundleSave.replace("{amount}", bundle.savingsLabel)}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  disabled
+                  className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border border-border bg-hairline text-[0.875rem] font-medium text-faint sm:w-auto sm:px-8"
+                >
+                  <Icon path={icons.lock} className="h-4 w-4" strokeWidth={1.9} />
+                  {t.storefront.bundleSoon}
+                </button>
+                <p className="mt-2 text-center text-[0.75rem] text-faint sm:text-start">
+                  {t.storefront.bundleSoonText}
+                </p>
+              </div>
             </div>
           </div>
 
