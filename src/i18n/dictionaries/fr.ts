@@ -1861,6 +1861,25 @@ const fr = {
       payoutNeedKycCta: "Commencer la vérification",
       payoutKycPendingNote:
         "Ta demande restera en vérification tant que ton identité n'est pas approuvée.",
+      statementsTitle: "Relevés de compte",
+      statementsSubtitle:
+        "Télécharge le détail de tes mouvements et de tes soldes sur un mois.",
+      statementsLink: "Relevés",
+      statementPeriod: "Mois",
+      statementGenerate: "Afficher",
+      statementDownload: "Télécharger le CSV",
+      statementSales: "Ventes",
+      statementCommissions: "Commissions",
+      statementPayouts: "Retraits payés",
+      statementAvailable: "Solde disponible",
+      statementPending: "En attente",
+      statementReserved: "Réservé",
+      statementCommissionDue: "Commission à régler",
+      statementMovements: "Mouvements de la période",
+      statementEmpty: "Aucun mouvement sur cette période",
+      statementEmptyHint: "Choisis un autre mois.",
+      statementNote:
+        "Ce relevé est calculé à partir du ledger. Les lignes détaillées sont exportées en CSV.",
       errors: {
         payoutCountryInvalid: "Pays de retrait invalide.",
         payoutProviderInvalid: "Cet opérateur n'est pas disponible dans ce pays.",

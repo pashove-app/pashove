@@ -1809,6 +1809,25 @@ const ln: Dictionary = {
       payoutNeedKycCta: "Banda bokengi",
       payoutKycPendingNote:
         "Demande na yo ekotikala na bokengi kino identité na yo ekondimama.",
+      statementsTitle: "Ba relevés ya konti",
+      statementsSubtitle:
+        "Bimisa ba mouvement mpe ba balance na yo ya sanza moko.",
+      statementsLink: "Ba relevés",
+      statementPeriod: "Sanza",
+      statementGenerate: "Komonsa",
+      statementDownload: "Bimisa CSV",
+      statementSales: "Ba vente",
+      statementCommissions: "Ba commission",
+      statementPayouts: "Ba retrait efutami",
+      statementAvailable: "Balance ya kobimisa",
+      statementPending: "Ezali kozela",
+      statementReserved: "Ebatelamí",
+      statementCommissionDue: "Commission ya kofuta",
+      statementMovements: "Ba mouvement ya eleko",
+      statementEmpty: "Mouvement moko te na eleko oyo",
+      statementEmptyHint: "Pona sanza mosusu.",
+      statementNote:
+        "Relevé oyo esalemí na ledger. Ba ligne ebimisamí na CSV.",
       errors: {
         payoutCountryInvalid: "Mboka ya retrait ezali malamu te.",
         payoutProviderInvalid: "Operatɛrɛ oyo azali na mboka yango te.",

@@ -139,3 +139,47 @@ export async function adminKycForStore(
 
   return (data as { id: string; status: string } | null) ?? null;
 }
+
+export type ReconciliationRow = {
+  store_id: string;
+  store_name: string;
+  store_slug: string;
+  currency: string;
+  available: number;
+  pending: number;
+  reserved: number;
+  cod_cash: number;
+  commission_due: number;
+  fees: number;
+  payouts: number;
+};
+
+export async function getReconciliation(): Promise<ReconciliationRow[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("platform_reconciliation");
+  if (error || !data) return [];
+  return data as ReconciliationRow[];
+}
+
+export type AuditEntry = {
+  id: string;
+  created_at: string;
+  actor_email: string | null;
+  action: string;
+  target_type: string;
+  target_id: string | null;
+  metadata: Record<string, unknown> | null;
+};
+
+export async function listAudit(
+  limit = 50,
+  offset = 0,
+): Promise<AuditEntry[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("platform_audit_feed", {
+    p_limit: limit,
+    p_offset: offset,
+  });
+  if (error || !data) return [];
+  return data as AuditEntry[];
+}

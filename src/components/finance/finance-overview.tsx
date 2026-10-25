@@ -157,6 +157,14 @@ export function FinanceOverview({
           >
             {labels.payoutHistory}
           </ButtonLink>
+          <ButtonLink
+            href={path(locale, "/app/finance/statements")}
+            variant="outline"
+            size="pill"
+          >
+            <Icon path={icons.file} className="h-4 w-4" strokeWidth={1.8} />
+            {labels.statementsLink}
+          </ButtonLink>
         </div>
       </section>
 

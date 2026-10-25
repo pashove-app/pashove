@@ -1803,6 +1803,25 @@ const en: Dictionary = {
       payoutNeedKycCta: "Start verification",
       payoutKycPendingNote:
         "Your request will stay under review until your identity is approved.",
+      statementsTitle: "Account statements",
+      statementsSubtitle:
+        "Download your movements and balances for a month.",
+      statementsLink: "Statements",
+      statementPeriod: "Month",
+      statementGenerate: "Show",
+      statementDownload: "Download CSV",
+      statementSales: "Sales",
+      statementCommissions: "Commissions",
+      statementPayouts: "Payouts paid",
+      statementAvailable: "Available balance",
+      statementPending: "Pending",
+      statementReserved: "Reserved",
+      statementCommissionDue: "Commission due",
+      statementMovements: "Movements for the period",
+      statementEmpty: "No movements for this period",
+      statementEmptyHint: "Choose another month.",
+      statementNote:
+        "This statement is calculated from the ledger. Detailed rows are exported as CSV.",
       errors: {
         payoutCountryInvalid: "Invalid payout country.",
         payoutProviderInvalid: "This provider is not available in that country.",

@@ -14,6 +14,8 @@ const NAV = [
   { href: "/platform-admin", label: "Vue d'ensemble", icon: icons.chart },
   { href: "/platform-admin/kyc", label: "KYC", icon: icons.shield },
   { href: "/platform-admin/payouts", label: "Retraits", icon: icons.wallet },
+  { href: "/platform-admin/reconciliation", label: "Réconciliation", icon: icons.chart },
+  { href: "/platform-admin/audit", label: "Audit", icon: icons.list },
 ];
 
 /** Coquille interne de l'administration plateforme. */

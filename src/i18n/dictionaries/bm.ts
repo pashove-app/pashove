@@ -1804,6 +1804,25 @@ const bm: Dictionary = {
       payoutNeedKycCta: "Lajɛli daminɛ",
       payoutKycPendingNote:
         "I ɲini bɛna to lajɛli la fɔ i yɛrɛjɛli lajɛna.",
+      statementsTitle: "Konti sɛbɛnw",
+      statementsSubtitle:
+        "I mouvementw ni i balancew sɛbɛn bɔ kalo kelen kɔnɔ.",
+      statementsLink: "Sɛbɛnw",
+      statementPeriod: "Kalo",
+      statementGenerate: "A jira",
+      statementDownload: "CSV bɔ",
+      statementSales: "Feerew",
+      statementCommissions: "Komisiyɔnw",
+      statementPayouts: "Bɔli sara",
+      statementAvailable: "Sɔngɔ min bɛ se ka bɔ",
+      statementPending: "A bɛ kɔnɔ",
+      statementReserved: "A mara",
+      statementCommissionDue: "Komisiyɔn ka sara",
+      statementMovements: "Waati in mouvementw",
+      statementEmpty: "Mouvement tɛ nin waati in na",
+      statementEmptyHint: "Kalo wɛrɛ sugandi.",
+      statementNote:
+        "Nin sɛbɛn bɛ kɛ ledger la. Lignes bɛ bɔ CSV la.",
       errors: {
         payoutCountryInvalid: "Sɔngɔ bɔli jamana man ɲi.",
         payoutProviderInvalid: "Nin operatɛrɛ tɛ yen nin jamana kɔnɔ.",
