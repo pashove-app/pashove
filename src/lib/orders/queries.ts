@@ -220,10 +220,16 @@ export type OrderDetail = {
     variant_label: string | null;
     sku: string | null;
     image_key: string | null;
-    product_type: "physical" | "digital" | "service";
+    product_type: "physical" | "digital" | "service" | "bundle";
     unit_price: number;
     quantity: number;
     line_total: number;
+    bundle_id: string | null;
+    bundle_contents: {
+      product_name: string;
+      variant_label: string | null;
+      quantity: number;
+    }[];
   }[];
   events: {
     id: string;
@@ -262,7 +268,7 @@ export async function getOrder(
         "customer_name, customer_email, customer_phone",
         "shipping_country, shipping_city, shipping_address, shipping_extra",
         "notes, tracking_number, created_at, confirmed_at, cancelled_at",
-        "order_items(id, product_name, variant_label, sku, image_key, product_type, unit_price, quantity, line_total)",
+        "order_items(id, product_name, variant_label, sku, image_key, product_type, unit_price, quantity, line_total, bundle_id, bundle_contents)",
         "order_events(id, type, payload, created_at)",
         "payments(provider, status, amount, currency, created_at)",
       ].join(", "),

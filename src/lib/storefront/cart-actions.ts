@@ -21,6 +21,7 @@ function cartError(error: { message?: string }): string {
   if (message.includes("out_of_stock")) return "out_of_stock";
   if (message.includes("variant_required")) return "variant_required";
   if (message.includes("invalid_variant")) return "variant_required";
+  if (message.includes("bundle_unavailable")) return "product_unavailable";
   if (message.includes("product_unavailable")) return "product_unavailable";
   if (message.includes("store_unavailable")) return "store_unavailable";
   if (message.includes("cart_unavailable")) return "cart_unavailable";
@@ -56,6 +57,45 @@ export async function addToCartAction(input: {
       p_token: opened.token,
       p_product_id: input.productId,
       p_variant_id: input.variantId,
+      p_quantity: quantity,
+    });
+
+    if (error || !data) {
+      return {
+        cart: decorateCart(withoutToken(opened), localeTag),
+        error: cartError(error ?? {}),
+      };
+    }
+
+    const view: CartView = decorateCart(data as CartPayload, localeTag);
+    return { cart: view };
+  } catch {
+    return { cart: null, error: "cart_unavailable" };
+  }
+}
+
+export async function addBundleToCartAction(input: {
+  slug: string;
+  bundleId: string;
+  quantity: number;
+  localeTag: string;
+}): Promise<CartActionResult> {
+  const slug = typeof input.slug === "string" ? input.slug.trim() : "";
+  const localeTag =
+    typeof input.localeTag === "string" ? input.localeTag.slice(0, 20) : "fr-FR";
+  const quantity = Math.min(Math.max(Math.trunc(input.quantity) || 1, 1), 99);
+
+  if (!slug || !isUuid(input.bundleId)) {
+    return { cart: null, error: "product_unavailable" };
+  }
+
+  try {
+    const opened = await openCart(slug);
+    const supabase = createPublicClient();
+
+    const { data, error } = await supabase.rpc("cart_add_bundle", {
+      p_token: opened.token,
+      p_bundle_id: input.bundleId,
       p_quantity: quantity,
     });
 

@@ -10,6 +10,7 @@ export type PublicBundleItem = {
   priceLabel: string;
   image_key: string | null;
   product_type: string;
+  stock: number | null;
 };
 
 export type PublicBundle = {
@@ -24,6 +25,8 @@ export type PublicBundle = {
   sumLabel: string;
   savings_amount: number;
   savingsLabel: string;
+  stock: number | null;
+  soldOut: boolean;
   items: PublicBundleItem[];
 };
 
@@ -34,12 +37,14 @@ type ItemRow = {
     slug: string;
     product_type: string;
     price_amount: number;
+    stock_quantity: number | null;
     options: ProductOption[] | null;
     images?: { position: number; media: { object_key: string } | null }[] | null;
   } | null;
   variant: {
     option_values: Record<string, string>;
     price_amount: number;
+    stock_quantity: number;
   } | null;
 };
 
@@ -56,7 +61,7 @@ type BundleRow = {
 const COLUMNS = [
   "id, name, slug, description, price_amount",
   "image:media_assets!image_media_id(object_key)",
-  "bundle_items(position, product:products!product_id(name, slug, product_type, price_amount, options, images:product_images(position, media:media_assets(object_key))), variant:product_variants!variant_id(option_values, price_amount))",
+  "bundle_items(position, product:products!product_id(name, slug, product_type, price_amount, stock_quantity, options, images:product_images(position, media:media_assets(object_key))), variant:product_variants!variant_id(option_values, price_amount, stock_quantity))",
 ].join(", ");
 
 function variantLabel(
@@ -79,6 +84,7 @@ function toBundle(row: BundleRow, currency: string, tag: string): PublicBundle {
         (left, right) => left.position - right.position,
       );
       const price = item.variant?.price_amount ?? product.price_amount;
+      const physical = product.product_type === "physical";
 
       return {
         name: product.name,
@@ -90,11 +96,18 @@ function toBundle(row: BundleRow, currency: string, tag: string): PublicBundle {
         priceLabel: formatMoney(price, currency, tag),
         image_key: images[0]?.media?.object_key ?? null,
         product_type: product.product_type,
+        stock: physical
+          ? (item.variant?.stock_quantity ?? product.stock_quantity ?? 0)
+          : null,
       } satisfies PublicBundleItem;
     });
 
   const sum = items.reduce((total, item) => total + item.price_amount, 0);
   const savings = Math.max(sum - row.price_amount, 0);
+  const physicalStocks = items
+    .map((item) => item.stock)
+    .filter((stock): stock is number => stock !== null);
+  const stock = physicalStocks.length > 0 ? Math.min(...physicalStocks) : null;
 
   return {
     id: row.id,
@@ -108,6 +121,8 @@ function toBundle(row: BundleRow, currency: string, tag: string): PublicBundle {
     sumLabel: formatMoney(sum, currency, tag),
     savings_amount: savings,
     savingsLabel: formatMoney(savings, currency, tag),
+    stock,
+    soldOut: stock !== null && stock <= 0,
     items,
   };
 }

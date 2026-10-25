@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/storefront/container";
+import { BundleBuyBox } from "@/components/storefront/bundle-buy-box";
 import { StorefrontClosed } from "@/components/storefront/storefront-closed";
 import { StorefrontHeader } from "@/components/storefront/storefront-header";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
@@ -130,16 +131,13 @@ export default async function BundlePage({
                   </span>
                 </div>
 
-                <button
-                  type="button"
-                  disabled
-                  className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border border-border bg-hairline text-[0.875rem] font-medium text-faint sm:w-auto sm:px-8"
-                >
-                  <Icon path={icons.lock} className="h-4 w-4" strokeWidth={1.9} />
-                  {t.storefront.bundleSoon}
-                </button>
-                <p className="mt-2 text-center text-[0.75rem] text-faint sm:text-start">
-                  {t.storefront.bundleSoonText}
+                <BundleBuyBox
+                  bundleId={bundle.id}
+                  maxQuantity={bundle.stock}
+                  soldOut={bundle.soldOut}
+                />
+                <p className="mt-3 text-[0.6875rem] leading-relaxed text-faint">
+                  {t.storefront.codInfo}
                 </p>
               </div>
             </div>

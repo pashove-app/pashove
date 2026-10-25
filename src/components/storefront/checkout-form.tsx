@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { SelectField, TextAreaField, TextField } from "@/components/ui/field";
 import { Icon, icons, Spinner } from "@/components/ui/primitives";
 import type { Dictionary } from "@/i18n/get-dictionary";
+import { interpolate } from "@/i18n/get-dictionary";
 import type { Locale } from "@/i18n/config";
 import { PAYOUT_COUNTRIES } from "@/lib/finance/providers";
 import {
@@ -70,7 +71,11 @@ export function CheckoutForm({
   };
 
   const serverMessage = state.messageKey
-    ? labels[state.messageKey as keyof typeof labels] ?? null
+    ? interpolate(
+        (labels[state.messageKey as keyof typeof labels] as string | undefined) ??
+          "",
+        state.messageVars ?? {},
+      ) || null
     : null;
 
   return (
@@ -170,7 +175,14 @@ export function CheckoutForm({
           {cart.items.map((item) => (
             <div key={item.id} className="flex items-start justify-between gap-3 py-3 first:pt-0">
               <div className="min-w-0">
-                <p className="text-[0.875rem] font-medium text-fg">{item.name}</p>
+                <p className="flex items-center gap-2 text-[0.875rem] font-medium text-fg">
+                  <span className="truncate">{item.name}</span>
+                  {item.kind === "bundle" ? (
+                    <span className="shrink-0 rounded-full bg-brand-500/10 px-1.5 py-0.5 text-[0.5625rem] font-semibold uppercase tracking-wide text-accent">
+                      {labels.bundleCartBadge}
+                    </span>
+                  ) : null}
+                </p>
                 {item.variantLabel ? (
                   <p className="mt-0.5 text-[0.75rem] text-subtle">{item.variantLabel}</p>
                 ) : null}

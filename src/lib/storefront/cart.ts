@@ -24,6 +24,10 @@ export function decorateCart(cart: CartPayload, localeTag: string): CartView {
       ...item,
       unitPriceLabel: price(item.unitPrice),
       lineTotalLabel: price(item.lineTotal),
+      compareAtLabel:
+        item.compareAt && item.compareAt > item.unitPrice
+          ? price(item.compareAt)
+          : null,
     })),
   };
 }

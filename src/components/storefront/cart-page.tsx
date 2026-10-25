@@ -83,18 +83,45 @@ export function CartPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <Link
-                      href={path(locale, `/store/${slug}/products/${item.slug}`)}
-                      className="block truncate text-[0.9375rem] font-medium text-fg transition-colors hover:text-accent"
+                      href={path(
+                        locale,
+                        item.kind === "bundle"
+                          ? `/store/${slug}/bundles/${item.slug}`
+                          : `/store/${slug}/products/${item.slug}`,
+                      )}
+                      className="flex items-center gap-2 text-[0.9375rem] font-medium text-fg transition-colors hover:text-accent"
                     >
-                      {item.name}
+                      <span className="truncate">{item.name}</span>
+                      {item.kind === "bundle" ? (
+                        <span className="shrink-0 rounded-full bg-brand-500/10 px-2 py-0.5 text-[0.625rem] font-semibold uppercase tracking-wide text-accent">
+                          {labels.bundleCartBadge}
+                        </span>
+                      ) : null}
                     </Link>
                     {item.variantLabel ? (
                       <p className="mt-0.5 text-[0.75rem] text-subtle">
                         {item.variantLabel}
                       </p>
                     ) : null}
-                    <p className="mt-1 text-[0.8125rem] tabular-nums text-muted">
-                      {item.unitPriceLabel}
+                    {item.kind === "bundle" && item.bundleItems.length > 0 ? (
+                      <p className="mt-0.5 text-[0.75rem] leading-relaxed text-subtle">
+                        {labels.bundleCartContains}{" "}
+                        {item.bundleItems
+                          .map((entry) =>
+                            entry.variantLabel
+                              ? `${entry.name} (${entry.variantLabel})`
+                              : entry.name,
+                          )
+                          .join(" · ")}
+                      </p>
+                    ) : null}
+                    <p className="mt-1 flex flex-wrap items-center gap-2 text-[0.8125rem] tabular-nums text-muted">
+                      <span>{item.unitPriceLabel}</span>
+                      {item.compareAtLabel ? (
+                        <span className="text-faint line-through">
+                          {item.compareAtLabel}
+                        </span>
+                      ) : null}
                     </p>
                   </div>
 

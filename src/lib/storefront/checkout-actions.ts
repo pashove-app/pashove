@@ -13,6 +13,7 @@ export type CheckoutFormState = {
   status: "idle" | "invalid" | "error";
   fieldErrors?: Record<string, string>;
   messageKey?: string;
+  messageVars?: Record<string, string>;
 };
 
 const UUID_PATTERN =
@@ -27,11 +28,13 @@ function errorKey(error: { message?: string }): string {
   const message = error.message ?? "";
 
   if (message.includes("cart_empty")) return "checkoutEmptyError";
+  if (message.includes("bundle_item_out_of_stock")) return "checkoutOutOfStock";
   if (message.includes("out_of_stock")) return "checkoutOutOfStock";
   if (message.includes("country_not_allowed")) return "checkoutCountryNotAllowed";
   if (message.includes("cod_unavailable")) return "checkoutCodUnavailable";
   if (message.includes("customer_incomplete")) return "checkoutCustomerIncomplete";
   if (message.includes("customer_invalid")) return "checkoutCustomerInvalid";
+  if (message.includes("bundle_unavailable")) return "checkoutProductUnavailable";
   if (message.includes("product_unavailable")) return "checkoutProductUnavailable";
   if (message.includes("store_unavailable")) return "checkoutStoreUnavailable";
   if (message.includes("cart_unavailable")) return "checkoutCartUnavailable";
@@ -93,6 +96,17 @@ export async function placeCodOrderAction(
   });
 
   if (error) {
+    const message = error.message ?? "";
+    const bundleStock = message.match(/bundle_item_out_of_stock:(.+)$/);
+
+    if (bundleStock) {
+      return {
+        status: "error",
+        messageKey: "checkoutBundleOutOfStock",
+        messageVars: { name: bundleStock[1].trim() },
+      };
+    }
+
     return { status: "error", messageKey: errorKey(error) };
   }
 

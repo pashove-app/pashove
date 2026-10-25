@@ -1,10 +1,17 @@
+export type CartBundleEntry = {
+  name: string;
+  variantLabel: string | null;
+};
+
 export type CartItem = {
   id: string;
-  productId: string;
-  variantId: string | null;
+  kind: "product" | "bundle";
+  productId: string | null;
+  bundleId: string | null;
+  bundleItems: CartBundleEntry[];
   name: string;
   slug: string;
-  productType: "physical" | "digital" | "service";
+  productType: "physical" | "digital" | "service" | "bundle";
   variantLabel: string | null;
   unitPrice: number;
   compareAt: number | null;
@@ -35,6 +42,7 @@ export type CartActionResult = {
 export type CartItemView = CartItem & {
   unitPriceLabel: string;
   lineTotalLabel: string;
+  compareAtLabel: string | null;
 };
 
 /** Panier prêt à afficher : les montants sont formatés par le serveur. */

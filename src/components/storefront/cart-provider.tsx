@@ -17,6 +17,7 @@ import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import { cn } from "@/lib/cn";
 import {
+  addBundleToCartAction,
   addToCartAction,
   removeCartItemAction,
   updateCartItemAction,
@@ -35,6 +36,10 @@ type CartContextValue = {
   add: (
     productId: string,
     variantId: string | null,
+    quantity: number,
+  ) => Promise<{ ok: boolean; error?: string }>;
+  addBundle: (
+    bundleId: string,
     quantity: number,
   ) => Promise<{ ok: boolean; error?: string }>;
   update: (itemId: string, quantity: number) => void;
@@ -117,6 +122,34 @@ export function CartProvider({
     return { ok: true };
   }
 
+  async function addBundle(
+    bundleId: string,
+    quantity: number,
+  ): Promise<{ ok: boolean; error?: string }> {
+    setError(null);
+
+    const result = await addBundleToCartAction({
+      slug,
+      bundleId,
+      quantity,
+      localeTag,
+    });
+
+    if (!result.cart) {
+      setError(labels.addError);
+      return { ok: false, error: result.error };
+    }
+
+    setCart(result.cart);
+
+    if (result.error) {
+      return { ok: false, error: result.error };
+    }
+
+    setOpen(true);
+    return { ok: true };
+  }
+
   function update(itemId: string, quantity: number) {
     setError(null);
     startTransition(async () => {
@@ -145,6 +178,7 @@ export function CartProvider({
         pending,
         error,
         add,
+        addBundle,
         update,
         remove,
         slug,
@@ -374,8 +408,13 @@ function DrawerLine({
 
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
-          <p className="min-w-0 truncate text-[0.875rem] font-medium text-fg">
-            {item.name}
+          <p className="flex min-w-0 items-center gap-2 text-[0.875rem] font-medium text-fg">
+            <span className="truncate">{item.name}</span>
+            {item.kind === "bundle" ? (
+              <span className="shrink-0 rounded-full bg-brand-500/10 px-1.5 py-0.5 text-[0.5625rem] font-semibold uppercase tracking-wide text-accent">
+                {labels.bundleCartBadge}
+              </span>
+            ) : null}
           </p>
           <button
             type="button"
@@ -392,6 +431,15 @@ function DrawerLine({
         {item.variantLabel ? (
           <p className="mt-0.5 truncate text-[0.75rem] text-subtle">
             {item.variantLabel}
+          </p>
+        ) : null}
+
+        {item.kind === "bundle" ? (
+          <p className="mt-0.5 flex flex-wrap items-center gap-2 text-[0.75rem] tabular-nums text-subtle">
+            <span>{item.unitPriceLabel}</span>
+            {item.compareAtLabel ? (
+              <span className="text-faint line-through">{item.compareAtLabel}</span>
+            ) : null}
           </p>
         ) : null}
 

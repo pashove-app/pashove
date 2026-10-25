@@ -128,8 +128,13 @@ export function OrderDetail({
                       <div className="flex items-center gap-3">
                         <ItemThumb item={item} />
                         <div className="min-w-0">
-                          <p className="truncate text-[0.8125rem] font-medium text-fg">
-                            {item.product_name}
+                          <p className="flex items-center gap-2 text-[0.8125rem] font-medium text-fg">
+                            <span className="truncate">{item.product_name}</span>
+                            {item.bundle_id ? (
+                              <span className="shrink-0 rounded-full bg-brand-500/10 px-1.5 py-0.5 text-[0.5625rem] font-semibold uppercase tracking-wide text-accent">
+                                {labels.bundleBadge}
+                              </span>
+                            ) : null}
                           </p>
                           {item.variant_label ? (
                             <p className="mt-0.5 text-[0.75rem] text-subtle">
@@ -141,6 +146,7 @@ export function OrderDetail({
                               {labels.skuLabel} · {item.sku}
                             </p>
                           ) : null}
+                          <BundleContents item={item} label={labels.bundleContentsLabel} />
                         </div>
                       </div>
                     </td>
@@ -163,8 +169,13 @@ export function OrderDetail({
                 <li key={item.id} className="flex gap-3 p-4">
                   <ItemThumb item={item} />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[0.8125rem] font-medium text-fg">
-                      {item.product_name}
+                    <p className="flex items-center gap-2 text-[0.8125rem] font-medium text-fg">
+                      <span className="truncate">{item.product_name}</span>
+                      {item.bundle_id ? (
+                        <span className="shrink-0 rounded-full bg-brand-500/10 px-1.5 py-0.5 text-[0.5625rem] font-semibold uppercase tracking-wide text-accent">
+                          {labels.bundleBadge}
+                        </span>
+                      ) : null}
                     </p>
                     {item.variant_label ? (
                       <p className="mt-0.5 text-[0.75rem] text-subtle">{item.variant_label}</p>
@@ -172,6 +183,7 @@ export function OrderDetail({
                     <p className="mt-1 text-[0.75rem] text-muted">
                       {item.quantity} × {money(item.unit_price)}
                     </p>
+                    <BundleContents item={item} label={labels.bundleContentsLabel} />
                   </div>
                   <p className="shrink-0 text-[0.8125rem] font-medium tabular-nums text-fg">
                     {money(item.line_total)}
@@ -285,6 +297,36 @@ export function OrderDetail({
           </section>
         </aside>
       </div>
+    </div>
+  );
+}
+
+/** Composition d'un paquet : ce qui a réellement été déduit du stock. */
+function BundleContents({
+  item,
+  label,
+}: {
+  item: OrderDetailData["items"][number];
+  label: string;
+}) {
+  if (!item.bundle_id || item.bundle_contents.length === 0) return null;
+
+  return (
+    <div className="mt-2 rounded-lg border border-hairline bg-hairline/40 px-2.5 py-2">
+      <p className="text-[0.5625rem] font-semibold uppercase tracking-[0.12em] text-faint">
+        {label}
+      </p>
+      <ul className="mt-1 space-y-0.5">
+        {item.bundle_contents.map((entry, index) => (
+          <li
+            key={`${entry.product_name}-${index}`}
+            className="text-[0.6875rem] leading-relaxed text-subtle"
+          >
+            {entry.quantity} × {entry.product_name}
+            {entry.variant_label ? ` (${entry.variant_label})` : ""}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
