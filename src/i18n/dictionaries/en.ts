@@ -1117,6 +1117,61 @@ const en: Dictionary = {
     },
   },
 
+  policies: {
+    title: "Legal pages",
+    subtitle:
+      "The legal information and policies shown on your storefront.",
+    backToSettings: "Back to settings",
+    footerTitle: "Legal information",
+    identityTitle: "Legal identity",
+    identityText:
+      "This information feeds your legal notice and official store documents.",
+    legalName: "Legal name",
+    legalNameHint: "Company or business name",
+    legalForm: "Legal form",
+    legalFormHint: "LLC, sole trader, association…",
+    address: "Address",
+    city: "City",
+    country: "Country",
+    email: "Contact email",
+    phone: "Phone",
+    registrationNumber: "Registration number",
+    registrationNumberHint: "Company or tax registration number",
+    taxNumber: "Tax number (optional)",
+    requiredNote:
+      "Legal name, address, city, country, email, phone and registration number are required to publish a page.",
+    pagesTitle: "Documents",
+    pagesText:
+      "Write each document, then publish it when ready. Unpublished pages do not appear on the storefront.",
+    publish: "Publish this page",
+    published: "Published",
+    draft: "Draft",
+    bodyLabel: "Content",
+    bodyPlaceholder: "Write this page's content here…",
+    bodyHelp: "Line breaks are preserved. 20,000 characters maximum.",
+    save: "Save pages",
+    saving: "Saving…",
+    saved: "Pages saved.",
+    mentions: "Legal notice",
+    terms: "Terms and conditions",
+    privacy: "Privacy policy",
+    shipping: "Shipping",
+    returns: "Returns and refunds",
+    updated: "Last updated: {date}",
+    errors: {
+      policyFieldTooLong: "This field is too long.",
+      policyEmailInvalid: "Invalid email address.",
+      policyRequiredForPublish:
+        "This field is required to publish a page.",
+      policyBodyRequired: "Add content before publishing this page.",
+      policyBodyTooLong: "20,000 characters maximum.",
+      policiesIncomplete:
+        "Complete the required fields before publishing a page.",
+      serverError: "Something went wrong. Try again.",
+      sessionExpired: "Your session has expired. Sign in again.",
+    },
+  },
+
   dashboard: {
     nav: {
       home: "Dashboard",
@@ -1968,6 +2023,10 @@ const en: Dictionary = {
       storeTitle: "Store",
       storeText: "Name, description, contacts, logo and banner.",
       storeCta: "Open settings",
+      policiesTitle: "Legal pages",
+      policiesText:
+        "Legal notice, terms, privacy, shipping and returns.",
+      policiesCta: "Manage pages",
       securityTitle: "Account security",
       securityText:
         "Password, email address, sessions and two-factor authentication.",

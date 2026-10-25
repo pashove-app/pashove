@@ -39,6 +39,11 @@ export async function proxy(request: NextRequest) {
     return refreshSession(request, NextResponse.next());
   }
 
+  // Pages légales publiques de la plateforme, hors préfixe de langue.
+  if (pathname === "/legal" || pathname.startsWith("/legal/")) {
+    return NextResponse.next();
+  }
+
   // Route déjà préfixée par une langue : on l'annonce au layout racine, et on
   // laisse Supabase renouveler la session dans la foulée.
   if (isLocale(first)) {

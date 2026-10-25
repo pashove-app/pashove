@@ -502,6 +502,13 @@ export const icons = {
       <path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01" />
     </>
   ),
+  file: (
+    <>
+      <path d="M6 3.5h7l5 5V20a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 20V3.5Z" />
+      <path d="M13 3.5v5h5" />
+      <path d="M9 13h6M9 17h4" />
+    </>
+  ),
   mail: (
     <>
       <rect x="3" y="5.5" width="18" height="13" rx="2.5" />

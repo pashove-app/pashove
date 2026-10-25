@@ -46,6 +46,14 @@ export default async function SettingsHubPage({
         />
 
         <SettingsLink
+          href={path(locale, "/app/settings/policies")}
+          icon="file"
+          title={t.dashboard.settings.policiesTitle}
+          text={t.dashboard.settings.policiesText}
+          cta={t.dashboard.settings.policiesCta}
+        />
+
+        <SettingsLink
           href={path(locale, "/auth/security")}
           icon="shield"
           title={t.dashboard.settings.securityTitle}

@@ -9,9 +9,11 @@ import type { Dictionary } from "@/i18n/get-dictionary";
 import { formatMoney } from "@/lib/money";
 import { publicUrl } from "@/lib/r2/media";
 import type { PublicStore } from "@/lib/storefront/queries";
+import { POLICY_PAGES, policyUrlSlug, type PolicySlug } from "@/lib/policies/pages";
+import { listPublishedPolicySlugs } from "@/lib/policies/queries";
 
 /** Coquille de la vitrine : fond du thème, contenu, pied de page complet. */
-export function StorefrontShell({
+export async function StorefrontShell({
   store,
   locale,
   t,
@@ -22,10 +24,17 @@ export function StorefrontShell({
   t: Dictionary;
   children: ReactNode;
 }) {
+  const policySlugs = await listPublishedPolicySlugs(store.id);
+
   return (
     <div className="flex min-h-dvh flex-col bg-bg">
       <div className="flex-1">{children}</div>
-      <StorefrontFooter store={store} locale={locale} t={t} />
+      <StorefrontFooter
+        store={store}
+        locale={locale}
+        t={t}
+        policySlugs={policySlugs}
+      />
     </div>
   );
 }
@@ -34,10 +43,12 @@ function StorefrontFooter({
   store,
   locale,
   t,
+  policySlugs,
 }: {
   store: PublicStore;
   locale: Locale;
   t: Dictionary;
+  policySlugs: PolicySlug[];
 }) {
   const labels = t.storefront;
   const home = path(locale, `/store/${store.slug}`);
@@ -50,7 +61,13 @@ function StorefrontFooter({
   return (
     <footer id="contact" className="mt-20 border-t border-border bg-surface/50 scroll-mt-24">
       <Container className="py-12 sm:py-16">
-        <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr_1fr]">
+        <div
+          className={
+            policySlugs.length > 0
+              ? "grid gap-10 lg:grid-cols-[1.4fr_1fr_1fr_1fr]"
+              : "grid gap-10 lg:grid-cols-[1.4fr_1fr_1fr]"
+          }
+        >
           <div className="max-w-sm">
             <Link href={home} className="flex items-center gap-2.5">
               {store.logo ? (
@@ -92,6 +109,30 @@ function StorefrontFooter({
               </Link>
             </div>
           </nav>
+
+          {policySlugs.length > 0 ? (
+            <nav>
+              <p className="text-[0.625rem] font-semibold uppercase tracking-[0.16em] text-faint">
+                {t.policies.footerTitle}
+              </p>
+              <div className="mt-4 flex flex-col gap-2.5">
+                {POLICY_PAGES.filter((page) =>
+                  policySlugs.includes(page.slug),
+                ).map((page) => (
+                  <Link
+                    key={page.slug}
+                    href={path(
+                      locale,
+                      `/store/${store.slug}/pages/${policyUrlSlug(page.slug)}`,
+                    )}
+                    className="text-[0.8125rem] text-subtle transition-colors hover:text-fg"
+                  >
+                    {t.policies[page.slug]}
+                  </Link>
+                ))}
+              </div>
+            </nav>
+          ) : null}
 
           <div>
             <p className="text-[0.625rem] font-semibold uppercase tracking-[0.16em] text-faint">

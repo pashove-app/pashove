@@ -1127,6 +1127,61 @@ const ln: Dictionary = {
     },
   },
 
+  policies: {
+    title: "Ba pages légales",
+    subtitle:
+      "Makambo ya sariya mpe ba politiques oyo emonanaka na magazini na yo.",
+    backToSettings: "Kozonga na ba paramètres",
+    footerTitle: "Makambo ya sariya",
+    identityTitle: "Identité légale",
+    identityText:
+      "Makambo oyo esalelaka mpo na ba mentions légales mpe ba documents ya magazini na yo.",
+    legalName: "Nkómbó ya société",
+    legalNameHint: "Nkómbó ya société to ya mosala",
+    legalForm: "Lolenge ya société",
+    legalFormHint: "SARL, SAS, EI, association…",
+    address: "Adrɛsi",
+    city: "Engumba",
+    country: "Mboka",
+    email: "E-mail",
+    phone: "Telefone",
+    registrationNumber: "Nimero ya immatriculation",
+    registrationNumberHint: "RCCM, SIRET, IFU…",
+    taxNumber: "Nimero ya mpako (soki ezali)",
+    requiredNote:
+      "Nkómbó ya société, adrɛsi, engumba, mboka, e-mail, telefone mpe immatriculation esengeli mpo na kobimisa page.",
+    pagesTitle: "Ba documents",
+    pagesText:
+      "Koma document moko na moko, sima bimisa yangó ntango ebongisamí. Page oyo ebimisamí te emonanaka na magazini te.",
+    publish: "Bimisa page oyo",
+    published: "Ebimí",
+    draft: "Brouillon",
+    bodyLabel: "Kontenu",
+    bodyPlaceholder: "Koma kontenu ya page oyo awa…",
+    bodyHelp: "Ba ligne ekobatamá. Ba caractère 20 000 koleka te.",
+    save: "Bikela ba pages",
+    saving: "Ezali kobikela…",
+    saved: "Ba pages ebikisamí.",
+    mentions: "Mentions légales",
+    terms: "Mibeko ya kosalela",
+    privacy: "Politique ya nkuku",
+    shipping: "Kotinda",
+    returns: "Kozongisa mpe kofuta",
+    updated: "Ebongisamí {date}",
+    errors: {
+      policyFieldTooLong: "Esika oyo eleki molai.",
+      policyEmailInvalid: "E-mail ezali malamu te.",
+      policyRequiredForPublish:
+        "Esika oyo esengeli mpo na kobimisa page.",
+      policyBodyRequired: "Bakisa kontenu liboso ya kobimisa page.",
+      policyBodyTooLong: "Ba caractère 20 000 koleka te.",
+      policiesIncomplete:
+        "Bongisa ba champs obligatoires liboso ya kobimisa page.",
+      serverError: "Likambo moko esalemí. Meka lisusu.",
+      sessionExpired: "Session na yo esilí. Kokota lisusu.",
+    },
+  },
+
   dashboard: {
     nav: {
       home: "Ebandeli",
@@ -1974,6 +2029,10 @@ const ln: Dictionary = {
       storeTitle: "Magazini",
       storeText: "Nkombo, ndimbola, ba kontak, logo mpe bannière.",
       storeCta: "Fungola makambo",
+      policiesTitle: "Ba pages légales",
+      policiesText:
+        "Mentions, mibeko, nkuku, kotinda mpe kozongisa.",
+      policiesCta: "Bongisa ba pages",
       securityTitle: "Bokengi ya kɔnti",
       securityText: "Kódi ya sekré, imɛlɛ, ba session mpe bokengi mibale.",
       securityCta: "Kobatela",

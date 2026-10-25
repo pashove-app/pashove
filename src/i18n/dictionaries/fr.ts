@@ -1167,6 +1167,61 @@ const fr = {
     },
   },
 
+  policies: {
+    title: "Pages légales",
+    subtitle:
+      "Les informations légales et les politiques affichées sur ta boutique.",
+    backToSettings: "Retour aux paramètres",
+    footerTitle: "Informations légales",
+    identityTitle: "Identité légale",
+    identityText:
+      "Ces informations servent aux mentions légales et aux documents officiels de ta boutique.",
+    legalName: "Raison sociale",
+    legalNameHint: "Nom de l'entreprise ou de l'activité",
+    legalForm: "Forme juridique",
+    legalFormHint: "SARL, SAS, EI, association…",
+    address: "Adresse",
+    city: "Ville",
+    country: "Pays",
+    email: "E-mail de contact",
+    phone: "Téléphone",
+    registrationNumber: "Numéro d'immatriculation",
+    registrationNumberHint: "RCCM, SIRET, IFU…",
+    taxNumber: "Numéro fiscal (facultatif)",
+    requiredNote:
+      "Les champs raison sociale, adresse, ville, pays, e-mail, téléphone et immatriculation sont obligatoires pour publier une page.",
+    pagesTitle: "Documents",
+    pagesText:
+      "Rédige chaque document, puis publie-le quand il est prêt. Une page non publiée n'apparaît pas sur la boutique.",
+    publish: "Publier cette page",
+    published: "Publiée",
+    draft: "Brouillon",
+    bodyLabel: "Contenu",
+    bodyPlaceholder: "Rédige ici le contenu de cette page…",
+    bodyHelp: "Les retours à la ligne sont conservés. 20 000 caractères maximum.",
+    save: "Enregistrer les pages",
+    saving: "Enregistrement…",
+    saved: "Pages enregistrées.",
+    mentions: "Mentions légales",
+    terms: "Conditions générales",
+    privacy: "Politique de confidentialité",
+    shipping: "Livraison",
+    returns: "Retours et remboursements",
+    updated: "Dernière mise à jour : {date}",
+    errors: {
+      policyFieldTooLong: "Ce champ est trop long.",
+      policyEmailInvalid: "Adresse e-mail invalide.",
+      policyRequiredForPublish:
+        "Ce champ est obligatoire pour publier une page.",
+      policyBodyRequired: "Ajoute un contenu avant de publier cette page.",
+      policyBodyTooLong: "20 000 caractères maximum.",
+      policiesIncomplete:
+        "Complète les champs obligatoires avant de publier une page.",
+      serverError: "Une erreur est survenue. Réessaie.",
+      sessionExpired: "Ta session a expiré. Reconnecte-toi.",
+    },
+  },
+
   dashboard: {
     nav: {
       home: "Tableau de bord",
@@ -2027,6 +2082,10 @@ const fr = {
       storeTitle: "Boutique",
       storeText: "Nom, description, contacts, logo et bannière.",
       storeCta: "Ouvrir les réglages",
+      policiesTitle: "Pages légales",
+      policiesText:
+        "Mentions, conditions, confidentialité, livraison et retours.",
+      policiesCta: "Gérer les pages",
       securityTitle: "Sécurité du compte",
       securityText:
         "Mot de passe, adresse e-mail, sessions et double authentification.",

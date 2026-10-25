@@ -1126,6 +1126,61 @@ const bm: Dictionary = {
     },
   },
 
+  policies: {
+    title: "Sariya sɛbɛnw",
+    subtitle:
+      "Sariya kunnafoniw ni politikiw min bɛ jira i butiki kan.",
+    backToSettings: "Ka segi paramɛtɛrw ma",
+    footerTitle: "Sariya kunnafoniw",
+    identityTitle: "Sariya yɛrɛjɛli",
+    identityText:
+      "Nin kunnafoniw bɛ baara kɛ sariya sɛbɛnw ni i butiki sɛbɛnw la.",
+    legalName: "Sɔsiyete tɔgɔ",
+    legalNameHint: "Sɔsiyete walima baara tɔgɔ",
+    legalForm: "Sariya sugu",
+    legalFormHint: "SARL, SAS, EI, jɛkulu…",
+    address: "Adrɛsi",
+    city: "Dugu",
+    country: "Jamana",
+    email: "E-mail",
+    phone: "Telefɔni",
+    registrationNumber: "Imatrikilasi nimɔrɔ",
+    registrationNumberHint: "RCCM, SIRET, IFU…",
+    taxNumber: "Taxi nimɔrɔ (sɔngɔ la)",
+    requiredNote:
+      "Sɔsiyete tɔgɔ, adrɛsi, dugu, jamana, e-mail, telefɔni ni imatrikilasi ka kan ka sɛbɛn ka page bɔ kɛnɛ.",
+    pagesTitle: "Sɛbɛnw",
+    pagesText:
+      "Sɛbɛn bɛɛ sɛbɛn, o kɔ fɛ a bɔ kɛnɛ ni a labɛnna. Page min ma bɔ kɛnɛ, a tɛ jira butiki kan.",
+    publish: "Nin page bɔ kɛnɛ",
+    published: "Bɔra kɛnɛ",
+    draft: "Brouillon",
+    bodyLabel: "Kɔnɔkow",
+    bodyPlaceholder: "Nin page kɔnɔkow sɛbɛn yan…",
+    bodyHelp: "Line breaks bɛ to. Caractère 20 000 dɔrɔn.",
+    save: "Pagew mara",
+    saving: "A bɛ mara…",
+    saved: "Pagew mara.",
+    mentions: "Sariya sɛbɛn",
+    terms: "Baarakɛ cogo",
+    privacy: "Dogonkow politiki",
+    shipping: "Ci",
+    returns: "Segin ni sɔngɔ segin",
+    updated: "Labɛn laban : {date}",
+    errors: {
+      policyFieldTooLong: "Nin yɔrɔ ka jan kojugu.",
+      policyEmailInvalid: "E-mail man ɲi.",
+      policyRequiredForPublish:
+        "Nin yɔrɔ ka kan ka sɛbɛn ka page bɔ kɛnɛ.",
+      policyBodyRequired: "Kɔnɔkow fara page bɔli ɲɛ.",
+      policyBodyTooLong: "Caractère 20 000 dɔrɔn.",
+      policiesIncomplete:
+        "Yɔrɔw labɛn page bɔli ɲɛ.",
+      serverError: "Fɔɲɔgɔ kɛra. Kɛlɛ tugun.",
+      sessionExpired: "I session banna. Kɔta tugun.",
+    },
+  },
+
   dashboard: {
     nav: {
       home: "Kaɲɛ",
@@ -1969,6 +2024,10 @@ const bm: Dictionary = {
       storeTitle: "Butiki",
       storeText: "Tɔgɔ, kunnafoni, contact, logo ni banniyɛrɛ.",
       storeCta: "Sigicogo da",
+      policiesTitle: "Sariya sɛbɛnw",
+      policiesText:
+        "Sariya, baarakɛ cogo, dogonkow, ci ni segin.",
+      policiesCta: "Pagew mara",
       securityTitle: "Konti lakana",
       securityText: "Dogolen kɔdi, imɛli, sessions ni lakana kɔdi fila.",
       securityCta: "Lakana kɛ",
