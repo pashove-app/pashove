@@ -1250,6 +1250,8 @@ const fr = {
       profileCta: "Voir mon profil",
       planTitle: "Version gratuite",
       planText: "10 % par vente",
+      adminSection: "Système",
+      adminConsole: "Console Admin",
       collapse: "Réduire le menu",
       expand: "Déployer le menu",
     },

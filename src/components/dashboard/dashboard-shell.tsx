@@ -22,12 +22,14 @@ export function DashboardShell({
   locale,
   merchant,
   defaultCollapsed,
+  isSuperAdmin,
   children,
 }: {
   t: Dictionary;
   locale: Locale;
   merchant: Merchant;
   defaultCollapsed: boolean;
+  isSuperAdmin: boolean;
   children: ReactNode;
 }) {
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
@@ -56,6 +58,7 @@ export function DashboardShell({
           merchant={merchant}
           collapsed={collapsed}
           onToggle={toggleCollapsed}
+          isSuperAdmin={isSuperAdmin}
         />
 
         <div className="flex min-w-0 flex-1 flex-col">

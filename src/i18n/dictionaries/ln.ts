@@ -1210,6 +1210,8 @@ const ln: Dictionary = {
       profileCta: "Talá profil na ngai",
       planTitle: "Version ya ofɛ́lɛ",
       planText: "10 % na motɛ́kɛ",
+      adminSection: "Système",
+      adminConsole: "Console Admin",
       collapse: "Kokitisa menu",
       expand: "Kofungola menu",
     },

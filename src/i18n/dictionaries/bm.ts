@@ -1209,6 +1209,8 @@ const bm: Dictionary = {
       profileCta: "N profil ye",
       planTitle: "Version gratis",
       planText: "10 % sara bɛɛ la",
+      adminSection: "Sistɛmu",
+      adminConsole: "Console Admin",
       collapse: "Menu dogo",
       expand: "Menu jira",
     },

@@ -25,12 +25,14 @@ export function DashboardSidebar({
   merchant,
   collapsed,
   onToggle,
+  isSuperAdmin,
 }: {
   t: Dictionary;
   locale: Locale;
   merchant: Merchant;
   collapsed: boolean;
   onToggle: () => void;
+  isSuperAdmin: boolean;
 }) {
   return (
     <aside
@@ -82,6 +84,27 @@ export function DashboardSidebar({
       <div className="mt-3 min-h-0 flex-1 overflow-y-auto px-3 pb-2">
         <DashboardNavList t={t} locale={locale} collapsed={collapsed} />
       </div>
+
+      {isSuperAdmin ? (
+        <div className={cn("px-3 pb-3", collapsed && "px-2")}>
+          {collapsed ? null : (
+            <p className="mb-2 px-3 text-[0.625rem] font-semibold uppercase tracking-[0.16em] text-white/35">
+              {t.dashboard.sidebar.adminSection}
+            </p>
+          )}
+          <Link
+            href="/platform-admin"
+            title={t.dashboard.sidebar.adminConsole}
+            className={cn(
+              "flex h-10 items-center gap-3 rounded-xl text-[0.8125rem] font-medium text-white/65 transition-colors hover:bg-white/[0.08] hover:text-white",
+              collapsed ? "justify-center px-0" : "px-3",
+            )}
+          >
+            <Icon path={icons.shield} className="h-[1.125rem] w-[1.125rem] shrink-0" strokeWidth={1.7} />
+            {collapsed ? null : <span className="truncate">{t.dashboard.sidebar.adminConsole}</span>}
+          </Link>
+        </div>
+      ) : null}
 
       <div className="px-3 pb-4">
         <SidebarPlanCard t={t} collapsed={collapsed} />

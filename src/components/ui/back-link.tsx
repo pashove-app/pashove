@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Icon, icons } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
 
-/** Bouton retour visible, posé en tête de chaque sous-page. */
+/** Lien retour discret, posé en tête de chaque sous-page. */
 export function BackLink({
   href,
   label,
@@ -16,7 +16,7 @@ export function BackLink({
     <Link
       href={href}
       className={cn(
-        "inline-flex h-10 items-center gap-2 rounded-full border border-border bg-hairline px-4 text-[0.8125rem] font-medium text-body transition-colors hover:border-border-strong hover:text-fg",
+        "inline-flex items-center gap-2 text-sm font-medium text-accent transition-colors hover:underline",
         className,
       )}
     >

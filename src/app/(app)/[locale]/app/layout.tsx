@@ -49,6 +49,12 @@ export default async function DashboardLayout({
   const store = await currentStore();
   if (!store) redirect(`/${locale}/onboarding/store`);
 
+  const { data: platformAdmin } = await supabase
+    .from("platform_admins")
+    .select("role")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
   const profile = await readProfile();
   const t = await getDictionary(locale);
 
@@ -64,6 +70,7 @@ export default async function DashboardLayout({
       locale={locale}
       merchant={{ name: profile?.full_name?.trim() || user.email || "Pashove" }}
       defaultCollapsed={collapsed}
+      isSuperAdmin={platformAdmin?.role === "super_admin"}
     >
       {children}
     </DashboardShell>

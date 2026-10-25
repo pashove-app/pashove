@@ -1195,6 +1195,8 @@ const ar: Dictionary = {
       profileCta: "عرض ملفي",
       planTitle: "النسخة المجانية",
       planText: "10% لكل عملية بيع",
+      adminSection: "النظام",
+      adminConsole: "وحدة الإدارة",
       collapse: "تصغير القائمة",
       expand: "توسيع القائمة",
     },

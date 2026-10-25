@@ -1200,6 +1200,8 @@ const en: Dictionary = {
       profileCta: "View my profile",
       planTitle: "Free plan",
       planText: "10% per sale",
+      adminSection: "System",
+      adminConsole: "Admin console",
       collapse: "Collapse menu",
       expand: "Expand menu",
     },
