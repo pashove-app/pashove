@@ -1,4 +1,11 @@
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+
+/** Rôle du membre sur une boutique. */
+export type StoreRole = "owner" | "admin" | "product_manager" | "staff";
+
+/** Cookie de la boutique active. Le serveur choisit, le client ne devine pas. */
+export const ACTIVE_STORE_COOKIE = "pashove_store";
 
 /** Une boutique telle que la lisent les écrans du marchand. */
 export type Store = {
@@ -38,8 +45,13 @@ const COLUMNS = [
   "created_at",
 ].join(", ");
 
+export type StoreMembership = {
+  role: StoreRole;
+  store: Store;
+};
+
 /**
- * Les boutiques de l'utilisateur connecté.
+ * Les boutiques de l'utilisateur connecté, avec son rôle sur chacune.
  *
  * On part de `store_members`, pas de `stores` : la politique publique de
  * `stores` rend visibles toutes les boutiques actives (c'est voulu pour la
@@ -48,7 +60,7 @@ const COLUMNS = [
  * propriétaire. La table des membres, elle, ne renvoie que les siennes — et sa
  * RLS confirme la même règle en base.
  */
-export async function listStores(): Promise<Store[]> {
+export async function listStoreMemberships(): Promise<StoreMembership[]> {
   const supabase = await createClient();
 
   const {
@@ -63,21 +75,59 @@ export async function listStores(): Promise<Store[]> {
 
   // Le client Supabase n'est pas typé : la forme renvoyée est vérifiée par le
   // select ci-dessus, pas par le compilateur.
-  const rows = (data ?? []) as unknown as { store: Store | null }[];
+  const rows = (data ?? []) as unknown as {
+    role: StoreRole;
+    store: Store | null;
+  }[];
 
   return rows
-    .map((row) => row.store)
-    .filter((store): store is Store => Boolean(store))
-    .sort((left, right) => left.created_at.localeCompare(right.created_at));
+    .filter(
+      (row): row is { role: StoreRole; store: Store } => Boolean(row.store),
+    )
+    .sort((left, right) =>
+      left.store.created_at.localeCompare(right.store.created_at),
+    );
+}
+
+/** Les boutiques seules, dans l'ordre de création. */
+export async function listStores(): Promise<Store[]> {
+  return (await listStoreMemberships()).map((membership) => membership.store);
+}
+
+/**
+ * La boutique active et le rôle du membre.
+ *
+ * Le cookie `pashove_store` est validé contre les appartenances réelles : un
+ * identifiant forgé retombe sur la première boutique, jamais sur celle d'un
+ * autre compte.
+ */
+export async function currentMembership(): Promise<StoreMembership | null> {
+  const memberships = await listStoreMemberships();
+  if (memberships.length === 0) return null;
+
+  const active = (await cookies()).get(ACTIVE_STORE_COOKIE)?.value;
+
+  return (
+    memberships.find((membership) => membership.store.id === active) ??
+    memberships[0]
+  );
 }
 
 /**
  * La boutique courante.
  *
- * Tant qu'un marchand n'a qu'une boutique, c'est la première créée. Le
- * sélecteur multi-boutiques viendra se poser ici, et non dans chaque écran.
+ * Les écrans métier n'ont pas besoin du rôle ; ils passent par cette fonction.
  */
 export async function currentStore(): Promise<Store | null> {
-  const stores = await listStores();
-  return stores[0] ?? null;
+  return (await currentMembership())?.store ?? null;
+}
+
+/** Droits minimaux pour gérer l'équipe et les invitations. */
+export function canManageTeam(role: StoreRole | null | undefined): boolean {
+  return role === "owner" || role === "admin";
+}
+
+/** Droits minimaux pour le catalogue. */
+export function canManageCatalog(role: StoreRole | null | undefined): boolean {
+  return role === "owner" || role === "admin" || role === "product_manager";
 }

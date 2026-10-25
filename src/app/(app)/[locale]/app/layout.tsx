@@ -8,7 +8,10 @@ import { getDictionary } from "@/i18n/get-dictionary";
 import { requireSecondFactor } from "@/lib/auth/mfa";
 import { currentOnboardingStep, onboardingPath } from "@/lib/onboarding/steps";
 import { readProfile } from "@/lib/profile/queries";
-import { currentStore } from "@/lib/stores/queries";
+import {
+  ACTIVE_STORE_COOKIE,
+  listStoreMemberships,
+} from "@/lib/stores/queries";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -46,8 +49,14 @@ export default async function DashboardLayout({
   const step = await currentOnboardingStep();
   if (step !== "done") redirect(onboardingPath(locale, step));
 
-  const store = await currentStore();
-  if (!store) redirect(`/${locale}/onboarding/store`);
+  const memberships = await listStoreMemberships();
+  if (memberships.length === 0) redirect(`/${locale}/onboarding/store`);
+
+  const jar = await cookies();
+  const activeStoreId = jar.get(ACTIVE_STORE_COOKIE)?.value;
+  const membership =
+    memberships.find((entry) => entry.store.id === activeStoreId) ??
+    memberships[0];
 
   const { data: platformAdmin } = await supabase
     .from("platform_admins")
@@ -61,8 +70,14 @@ export default async function DashboardLayout({
   // Le repli de la sidebar est un choix d'affichage, pas une donnée métier :
   // un cookie suffit, et le serveur le connaît dès le premier rendu — donc pas
   // de saut visuel à l'hydratation.
-  const collapsed =
-    (await cookies()).get("pashove-sidebar")?.value === "1";
+  const collapsed = jar.get("pashove-sidebar")?.value === "1";
+
+  const stores = memberships.map((entry) => ({
+    id: entry.store.id,
+    name: entry.store.name,
+    slug: entry.store.slug,
+    role: entry.role,
+  }));
 
   return (
     <DashboardShell
@@ -71,6 +86,8 @@ export default async function DashboardLayout({
       merchant={{ name: profile?.full_name?.trim() || user.email || "Pashove" }}
       defaultCollapsed={collapsed}
       isSuperAdmin={platformAdmin?.role === "super_admin"}
+      stores={stores}
+      activeStoreId={membership.store.id}
     >
       {children}
     </DashboardShell>

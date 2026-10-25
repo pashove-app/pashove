@@ -232,6 +232,9 @@ export type OrderDetail = {
       variant_label: string | null;
       quantity: number;
     }[];
+    partner_offer_id: string | null;
+    partner_commission_amount: number;
+    partner_source_revenue: number;
   }[];
   events: {
     id: string;
@@ -270,7 +273,7 @@ export async function getOrder(
         "customer_name, customer_email, customer_phone",
         "shipping_country, shipping_city, shipping_address, shipping_extra",
         "notes, tracking_number, created_at, confirmed_at, cancelled_at",
-        "order_items(id, product_name, variant_label, sku, image_key, product_type, unit_price, quantity, line_total, bundle_id, bundle_contents)",
+        "order_items(id, product_name, variant_label, sku, image_key, product_type, unit_price, quantity, line_total, bundle_id, bundle_contents, partner_offer_id, partner_commission_amount, partner_source_revenue)",
         "order_events(id, type, payload, created_at)",
         "payments(provider, status, amount, currency, created_at)",
       ].join(", "),

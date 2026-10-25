@@ -4,6 +4,7 @@ import { PashoveLogo } from "@/components/brand/pashove-logo";
 import { DashboardNavList } from "@/components/dashboard/dashboard-nav";
 import { SidebarPlanCard } from "@/components/dashboard/sidebar-plan-card";
 import { SidebarProfileCard } from "@/components/dashboard/sidebar-profile-card";
+import { StoreSwitcher, type StoreOption } from "@/components/dashboard/store-switcher";
 import type { Merchant } from "@/components/dashboard/types";
 import { Icon, icons } from "@/components/ui/primitives";
 import type { Locale } from "@/i18n/config";
@@ -19,12 +20,16 @@ export function MobileMenuSheet({
   t,
   locale,
   merchant,
+  stores,
+  activeStoreId,
   open,
   onClose,
 }: {
   t: Dictionary;
   locale: Locale;
   merchant: Merchant;
+  stores: StoreOption[];
+  activeStoreId: string;
   open: boolean;
   onClose: () => void;
 }) {
@@ -54,6 +59,15 @@ export function MobileMenuSheet({
         style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom, 0px))" }}
       >
         <SidebarProfileCard t={t} locale={locale} merchant={merchant} />
+
+        <div className="mt-3">
+          <StoreSwitcher
+            stores={stores}
+            activeStoreId={activeStoreId}
+            locale={locale}
+            labels={t.dashboard.stores}
+          />
+        </div>
 
         <div className="mt-4">
           <DashboardNavList t={t} locale={locale} onNavigate={onClose} />

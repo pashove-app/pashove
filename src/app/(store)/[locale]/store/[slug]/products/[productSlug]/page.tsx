@@ -266,6 +266,15 @@ export default async function ProductPage({
               {product.name}
             </h1>
 
+            {product.partner_store ? (
+              <p className="mt-2 inline-flex rounded-full border border-border-soft bg-hairline px-2.5 py-1 text-[0.6875rem] font-medium text-subtle">
+                {t.storefront.partnerProduct.replace(
+                  "{store}",
+                  product.partner_store.name,
+                )}
+              </p>
+            ) : null}
+
             {product.description ? (
               <p className="mt-4 line-clamp-3 text-[0.9375rem] leading-relaxed text-muted">
                 {product.description}

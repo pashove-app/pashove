@@ -2,13 +2,19 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ProductForm } from "@/components/products/product-form";
+import { PartnerOfferCard } from "@/components/partners/partner-offer-card";
 import { Icon, icons } from "@/components/ui/primitives";
 import { path } from "@/components/ui/types";
 import { resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getProduct } from "@/lib/products/queries";
+import { getPartnerOffer } from "@/lib/partners/queries";
 import { publicUrl } from "@/lib/r2/media";
-import { currentStore } from "@/lib/stores/queries";
+import {
+  canManageCatalog,
+  currentMembership,
+  currentStore,
+} from "@/lib/stores/queries";
 
 export async function generateMetadata({
   params,
@@ -45,8 +51,13 @@ export default async function EditProductPage({
   const store = await currentStore();
   if (!store) redirect(`/${locale}/onboarding/store`);
 
+  const membership = await currentMembership();
   const product = await getProduct(id, store.id);
   if (!product) notFound();
+
+  const offer = await getPartnerOffer(product.id, store.id);
+  const eligible =
+    product.product_type === "physical" && product.variants.length === 0;
 
   const t = await getDictionary(locale);
   const labels = t.dashboard.products;
@@ -101,6 +112,26 @@ export default async function EditProductPage({
         initialDescriptionImage={initialDescriptionImage}
         initialFile={initialFile}
       />
+
+      {membership && canManageCatalog(membership.role) ? (
+        <div className="mt-6">
+          <PartnerOfferCard
+            t={t}
+            locale={locale}
+            productId={product.id}
+            initial={offer}
+            eligible={eligible}
+            ineligibleReason={
+              product.variants.length > 0
+                ? "variants"
+                : product.product_type !== "physical"
+                  ? "physical"
+                  : null
+            }
+            isCopy={Boolean(product.source_product_id)}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

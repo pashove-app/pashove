@@ -41,6 +41,7 @@ export function OrderDetail({
   order: OrderDetailData;
 }) {
   const labels = t.dashboard.orders;
+  const partnerLabels = t.dashboard.partners;
   const localeTag = LOCALE_META[locale].tag;
 
   const money = (amount: number) => formatMoney(amount, order.currency, localeTag);
@@ -146,6 +147,19 @@ export function OrderDetail({
                               {labels.skuLabel} · {item.sku}
                             </p>
                           ) : null}
+                          {item.partner_offer_id ? (
+                            <p className="mt-1 flex flex-wrap items-center gap-1.5 text-[0.6875rem] text-subtle">
+                              <span className="rounded-full bg-brand-500/10 px-1.5 py-0.5 font-semibold uppercase tracking-wide text-accent">
+                                {partnerLabels.partnerBadge}
+                              </span>
+                              <span>
+                                {partnerLabels.commission}{" "}
+                                <span className="font-medium tabular-nums text-body">
+                                  {money(item.partner_commission_amount)}
+                                </span>
+                              </span>
+                            </p>
+                          ) : null}
                           <BundleContents item={item} label={labels.bundleContentsLabel} />
                         </div>
                       </div>
@@ -183,6 +197,19 @@ export function OrderDetail({
                     <p className="mt-1 text-[0.75rem] text-muted">
                       {item.quantity} × {money(item.unit_price)}
                     </p>
+                    {item.partner_offer_id ? (
+                      <p className="mt-1 flex flex-wrap items-center gap-1.5 text-[0.6875rem] text-subtle">
+                        <span className="rounded-full bg-brand-500/10 px-1.5 py-0.5 font-semibold uppercase tracking-wide text-accent">
+                          {partnerLabels.partnerBadge}
+                        </span>
+                        <span>
+                          {partnerLabels.commission}{" "}
+                          <span className="font-medium tabular-nums text-body">
+                            {money(item.partner_commission_amount)}
+                          </span>
+                        </span>
+                      </p>
+                    ) : null}
                     <BundleContents item={item} label={labels.bundleContentsLabel} />
                   </div>
                   <p className="shrink-0 text-[0.8125rem] font-medium tabular-nums text-fg">

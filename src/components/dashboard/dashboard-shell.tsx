@@ -6,6 +6,7 @@ import { CommandPaletteProvider } from "@/components/dashboard/command-palette";
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { DashboardTopbar } from "@/components/dashboard/dashboard-topbar";
 import { MobileMenuSheet } from "@/components/dashboard/mobile-menu-sheet";
+import type { StoreOption } from "@/components/dashboard/store-switcher";
 import type { Merchant } from "@/components/dashboard/types";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/get-dictionary";
@@ -23,6 +24,8 @@ export function DashboardShell({
   merchant,
   defaultCollapsed,
   isSuperAdmin,
+  stores,
+  activeStoreId,
   children,
 }: {
   t: Dictionary;
@@ -30,6 +33,8 @@ export function DashboardShell({
   merchant: Merchant;
   defaultCollapsed: boolean;
   isSuperAdmin: boolean;
+  stores: StoreOption[];
+  activeStoreId: string;
   children: ReactNode;
 }) {
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
@@ -59,6 +64,8 @@ export function DashboardShell({
           collapsed={collapsed}
           onToggle={toggleCollapsed}
           isSuperAdmin={isSuperAdmin}
+          stores={stores}
+          activeStoreId={activeStoreId}
         />
 
         <div className="flex min-w-0 flex-1 flex-col">
@@ -79,6 +86,8 @@ export function DashboardShell({
           t={t}
           locale={locale}
           merchant={merchant}
+          stores={stores}
+          activeStoreId={activeStoreId}
           open={menuOpen}
           onClose={() => setMenuOpen(false)}
         />

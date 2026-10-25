@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { PashoveLogo } from "@/components/brand/pashove-logo";
 import { DashboardNavList } from "@/components/dashboard/dashboard-nav";
+import { StoreSwitcher, type StoreOption } from "@/components/dashboard/store-switcher";
 import { SidebarPlanCard } from "@/components/dashboard/sidebar-plan-card";
 import { SidebarProfileCard } from "@/components/dashboard/sidebar-profile-card";
 import type { Merchant } from "@/components/dashboard/types";
@@ -26,6 +27,8 @@ export function DashboardSidebar({
   collapsed,
   onToggle,
   isSuperAdmin,
+  stores,
+  activeStoreId,
 }: {
   t: Dictionary;
   locale: Locale;
@@ -33,6 +36,8 @@ export function DashboardSidebar({
   collapsed: boolean;
   onToggle: () => void;
   isSuperAdmin: boolean;
+  stores: StoreOption[];
+  activeStoreId: string;
 }) {
   return (
     <aside
@@ -80,6 +85,17 @@ export function DashboardSidebar({
           collapsed={collapsed}
         />
       </div>
+
+      {collapsed ? null : (
+        <div className="px-3 pt-3">
+          <StoreSwitcher
+            stores={stores}
+            activeStoreId={activeStoreId}
+            locale={locale}
+            labels={t.dashboard.stores}
+          />
+        </div>
+      )}
 
       <div className="mt-3 min-h-0 flex-1 overflow-y-auto px-3 pb-2">
         <DashboardNavList t={t} locale={locale} collapsed={collapsed} />

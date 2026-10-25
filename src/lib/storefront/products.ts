@@ -26,6 +26,8 @@ export type StoreProduct = {
   description_image: { object_key: string } | null;
   images: { object_key: string }[];
   variants: StoreVariant[];
+  partner_source_store_id: string | null;
+  partner_store: { name: string; slug: string } | null;
 };
 
 const COLUMNS = [
@@ -34,6 +36,7 @@ const COLUMNS = [
   "description_image:media_assets!description_media_id(object_key)",
   "images:product_images(position, media:media_assets(object_key))",
   "variants:product_variants(id, option_values, sku, price_amount, stock_quantity, position)",
+  "partner_source_store_id, partner_store:stores!partner_source_store_id(name, slug)",
 ].join(", ");
 
 type Row = Omit<StoreProduct, "images" | "variants"> & {

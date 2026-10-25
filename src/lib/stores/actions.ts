@@ -1,12 +1,13 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { LOCALES } from "@/i18n/config";
 import { deleteMediaAsset } from "@/lib/media/assets";
 import { currentOnboardingStep, onboardingPath } from "@/lib/onboarding/steps";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
-import { currentStore } from "@/lib/stores/queries";
+import { ACTIVE_STORE_COOKIE, currentStore } from "@/lib/stores/queries";
 import { parsePrice } from "@/lib/products/schema";
 import { createStoreSchema, sellingSchema, storeSettingsSchema } from "@/lib/stores/schema";
 import type { StoreFormState, StoreSettingsState } from "@/lib/stores/types";
@@ -258,4 +259,107 @@ export async function saveStoreSettingsAction(
   }
 
   return { status: "saved" };
+}
+
+/* ------------------------------------------------------------------ *
+ *  Multi-boutiques
+ * ------------------------------------------------------------------ */
+
+/** Mémorise la boutique active après avoir vérifié l'appartenance. */
+async function rememberStore(id: string): Promise<void> {
+  (await cookies()).set(ACTIVE_STORE_COOKIE, id, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+  });
+}
+
+export async function switchStoreAction(formData: FormData): Promise<void> {
+  const locale = field(formData, "locale") || "fr";
+  const storeId = field(formData, "storeId");
+
+  if (!storeId) redirect(`/${locale}/app`);
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect(`/${locale}/auth/login`);
+
+  const { data } = await supabase
+    .from("store_members")
+    .select("store_id")
+    .eq("user_id", user.id)
+    .eq("store_id", storeId)
+    .maybeSingle();
+
+  if (!data) redirect(`/${locale}/app`);
+
+  await rememberStore(storeId);
+  revalidatePath("/", "layout");
+  redirect(`/${locale}/app`);
+}
+
+/**
+ * Crée une boutique supplémentaire puis l'active.
+ *
+ * La limite du plan est revérifiée dans `create_store()` en base : le
+ * formulaire ne peut pas la contourner.
+ */
+export async function createStoreAction(
+  _previous: StoreFormState,
+  formData: FormData,
+): Promise<StoreFormState> {
+  const locale = field(formData, "locale") || "fr";
+
+  const parsed = createStoreSchema.safeParse({
+    name: field(formData, "name"),
+    slug: field(formData, "slug"),
+    country: field(formData, "country"),
+    currency: field(formData, "currency"),
+  });
+
+  if (!parsed.success) {
+    return { status: "invalid", fieldErrors: toFieldErrors(parsed.error) };
+  }
+
+  if (!isSupabaseConfigured()) return { status: "unconfigured" };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("create_additional_store", {
+    p_name: parsed.data.name,
+    p_slug: parsed.data.slug,
+    p_country: parsed.data.country,
+    p_currency: parsed.data.currency,
+  });
+
+  if (error || !data) {
+    const message = error?.message ?? "";
+
+    if (message.includes("store_limit_reached")) {
+      return { status: "error", messageKey: "limitReached" };
+    }
+    if (error?.code === "23505") {
+      return { status: "invalid", fieldErrors: { slug: "slugTaken" } };
+    }
+    if (error?.code === "23514") {
+      return { status: "invalid", fieldErrors: { slug: "slugInvalid" } };
+    }
+
+    return { status: "error", messageKey: "serverError" };
+  }
+
+  // Une boutique créée depuis le dashboard n'a pas encore traversé l'étape
+  // « mode de vente » : on autorise les trois types par défaut.
+  await supabase
+    .from("stores")
+    .update({ product_types: ["physical", "digital", "service"] })
+    .eq("id", data as string);
+
+  await rememberStore(data as string);
+  revalidatePath("/", "layout");
+  redirect(`/${locale}/app`);
 }

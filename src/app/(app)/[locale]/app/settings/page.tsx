@@ -46,6 +46,14 @@ export default async function SettingsHubPage({
         />
 
         <SettingsLink
+          href={path(locale, "/app/settings/users")}
+          icon="users"
+          title={t.dashboard.team.title}
+          text={t.dashboard.team.subtitle}
+          cta={t.dashboard.team.title}
+        />
+
+        <SettingsLink
           href={path(locale, "/app/settings/policies")}
           icon="file"
           title={t.dashboard.settings.policiesTitle}

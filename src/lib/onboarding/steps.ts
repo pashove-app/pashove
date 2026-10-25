@@ -1,5 +1,5 @@
 import { readProfile } from "@/lib/profile/queries";
-import { currentStore } from "@/lib/stores/queries";
+import { currentStore, listStores } from "@/lib/stores/queries";
 
 export type OnboardingStep = "store" | "profile" | "selling" | "launch" | "done";
 
@@ -12,6 +12,14 @@ export type OnboardingStep = "store" | "profile" | "selling" | "launch" | "done"
  * écrans change entre-temps.
  */
 export async function currentOnboardingStep(): Promise<OnboardingStep> {
+  const stores = await listStores();
+  if (stores.length === 0) return "store";
+
+  // Un compte qui possède déjà une boutique publiée a terminé son onboarding :
+  // une deuxième boutique en brouillon se gère depuis le dashboard, sans
+  // renvoyer le marchand dans le parcours de création.
+  if (stores.some((entry) => entry.status !== "draft")) return "done";
+
   const store = await currentStore();
   if (!store) return "store";
 

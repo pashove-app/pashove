@@ -43,6 +43,11 @@ export type Product = {
   image: { id: string; object_key: string } | null;
   /** Fichier vendu, dans le bucket privé. */
   digital_file: { id: string; name: string | null } | null;
+  /** Copie partenaire : offre source, produit source et boutique source. */
+  partner_offer_id: string | null;
+  source_product_id: string | null;
+  partner_source_store_id: string | null;
+  partner_commission_bps: number | null;
 };
 
 const COLUMNS = [
@@ -55,6 +60,7 @@ const COLUMNS = [
   "variants:product_variants(id, option_values, sku, barcode, price_amount, stock_quantity, position)",
   "images:product_images(position, media:media_assets(id, object_key))",
   "digital_file:media_assets!digital_file_id(id, file_name)",
+  "partner_offer_id, source_product_id, partner_source_store_id, partner_commission_bps",
 ].join(", ");
 
 /**
@@ -70,6 +76,7 @@ const LIST_COLUMNS = [
   "published_at, created_at, updated_at, options",
   "images:product_images(position, media:media_assets(id, object_key))",
   "digital_file:media_assets!digital_file_id(id, file_name)",
+  "partner_offer_id, source_product_id, partner_source_store_id, partner_commission_bps",
 ].join(", ");
 
 type Row = Omit<Product, "image" | "images" | "digital_file" | "variants"> & {
