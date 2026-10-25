@@ -24,8 +24,8 @@ export function isPayoutEncryptionConfigured(): boolean {
   return encryptionKey() !== null;
 }
 
-/** Chiffre un numéro de retrait : IV + tag + texte, en base64 versionné. */
-export function encryptPayoutNumber(value: string): string {
+/** Chiffre une donnée sensible : IV + tag + texte, en base64 versionné. */
+export function encryptSensitive(value: string): string {
   const key = encryptionKey();
   if (!key) throw new Error("encryption_not_configured");
 
@@ -40,7 +40,7 @@ export function encryptPayoutNumber(value: string): string {
   return `${VERSION}:${Buffer.concat([iv, tag, encrypted]).toString("base64")}`;
 }
 
-export function decryptPayoutNumber(payload: string): string {
+export function decryptSensitive(payload: string): string {
   const key = encryptionKey();
   if (!key) throw new Error("encryption_not_configured");
 
@@ -61,6 +61,14 @@ export function decryptPayoutNumber(payload: string): string {
 }
 
 /** Empreinte non réversible, pour détecter un doublon sans déchiffrer. */
+export function encryptPayoutNumber(value: string): string {
+  return encryptSensitive(value);
+}
+
+export function decryptPayoutNumber(payload: string): string {
+  return decryptSensitive(payload);
+}
+
 export function fingerprintPayoutNumber(value: string): string {
   const key = encryptionKey();
   if (!key) throw new Error("encryption_not_configured");

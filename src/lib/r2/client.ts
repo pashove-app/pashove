@@ -1,5 +1,6 @@
 import {
   DeleteObjectCommand,
+  GetObjectCommand,
   HeadObjectCommand,
   PutObjectCommand,
   S3Client,
@@ -99,6 +100,18 @@ export async function inspectObject(
   } catch {
     return null;
   }
+}
+
+/** Lien de lecture temporaire pour un objet privé (documents KYC). */
+export async function signDownload(
+  key: string,
+  kind: MediaKind,
+): Promise<string> {
+  return getSignedUrl(
+    client(),
+    new GetObjectCommand({ Bucket: bucketFor(kind), Key: key }),
+    { expiresIn: PRESIGN_TTL_SECONDS },
+  );
 }
 
 /** Supprime l'objet du bon bucket. Appelé après la suppression de sa ligne. */

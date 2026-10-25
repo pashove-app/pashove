@@ -5,7 +5,13 @@
  * vendus, privés. Leur taille et leurs formats n'ont rien à voir.
  */
 
-export const MEDIA_KINDS = ["logo", "banner", "product", "digital_file"] as const;
+export const MEDIA_KINDS = [
+  "logo",
+  "banner",
+  "product",
+  "digital_file",
+  "kyc_document",
+] as const;
 export type MediaKind = (typeof MEDIA_KINDS)[number];
 
 export const IMAGE_EXTENSIONS = {
@@ -32,8 +38,13 @@ export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 /** 100 Mo : un PDF, un ZIP ou un EPUB vendu. */
 export const MAX_FILE_BYTES = 100 * 1024 * 1024;
 
-/** Un fichier vendu ne doit jamais être public. */
+/** Un fichier vendu ou un document KYC ne doit jamais être public. */
 export function isPrivateKind(kind: MediaKind): boolean {
+  return kind === "digital_file" || kind === "kyc_document";
+}
+
+/** Seul un fichier vendu accepte les formats documentaires. */
+export function isFileKind(kind: MediaKind): boolean {
   return kind === "digital_file";
 }
 
@@ -51,11 +62,11 @@ export function isMediaKind(value: unknown): value is MediaKind {
 
 /** Taille maximale selon la nature de l'objet. */
 export function maxBytesFor(kind: MediaKind): number {
-  return isPrivateKind(kind) ? MAX_FILE_BYTES : MAX_IMAGE_BYTES;
+  return isFileKind(kind) ? MAX_FILE_BYTES : MAX_IMAGE_BYTES;
 }
 
 export function maxLabelFor(kind: MediaKind): string {
-  return isPrivateKind(kind) ? "100 Mo" : "5 Mo";
+  return isFileKind(kind) ? "100 Mo" : "5 Mo";
 }
 
 const ALL_EXTENSIONS: Record<string, string> = {
@@ -79,7 +90,7 @@ export function buildObjectKey(
 }
 
 const KEY_PATTERN =
-  /^stores\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/(logo|banner|product|digital_file)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.[a-z0-9]+$/i;
+  /^stores\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/(logo|banner|product|digital_file|kyc_document)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.[a-z0-9]+$/i;
 
 /** Relit une clé et vérifie qu'elle respecte la forme attendue. */
 export function parseObjectKey(

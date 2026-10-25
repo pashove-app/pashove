@@ -3,6 +3,7 @@ import { inspectObject, isStorageConfigured } from "@/lib/r2/client";
 import {
   isAllowedFileType,
   isAllowedImageType,
+  isFileKind,
   isPrivateKind,
   maxBytesFor,
   parseObjectKey,
@@ -61,8 +62,9 @@ export async function POST(request: Request) {
   }
 
   const privateKind = isPrivateKind(parsed.kind);
+  const fileKind = isFileKind(parsed.kind);
 
-  const accepted = privateKind
+  const accepted = fileKind
     ? isAllowedFileType(object.contentType)
     : isAllowedImageType(object.contentType);
 
@@ -81,7 +83,7 @@ export async function POST(request: Request) {
   };
 
   const safeFileName =
-    privateKind && typeof fileName === "string"
+    fileKind && typeof fileName === "string"
       ? fileName.replace(/[\\/]/g, "").trim().slice(0, 255) || null
       : null;
 

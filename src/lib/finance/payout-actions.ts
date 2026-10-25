@@ -23,6 +23,7 @@ import type {
   PayoutMethodFormState,
   PayoutPinFormState,
 } from "@/lib/finance/types";
+import { hasVerifiedTotp } from "@/lib/auth/mfa";
 import { parsePrice } from "@/lib/products/schema";
 import { currentStore } from "@/lib/stores/queries";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
@@ -284,6 +285,7 @@ export async function setPayoutPinAction(
 function payoutErrorKey(error: { message?: string }): string {
   const message = error.message ?? "";
 
+  if (message.includes("kyc_required")) return "kycRequired";
   if (message.includes("insufficient_funds")) return "insufficientFunds";
   if (message.includes("payout_amount_too_low")) return "payoutAmountTooLow";
   if (message.includes("method_not_found")) return "payoutMethodMissing";
@@ -310,6 +312,18 @@ export async function requestPayoutAction(
   const supabase = await createClient();
   const store = await currentStore();
   if (!store) return { status: "error", messageKey: "sessionExpired" };
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (hasVerifiedTotp(user)) {
+    const { data: level } =
+      await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (level?.currentLevel !== "aal2") {
+      return { status: "error", messageKey: "twoFactorRequired" };
+    }
+  }
 
   const amount = parsePrice(field(formData, "amount"), store.currency);
 

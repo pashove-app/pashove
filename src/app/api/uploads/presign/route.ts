@@ -3,6 +3,7 @@ import { isStorageConfigured, signUpload } from "@/lib/r2/client";
 import {
   isAllowedFileType,
   isAllowedImageType,
+  isFileKind,
   isMediaKind,
   isPrivateKind,
   maxBytesFor,
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
 
   // La validation directe (et non un booléen intermédiaire) permet au
   // compilateur de savoir que `contentType` est bien une chaîne ensuite.
-  if (isPrivateKind(kind)) {
+  if (isFileKind(kind)) {
     if (!isAllowedFileType(contentType)) {
       return NextResponse.json({ error: "type_not_allowed" }, { status: 415 });
     }

@@ -12,6 +12,7 @@ import {
   getStoreBalances,
   listPayoutMethods,
 } from "@/lib/finance/queries";
+import { getKycStatus, kycAllowsPayout } from "@/lib/kyc/queries";
 import { formatMoney } from "@/lib/money";
 import { currentStore } from "@/lib/stores/queries";
 
@@ -39,16 +40,18 @@ export default async function NewPayoutPage({
   const store = await currentStore();
   if (!store) redirect(`/${locale}/onboarding/store`);
 
-  const [methods, security, balances, t] = await Promise.all([
+  const [methods, security, balances, kyc, t] = await Promise.all([
     listPayoutMethods(store.id),
     getPayoutSecurity(store.id),
     getStoreBalances(store.id),
+    getKycStatus(store.id),
     getDictionary(locale),
   ]);
 
   const labels = t.dashboard.finance;
   const tag = LOCALE_META[locale].tag;
-  const ready = methods.length > 0 && security.hasPin;
+  const kycReady = kycAllowsPayout(kyc.status);
+  const ready = methods.length > 0 && security.hasPin && kycReady;
 
   return (
     <div className="mx-auto w-full max-w-2xl">
@@ -108,16 +111,46 @@ export default async function NewPayoutPage({
               </ButtonLink>
             </section>
           ) : null}
+
+          {!kycReady ? (
+            <section className="rounded-3xl border border-border bg-surface p-6">
+              <h2 className="text-[0.9375rem] font-medium text-fg">
+                {labels.payoutNeedKycTitle}
+              </h2>
+              <p className="mt-1 text-[0.8125rem] leading-relaxed text-subtle">
+                {labels.payoutNeedKycText}
+              </p>
+              <ButtonLink
+                href={path(locale, "/app/finance/kyc")}
+                size="pill"
+                className="mt-4"
+              >
+                <Icon path={icons.shield} className="h-4 w-4" strokeWidth={1.8} />
+                {labels.payoutNeedKycCta}
+              </ButtonLink>
+            </section>
+          ) : null}
         </div>
       ) : (
-        <PayoutForm
-          t={t}
-          locale={locale}
-          availableLabel={formatMoney(balances.available, store.currency, tag)}
-          minLabel={formatMoney(1000, store.currency, tag)}
-          methods={methods}
-          idempotencyKey={randomUUID()}
-        />
+        <>
+          {kyc.status !== "approved" ? (
+            <div className="mt-5 flex items-start gap-2.5 rounded-2xl border border-amber-400/25 bg-amber-400/[0.06] px-4 py-3.5">
+              <Icon path={icons.shield} className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" strokeWidth={1.8} />
+              <p className="text-[0.75rem] leading-relaxed text-muted">
+                {labels.payoutKycPendingNote}
+              </p>
+            </div>
+          ) : null}
+
+          <PayoutForm
+            t={t}
+            locale={locale}
+            availableLabel={formatMoney(balances.available, store.currency, tag)}
+            minLabel={formatMoney(1000, store.currency, tag)}
+            methods={methods}
+            idempotencyKey={randomUUID()}
+          />
+        </>
       )}
     </div>
   );
