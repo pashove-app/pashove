@@ -33,6 +33,12 @@ export async function proxy(request: NextRequest) {
 
   const first = pathname.split("/")[1] ?? "";
 
+  // L'administration plateforme vit hors du préfixe de langue : elle est
+  // interne, en français, et doit rester accessible à /platform-admin.
+  if (pathname === "/platform-admin" || pathname.startsWith("/platform-admin/")) {
+    return refreshSession(request, NextResponse.next());
+  }
+
   // Route déjà préfixée par une langue : on l'annonce au layout racine, et on
   // laisse Supabase renouveler la session dans la foulée.
   if (isLocale(first)) {
