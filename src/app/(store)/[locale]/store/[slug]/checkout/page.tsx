@@ -1,28 +1,27 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { CheckoutForm } from "@/components/storefront/checkout-form";
 import { Container } from "@/components/storefront/container";
 import { StorefrontClosed } from "@/components/storefront/storefront-closed";
 import { StorefrontHeader } from "@/components/storefront/storefront-header";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
-import { Icon, icons } from "@/components/ui/primitives";
+import { BackLink } from "@/components/ui/back-link";
 import { path } from "@/components/ui/types";
-import { isLocale } from "@/i18n/config";
+import { LOCALE_META, isLocale, resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
+import { readCart } from "@/lib/storefront/cart";
 import { loadStorefront } from "@/lib/storefront/queries";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
-/**
- * Emplacement du checkout. Le lot V2 le remplace par le formulaire réel.
- */
-export default async function CheckoutRoute({
+export default async function CheckoutPage({
   params,
 }: {
   params: Promise<{ locale: string; slug: string }>;
 }) {
-  const { locale, slug } = await params;
-  if (!isLocale(locale)) notFound();
+  const { locale: raw, slug } = await params;
+  if (!isLocale(raw)) notFound();
+  const locale = resolveLocale(raw);
 
   const { status, store } = await loadStorefront(slug);
   if (status === "missing") notFound();
@@ -31,28 +30,41 @@ export default async function CheckoutRoute({
   if (status === "suspended") return <StorefrontClosed t={t} />;
   if (!store) notFound();
 
+  const cart = await readCart(LOCALE_META[locale].tag);
+  if (!cart || cart.items.length === 0) {
+    redirect(path(locale, `/store/${slug}/cart`));
+  }
+
   return (
     <StorefrontShell store={store} locale={locale} t={t}>
       <StorefrontHeader store={store} locale={locale} t={t} />
-      <main className="py-16">
-        <Container>
-        <div className="mx-auto max-w-md rounded-3xl border border-border bg-surface p-8 text-center">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-hairline text-accent">
-            <Icon path={icons.lock} className="h-6 w-6" strokeWidth={1.7} />
-          </span>
-          <h1 className="mt-5 text-[1.375rem] font-medium tracking-[-0.02em] text-fg">
-            {t.storefront.checkoutTitle}
-          </h1>
-          <p className="mt-2 text-[0.875rem] leading-relaxed text-muted">
-            {t.storefront.checkoutText}
-          </p>
-          <Link
-            href={path(locale, `/store/${slug}/cart`)}
-            className="mt-6 inline-flex h-11 items-center justify-center rounded-xl bg-brand-500 px-5 text-[0.8125rem] font-medium text-white transition-colors hover:bg-brand-600"
-          >
-            {t.storefront.viewCart}
-          </Link>
-        </div>
+      <main>
+        <Container className="py-10 sm:py-14">
+          <div className="mx-auto w-full max-w-2xl">
+            <BackLink
+              href={path(locale, `/store/${slug}/cart`)}
+              label={t.storefront.checkoutBackToCart}
+            />
+
+            <div className="mt-5">
+              <h1 className="text-[1.875rem] font-medium tracking-[-0.035em] text-fg sm:text-[2.25rem]">
+                {t.storefront.checkoutPageTitle}
+              </h1>
+              <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-subtle">
+                {t.storefront.checkoutPageSubtitle}
+              </p>
+            </div>
+
+            <div className="mt-7">
+              <CheckoutForm
+                t={t}
+                locale={locale}
+                slug={slug}
+                cart={cart}
+                defaultCountry={store.country}
+              />
+            </div>
+          </div>
         </Container>
       </main>
     </StorefrontShell>
