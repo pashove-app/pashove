@@ -3,6 +3,8 @@
 > Date : 25/10/2026 · Dernier commit : `6bf1e22`
 > Sources : code du dépôt, `docs/00` → `docs/06`, blueprint `AGENTSb.md`.
 > Méthode : lecture des routes, des écrans, des RPC et tests réels (SQL + navigateur).
+> **Détail module par module (pages, données, flux, dépendances)** :
+> `docs/08-PLAN-MODULES-COMPLET.md`.
 
 ---
 
