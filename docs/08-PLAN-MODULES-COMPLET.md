@@ -18,7 +18,7 @@
 
 ---
 
-## 1. Socle : multi-boutiques, équipe, rôles, plans — 🟡 / 🔴
+## 1. Socle : multi-boutiques, équipe, rôles, plans — ✅ livré (V1, 25/10/2026)
 
 ### Pourquoi c'est la première brique
 
@@ -318,7 +318,7 @@ date d'envoi.
 
 ---
 
-## 10. Partenaires et affiliation — 🔴 (le module central que tu décris)
+## 10. Partenaires et affiliation — ✅ V1 livrée le 25/10/2026
 
 ### Objectif exact
 
@@ -392,6 +392,19 @@ Multi-boutiques + commandes + ledger + paiements (ou COD). Ne peut pas être
 construit avant le socle multi-boutiques.
 
 **Effort** : 4 semaines.
+
+### V1 livrée le 25/10/2026
+
+- Sélecteur de boutique, création (limite Free = 2, vérifiée en base),
+  invitations admin / gestionnaire de produits (lien copiable ; envoi e-mail
+  à brancher avec Brevo).
+- Offre de partage sur un produit (1 à 50 %), découverte, ajout d'une copie
+  contrôlée dans la boutique partenaire.
+- **Limites V1** : produits physiques sans variantes uniquement ; pas de
+  partage en chaîne ; commission partenaire `pending` (virements plus tard) ;
+  le prix est recopié à l'ajout (pas encore de synchronisation).
+- Ledger : reclassement chez B, revenu source et commission Pashove chez A,
+  remboursement partenaire testé en base.
 
 ---
 
