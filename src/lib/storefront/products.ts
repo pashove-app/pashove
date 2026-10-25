@@ -126,3 +126,20 @@ export async function searchStoreProducts(
 
   return ((data ?? []) as unknown as Row[]).map(toProduct);
 }
+
+/** Des produits publiés, dans l'ordre demandé par l'appelant. */
+export async function listStoreProductsByIds(
+  storeId: string,
+  ids: string[],
+): Promise<StoreProduct[]> {
+  if (ids.length === 0) return [];
+  const supabase = createPublicClient();
+  const { data } = await supabase
+    .from("products")
+    .select(COLUMNS)
+    .eq("store_id", storeId)
+    .eq("status", "published")
+    .in("id", ids);
+
+  return ((data ?? []) as unknown as Row[]).map(toProduct);
+}

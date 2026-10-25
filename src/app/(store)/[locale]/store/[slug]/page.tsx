@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/storefront/container";
 import { ProductGrid } from "@/components/storefront/product-grid";
+import {
+  BundlesSection,
+  CollectionsSection,
+} from "@/components/storefront/storefront-sections";
 import { Reveal } from "@/components/storefront/reveal";
 import { StorefrontClosed } from "@/components/storefront/storefront-closed";
 import { StorefrontHeader } from "@/components/storefront/storefront-header";
@@ -12,6 +16,8 @@ import { LOCALE_META, isLocale } from "@/i18n/config";
 import { getDictionary, interpolate } from "@/i18n/get-dictionary";
 import { publicUrl } from "@/lib/r2/media";
 import { listStoreProducts } from "@/lib/storefront/products";
+import { listPublicBundles } from "@/lib/storefront/bundles";
+import { listPublicCollections } from "@/lib/storefront/collections";
 import { loadStorefront } from "@/lib/storefront/queries";
 
 /**
@@ -73,7 +79,11 @@ export default async function StorefrontPage({
   if (status === "suspended") return <StorefrontClosed t={t} />;
   if (!store) notFound();
 
-  const products = await listStoreProducts(store.id);
+  const [products, collections, bundles] = await Promise.all([
+    listStoreProducts(store.id),
+    listPublicCollections(store.id),
+    listPublicBundles(store.id, store.currency, LOCALE_META[locale].tag),
+  ]);
   const bannerUrl = store.banner ? publicUrl(store.banner.object_key) : null;
 
   return (
@@ -100,6 +110,28 @@ export default async function StorefrontPage({
               localeTag={LOCALE_META[locale].tag}
             />
           </Reveal>
+
+          {collections.length > 0 ? (
+            <Reveal>
+              <CollectionsSection
+                collections={collections}
+                storeSlug={slug}
+                locale={locale}
+                labels={t.storefront}
+              />
+            </Reveal>
+          ) : null}
+
+          {bundles.length > 0 ? (
+            <Reveal>
+              <BundlesSection
+                bundles={bundles}
+                storeSlug={slug}
+                locale={locale}
+                labels={t.storefront}
+              />
+            </Reveal>
+          ) : null}
         </Container>
       </main>
     </StorefrontShell>

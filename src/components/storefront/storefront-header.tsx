@@ -44,6 +44,7 @@ export function StorefrontHeader({
 
   const links = [
     { href: home, label: labels.navHome },
+    { href: path(locale, `/store/${store.slug}/collections`), label: labels.navCollections },
     { href: `${home}#products`, label: labels.navNew },
     { href: `${home}#contact`, label: labels.navContact },
   ];
