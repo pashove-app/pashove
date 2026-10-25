@@ -46,3 +46,20 @@ export async function listDiscounts(storeId: string): Promise<DiscountRow[]> {
 
   return (data ?? []) as DiscountRow[];
 }
+
+/** Un code de la boutique, pour l'écran de modification. */
+export async function getDiscount(
+  id: string,
+  storeId: string,
+): Promise<DiscountRow | null> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("discount_codes")
+    .select(COLUMNS)
+    .eq("id", id)
+    .eq("store_id", storeId)
+    .maybeSingle();
+
+  return (data as DiscountRow | null) ?? null;
+}

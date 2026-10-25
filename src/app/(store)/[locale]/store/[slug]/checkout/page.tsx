@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { CheckoutForm } from "@/components/storefront/checkout-form";
 import { Container } from "@/components/storefront/container";
+import { DiscountField } from "@/components/storefront/discount-field";
 import { StorefrontClosed } from "@/components/storefront/storefront-closed";
 import { StorefrontHeader } from "@/components/storefront/storefront-header";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
@@ -56,6 +57,10 @@ export default async function CheckoutPage({
             </div>
 
             <div className="mt-7">
+              <section className="rounded-3xl border border-border bg-surface p-5 sm:p-6">
+                <DiscountField />
+              </section>
+
               <CheckoutForm
                 t={t}
                 locale={locale}

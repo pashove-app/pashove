@@ -7,30 +7,35 @@ import { Icon, icons, Spinner } from "@/components/ui/primitives";
 import { path } from "@/components/ui/types";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/get-dictionary";
-import { createDiscountAction } from "@/lib/discounts/actions";
+import { saveDiscountAction } from "@/lib/discounts/actions";
+import type { DiscountRow } from "@/lib/discounts/queries";
 import {
   INITIAL_DISCOUNT_FORM_STATE,
   type DiscountFormState,
 } from "@/lib/discounts/types";
-
+import { formatPriceInput } from "@/lib/products/schema";
 /** Création d'un code promo. Les montants sont validés côté serveur. */
 export function DiscountForm({
   t,
   locale,
   currency,
+  initial,
 }: {
   t: Dictionary;
   locale: Locale;
   currency: string;
+  initial: DiscountRow | null;
 }) {
   const labels = t.dashboard.discounts;
   const [state, formAction, pending] = useActionState<
     DiscountFormState,
     FormData
-  >(createDiscountAction, INITIAL_DISCOUNT_FORM_STATE);
+  >(saveDiscountAction, INITIAL_DISCOUNT_FORM_STATE);
 
-  const [kind, setKind] = useState<"percent" | "fixed">("percent");
-  const [code, setCode] = useState("");
+  const [kind, setKind] = useState<"percent" | "fixed">(
+    initial?.kind ?? "percent",
+  );
+  const [code, setCode] = useState(initial?.code ?? "");
 
   const fieldError = (key: string) => {
     const messageKey = state.fieldErrors?.[key];
@@ -48,6 +53,9 @@ export function DiscountForm({
   return (
     <form action={formAction} noValidate>
       <input type="hidden" name="locale" value={locale} />
+      {initial ? (
+        <input type="hidden" name="discountId" value={initial.id} />
+      ) : null}
 
       <section className="rounded-3xl border border-border bg-surface p-5 sm:p-6">
         <div className="grid gap-5 sm:grid-cols-2">
@@ -83,6 +91,13 @@ export function DiscountForm({
               kind === "percent" ? labels.valuePercentLabel : labels.valueFixedLabel
             }
             inputMode="numeric"
+            defaultValue={
+              initial
+                ? initial.kind === "percent"
+                  ? String(initial.value)
+                  : formatPriceInput(initial.value, currency)
+                : ""
+            }
             placeholder={kind === "percent" ? "10" : "5 000"}
             help={
               kind === "percent" ? labels.valuePercentHelp : labels.valueFixedHelp
@@ -95,6 +110,11 @@ export function DiscountForm({
             name="minSubtotal"
             label={labels.fieldMinSubtotal}
             inputMode="numeric"
+            defaultValue={
+              initial && initial.min_subtotal > 0
+                ? formatPriceInput(initial.min_subtotal, currency)
+                : ""
+            }
             placeholder="0"
             help={labels.minSubtotalHelp}
             maxLength={12}
@@ -105,6 +125,7 @@ export function DiscountForm({
             name="maxUses"
             label={labels.fieldMaxUses}
             inputMode="numeric"
+            defaultValue={initial?.max_uses ?? ""}
             placeholder={labels.maxUsesPlaceholder}
             help={labels.maxUsesHelp}
             maxLength={6}
@@ -117,6 +138,7 @@ export function DiscountForm({
             name="startsAt"
             label={labels.fieldStartsAt}
             type="date"
+            defaultValue={initial?.starts_at?.slice(0, 10) ?? ""}
             help={labels.startsAtHelp}
             error={fieldError("startsAt")}
           />
@@ -125,6 +147,7 @@ export function DiscountForm({
             name="expiresAt"
             label={labels.fieldExpiresAt}
             type="date"
+            defaultValue={initial?.expires_at?.slice(0, 10) ?? ""}
             help={labels.expiresAtHelp}
             error={fieldError("expiresAt")}
           />
@@ -133,7 +156,7 @@ export function DiscountForm({
         <div className="mt-5 border-t border-hairline pt-5">
           <Checkbox
             name="active"
-            defaultChecked
+            defaultChecked={initial?.active ?? true}
             label={
               <span>
                 <span className="block font-medium text-body">
@@ -163,7 +186,13 @@ export function DiscountForm({
             className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-[0.875rem] font-medium text-white transition-colors hover:bg-brand-600 disabled:pointer-events-none disabled:opacity-60"
           >
             {pending ? <Spinner /> : <Icon path={icons.percent} className="h-4 w-4" strokeWidth={2} />}
-            {pending ? labels.submitting : labels.submit}
+            {pending
+              ? initial
+                ? labels.saving
+                : labels.submitting
+              : initial
+                ? labels.save
+                : labels.submit}
           </button>
 
           <Link

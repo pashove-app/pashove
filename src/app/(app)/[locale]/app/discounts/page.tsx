@@ -26,11 +26,11 @@ export default async function DiscountsPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ created?: string; updated?: string }>;
+  searchParams: Promise<{ created?: string; updated?: string; deleted?: string }>;
 }) {
   const { locale: raw } = await params;
   const locale = resolveLocale(raw);
-  const { created, updated } = await searchParams;
+  const { created, updated, deleted } = await searchParams;
 
   const store = await currentStore();
   if (!store) redirect(`/${locale}/onboarding/store`);
@@ -64,13 +64,17 @@ export default async function DiscountsPage({
         {labels.subtitle}
       </p>
 
-      {created || updated ? (
+      {created || updated || deleted ? (
         <p
           role="status"
           className="mt-5 flex items-start gap-2.5 rounded-xl border border-emerald-400/25 bg-emerald-400/[0.07] p-3.5 text-[0.8125rem] leading-relaxed text-emerald-700 dark:text-emerald-300"
         >
           <Icon path={icons.check} className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2.4} />
-          {updated ? labels.flashUpdated : labels.flashCreated}
+          {deleted
+            ? labels.flashDeleted
+            : updated
+              ? labels.flashUpdated
+              : labels.flashCreated}
         </p>
       ) : null}
 

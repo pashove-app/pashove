@@ -14,6 +14,11 @@ function field(formData: FormData, key: string): string {
   return typeof value === "string" ? value : "";
 }
 
+/** « 20 000 » saisi par un marchand doit rester un montant valide. */
+function cleanAmount(value: string): string {
+  return value.replace(/[\s  ]/g, "");
+}
+
 function messageKeyFor(error: { code?: string; message?: string }): string {
   const message = error.message ?? "";
 
@@ -27,12 +32,13 @@ function messageKeyFor(error: { code?: string; message?: string }): string {
   return "serverError";
 }
 
-/** Crée un code promo. Le `store_id` vient toujours du serveur. */
-export async function createDiscountAction(
+/** Crée ou met à jour un code promo. Le `store_id` vient toujours du serveur. */
+export async function saveDiscountAction(
   _previous: DiscountFormState,
   formData: FormData,
 ): Promise<DiscountFormState> {
   const locale = field(formData, "locale") || "fr";
+  const discountId = field(formData, "discountId");
 
   const parsed = discountSchema.safeParse({
     code: field(formData, "code"),
@@ -66,14 +72,14 @@ export async function createDiscountAction(
       fieldErrors.value = "valueInvalid";
     }
   } else {
-    value = parsePrice(parsed.data.value, store.currency);
+    value = parsePrice(cleanAmount(parsed.data.value), store.currency);
     if (value === null || value <= 0) {
       fieldErrors.value = "valueInvalid";
     }
   }
 
   const minSubtotal = parsed.data.minSubtotal
-    ? parsePrice(parsed.data.minSubtotal, store.currency)
+    ? parsePrice(cleanAmount(parsed.data.minSubtotal), store.currency)
     : 0;
   if (minSubtotal === null || minSubtotal < 0) {
     fieldErrors.minSubtotal = "minInvalid";
@@ -105,24 +111,47 @@ export async function createDiscountAction(
     return { status: "invalid", fieldErrors };
   }
 
-  const { error } = await supabase.from("discount_codes").insert({
-    store_id: store.id,
+  const payload = {
     code: parsed.data.code,
     kind: parsed.data.kind,
-    value,
-    min_subtotal: minSubtotal,
+    value: value as number,
+    min_subtotal: minSubtotal as number,
     max_uses: maxUses,
     starts_at: starts.value,
     expires_at: expires.value,
     active: parsed.data.active === "on",
-  });
+  };
 
-  if (error) {
-    return { status: "error", messageKey: messageKeyFor(error) };
+  let saveError: { code?: string; message?: string } | null = null;
+
+  if (discountId) {
+    const { data, error } = await supabase
+      .from("discount_codes")
+      .update(payload)
+      .eq("id", discountId)
+      .eq("store_id", store.id)
+      .select("id");
+
+    saveError = error;
+    if (!error && (!data || data.length === 0)) {
+      return { status: "error", messageKey: "serverError" };
+    }
+  } else {
+    const { error } = await supabase
+      .from("discount_codes")
+      .insert({ ...payload, store_id: store.id });
+
+    saveError = error;
+  }
+
+  if (saveError) {
+    return { status: "error", messageKey: messageKeyFor(saveError) };
   }
 
   revalidatePath(`/${locale}/app/discounts`);
-  redirect(`/${locale}/app/discounts?created=1`);
+  redirect(
+    `/${locale}/app/discounts?${discountId ? "updated=1" : "created=1"}`,
+  );
 }
 
 /** Active ou désactive un code existant. */
@@ -145,4 +174,25 @@ export async function toggleDiscountAction(formData: FormData): Promise<void> {
 
   revalidatePath(`/${locale}/app/discounts`);
   redirect(`/${locale}/app/discounts?updated=1`);
+}
+
+/** Supprime un code promo sans toucher aux commandes qui l'ont utilisé. */
+export async function deleteDiscountAction(formData: FormData): Promise<void> {
+  const locale = field(formData, "locale") || "fr";
+  const id = field(formData, "id");
+
+  if (!id) redirect(`/${locale}/app/discounts`);
+
+  const supabase = await createClient();
+  const store = await currentStore();
+  if (!store) redirect(`/${locale}/onboarding/store`);
+
+  await supabase
+    .from("discount_codes")
+    .delete()
+    .eq("id", id)
+    .eq("store_id", store.id);
+
+  revalidatePath(`/${locale}/app/discounts`);
+  redirect(`/${locale}/app/discounts?deleted=1`);
 }

@@ -30,6 +30,8 @@ export type NavItem = {
   /** Chemin sans préfixe de langue ; `path()` l'ajoute à l'affichage. */
   href: string;
   icon: IconKey;
+  /** Section encore en construction : affichée avec un badge « Bientôt ». */
+  soon?: boolean;
 };
 
 export type NavGroup = {
@@ -47,23 +49,23 @@ export const NAV_GROUPS: NavGroup[] = [
       { key: "collections", href: "/app/collections", icon: "layers" },
       { key: "bundles", href: "/app/bundles", icon: "bundle" },
       { key: "customers", href: "/app/clients", icon: "users" },
-      { key: "marketing", href: "/app/marketing", icon: "bolt" },
+      { key: "marketing", href: "/app/marketing", icon: "bolt", soon: true },
       { key: "discounts", href: "/app/discounts", icon: "percent" },
     ],
   },
   {
     labelKey: "store",
     items: [
-      { key: "onlineStore", href: "/app/online-store", icon: "store" },
-      { key: "salesChannels", href: "/app/sales-channels", icon: "globe" },
-      { key: "partners", href: "/app/partners", icon: "route" },
-      { key: "gifts", href: "/app/gifts", icon: "gift" },
+      { key: "onlineStore", href: "/app/online-store", icon: "store", soon: true },
+      { key: "salesChannels", href: "/app/sales-channels", icon: "globe", soon: true },
+      { key: "partners", href: "/app/partners", icon: "route", soon: true },
+      { key: "gifts", href: "/app/gifts", icon: "gift", soon: true },
     ],
   },
   {
     labelKey: "insight",
     items: [
-      { key: "analytics", href: "/app/analytics", icon: "chart" },
+      { key: "analytics", href: "/app/analytics", icon: "chart", soon: true },
       { key: "finance", href: "/app/finance", icon: "wallet" },
     ],
   },
@@ -72,8 +74,8 @@ export const NAV_GROUPS: NavGroup[] = [
 /** Réglages et services : rendus en bas de la navigation, après un trait. */
 export const NAV_SYSTEM: NavItem[] = [
   { key: "settings", href: "/app/settings", icon: "settings" },
-  { key: "apps", href: "/app/apps", icon: "grid" },
-  { key: "support", href: "/app/support", icon: "chat" },
+  { key: "apps", href: "/app/apps", icon: "grid", soon: true },
+  { key: "support", href: "/app/support", icon: "chat", soon: true },
 ];
 
 export const NAV_ALL: NavItem[] = [

@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { DeleteDiscountButton } from "@/components/discounts/delete-discount-button";
 import { toggleDiscountAction } from "@/lib/discounts/actions";
 import {
   discountStatus,
@@ -5,6 +7,7 @@ import {
   type DiscountStatus,
 } from "@/lib/discounts/queries";
 import { Icon, icons } from "@/components/ui/primitives";
+import { path } from "@/components/ui/types";
 import type { Locale } from "@/i18n/config";
 import { LOCALE_META } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/get-dictionary";
@@ -154,12 +157,27 @@ export function DiscountList({
                   <StatusBadge status={status} labels={labels} />
                 </td>
 
-                <td className="px-5 py-4 text-end">
-                  <ToggleButton
-                    discount={discount}
-                    locale={locale}
-                    labels={labels}
-                  />
+                <td className="px-5 py-4">
+                  <div className="flex items-center justify-end gap-1.5">
+                    <Link
+                      href={path(locale, `/app/discounts/${discount.id}`)}
+                      aria-label={labels.edit}
+                      title={labels.edit}
+                      className="flex h-8 w-8 items-center justify-center rounded-lg text-faint transition-colors hover:bg-hairline hover:text-fg"
+                    >
+                      <Icon path={icons.pencil} className="h-4 w-4" strokeWidth={1.8} />
+                    </Link>
+                    <DeleteDiscountButton
+                      locale={locale}
+                      discountId={discount.id}
+                      labels={labels}
+                    />
+                    <ToggleButton
+                      discount={discount}
+                      locale={locale}
+                      labels={labels}
+                    />
+                  </div>
                 </td>
               </tr>
             );
@@ -208,7 +226,19 @@ export function DiscountList({
                 </li>
               </ul>
 
-              <div className="mt-4">
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <Link
+                  href={path(locale, `/app/discounts/${discount.id}`)}
+                  className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border px-3.5 text-[0.75rem] font-medium text-subtle transition-colors hover:border-border-strong hover:text-fg"
+                >
+                  <Icon path={icons.pencil} className="h-3.5 w-3.5" strokeWidth={1.8} />
+                  {labels.edit}
+                </Link>
+                <DeleteDiscountButton
+                  locale={locale}
+                  discountId={discount.id}
+                  labels={labels}
+                />
                 <ToggleButton discount={discount} locale={locale} labels={labels} />
               </div>
             </li>

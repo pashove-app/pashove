@@ -48,7 +48,7 @@ export default async function NewDiscountPage({
       </div>
 
       <div className="mt-6">
-        <DiscountForm t={t} locale={locale} currency={store.currency} />
+        <DiscountForm t={t} locale={locale} currency={store.currency} initial={null} />
       </div>
     </div>
   );

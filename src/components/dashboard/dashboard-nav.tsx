@@ -63,7 +63,21 @@ export function DashboardNavList({
             className="h-[1.125rem] w-[1.125rem] shrink-0"
             strokeWidth={1.8}
           />
-          {collapsed ? null : <span className="truncate">{label}</span>}
+          {collapsed ? null : (
+            <>
+              <span className="min-w-0 flex-1 truncate">{label}</span>
+              {item.soon ? (
+                <span
+                  className={cn(
+                    "shrink-0 rounded-full px-1.5 py-0.5 text-[0.5625rem] font-semibold uppercase tracking-wide",
+                    active ? "bg-white/20 text-white/80" : "bg-white/10 text-white/45",
+                  )}
+                >
+                  {t.dashboard.nav.soon}
+                </span>
+              ) : null}
+            </>
+          )}
         </Link>
       </li>
     );

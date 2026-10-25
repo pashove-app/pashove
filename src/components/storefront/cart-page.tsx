@@ -163,7 +163,9 @@ export function CartPage() {
         <aside className="rounded-2xl border border-border bg-surface p-5 lg:sticky lg:top-6">
           <h2 className="text-[0.9375rem] font-medium text-fg">{labels.summaryTitle}</h2>
 
-          <DiscountField />
+          <div className="mt-4 border-t border-hairline pt-4">
+            <DiscountField />
+          </div>
 
           <dl className="mt-4 space-y-2 text-[0.875rem]">
             <div className="flex items-center justify-between gap-3">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/components/storefront/cart-provider";
 import { Icon, icons, Spinner } from "@/components/ui/primitives";
 
@@ -12,6 +13,7 @@ import { Icon, icons, Spinner } from "@/components/ui/primitives";
  */
 export function DiscountField() {
   const { cart, labels, applyDiscount, removeDiscount } = useCart();
+  const router = useRouter();
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +40,8 @@ export function DiscountField() {
     }
 
     setCode("");
+    // Sur le checkout, les totaux viennent du serveur : on les rafraîchit.
+    router.refresh();
   }
 
   async function remove() {
@@ -48,11 +52,16 @@ export function DiscountField() {
     const result = await removeDiscount();
     setBusy(false);
 
-    if (!result.ok) setError(result.error ?? "discountApplyError");
+    if (!result.ok) {
+      setError(result.error ?? "discountApplyError");
+      return;
+    }
+
+    router.refresh();
   }
 
   return (
-    <div className="mt-4 border-t border-hairline pt-4">
+    <div>
       <p className="text-[0.75rem] font-medium text-body">
         {labels.discountCodeLabel}
       </p>
