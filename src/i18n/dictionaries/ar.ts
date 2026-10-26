@@ -2271,6 +2271,7 @@ const ar: Dictionary = {
     attach: "أرفق صورة أو فيديو",
     sending: "جارٍ الإرسال…",
     loginRequired: "سجّل الدخول للتحدث مع المتجر.",
+    merchantSelf: "أنت تدير هذا المتجر. تجد الدعم في لوحة التحكم.",
     loginCta: "تسجيل الدخول",
     openChat: "فتح المحادثة",
     closeChat: "إغلاق المحادثة",

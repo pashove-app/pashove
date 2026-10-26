@@ -329,6 +329,21 @@ export function StorefrontChat({
             <div className="flex flex-1 items-center justify-center">
               <Spinner />
             </div>
+          ) : session?.merchant ? (
+            <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-500/10 text-accent">
+                <Icon path={icons.store} className="h-5 w-5" strokeWidth={1.8} />
+              </span>
+              <p className="mt-4 text-[0.875rem] leading-relaxed text-muted">
+                {labels.merchantSelf}
+              </p>
+              <Link
+                href={path(locale, "/app/support")}
+                className="mt-4 inline-flex h-10 items-center rounded-full bg-brand-500 px-5 text-[0.8125rem] font-medium text-white"
+              >
+                {labels.support}
+              </Link>
+            </div>
           ) : session?.authRequired ? (
             <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
               <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-500/10 text-accent">

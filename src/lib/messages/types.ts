@@ -7,6 +7,7 @@ export type ChatSession = {
   storeName: string;
   customerName: string | null;
   authRequired?: boolean;
+  merchant?: boolean;
 };
 
 export type ChatConversation = {

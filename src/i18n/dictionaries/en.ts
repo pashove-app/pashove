@@ -2294,6 +2294,7 @@ const en: Dictionary = {
     attach: "Attach an image or video",
     sending: "Sending…",
     loginRequired: "Sign in to chat with the store.",
+    merchantSelf: "You manage this store. Find support in your dashboard.",
     loginCta: "Sign in",
     openChat: "Open chat",
     closeChat: "Close chat",

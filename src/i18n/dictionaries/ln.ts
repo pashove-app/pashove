@@ -2298,6 +2298,7 @@ const ln: Dictionary = {
     attach: "Kobakisa foto to video",
     sending: "Ezali kotinda…",
     loginRequired: "Kokota mpo na kosolola na magasin.",
+    merchantSelf: "Yo nde ozali kokamba magasin oyo. Support ezali na dashboard na yo.",
     loginCta: "Kokota",
     openChat: "Kofungola messages",
     closeChat: "Kokanga messages",

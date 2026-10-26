@@ -2290,6 +2290,7 @@ const bm: Dictionary = {
     attach: "Fɔto walima videwo jɔ",
     sending: "A bɛ ci…",
     loginRequired: "I don walisa ka baro butiki ni.",
+    merchantSelf: "I bɛ nin butiki mara. Support bɛ i ka dashboard kɔnɔ.",
     loginCta: "Don",
     openChat: "Messagi da",
     closeChat: "Messagi datugu",

@@ -27,6 +27,7 @@ export default async function PlatformMessagesPage() {
         attach: "Joindre une image ou une vidéo",
         sending: "Envoi…",
         loginRequired: "Connecte-toi pour discuter.",
+        merchantSelf: "Tu gères cette boutique.",
         loginCta: "Se connecter",
         openChat: "Ouvrir la messagerie",
         closeChat: "Fermer la messagerie",
