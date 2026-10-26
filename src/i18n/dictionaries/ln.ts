@@ -2158,6 +2158,7 @@ const ln: Dictionary = {
       statusDelivered: "Ekomi",
       statusCancelled: "Elongolami",
       paymentCod: "Kofuta na bokɔmɔ",
+      paymentInstant: "Kofuta na commande",
       paymentPending: "Ezali kofutama",
       paymentPaid: "Efutami",
       paymentRefunded: "Ezongisami",

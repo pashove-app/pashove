@@ -2131,6 +2131,7 @@ const ar: Dictionary = {
       statusDelivered: "تم التسليم",
       statusCancelled: "ملغاة",
       paymentCod: "الدفع عند الاستلام",
+      paymentInstant: "الدفع عند الطلب",
       paymentPending: "بانتظار التحصيل",
       paymentPaid: "محصّل",
       paymentRefunded: "مسترد",

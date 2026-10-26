@@ -39,6 +39,7 @@ export async function StorefrontHeader({
   const cart = await readCart(LOCALE_META[locale].tag);
   const instantOnly = Boolean(
     cart &&
+      cart.storeId === store.id &&
       cart.items.length > 0 &&
       cart.items.every(
         (item) =>

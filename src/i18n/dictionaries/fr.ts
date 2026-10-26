@@ -2219,6 +2219,7 @@ const fr = {
       statusDelivered: "Livrée",
       statusCancelled: "Annulée",
       paymentCod: "Paiement à la livraison",
+      paymentInstant: "Paiement à la commande",
       paymentPending: "À encaisser",
       paymentPaid: "Encaissé",
       paymentRefunded: "Remboursé",

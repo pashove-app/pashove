@@ -2150,6 +2150,7 @@ const bm: Dictionary = {
       statusDelivered: "A sera",
       statusCancelled: "A bɔra",
       paymentCod: "Sɔngɔ dama livrezɔn",
+      paymentInstant: "Sara komande waati",
       paymentPending: "A bɛ sɔngɔ dama",
       paymentPaid: "A sɔngɔra",
       paymentRefunded: "A bɔra",

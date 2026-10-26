@@ -324,7 +324,11 @@ export function OrderDetail({
           <section className="rounded-2xl border border-border bg-surface p-5">
             <h2 className="text-[0.9375rem] font-medium text-fg">{labels.paymentTitle}</h2>
             <div className="mt-3 flex items-center justify-between gap-3 text-[0.8125rem]">
-              <span className="text-subtle">{labels.paymentCod}</span>
+              <span className="text-subtle">
+                {order.has_physical
+                  ? labels.paymentCod
+                  : labels.paymentInstant}
+              </span>
               <PaymentStatus status={order.payment_status} t={t} />
             </div>
             <p className="mt-2 text-[1rem] font-medium tabular-nums text-fg">

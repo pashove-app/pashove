@@ -23,12 +23,18 @@ export default async function StoreLayout({
   if (!isLocale(raw)) return children;
 
   const { status, store } = await loadStorefront(slug);
-  const [t, cart] = await Promise.all([
+  const [t, storedCart] = await Promise.all([
     getDictionary(raw),
     status === "active"
       ? readCart(LOCALE_META[raw].tag)
       : Promise.resolve(null),
   ]);
+
+  // Un panier d'une autre boutique ne doit jamais s'afficher ici.
+  const cart =
+    storedCart && store && storedCart.storeId === store.id
+      ? storedCart
+      : null;
 
   const mediaBase = (process.env.R2_PUBLIC_URL ?? "").replace(/\/+$/, "");
 

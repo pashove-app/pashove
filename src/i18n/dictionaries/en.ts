@@ -2153,6 +2153,7 @@ const en: Dictionary = {
       statusDelivered: "Delivered",
       statusCancelled: "Cancelled",
       paymentCod: "Cash on delivery",
+      paymentInstant: "Payment at checkout",
       paymentPending: "To collect",
       paymentPaid: "Collected",
       paymentRefunded: "Refunded",
