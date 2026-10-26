@@ -67,6 +67,11 @@ export default async function CheckoutPage({
                 slug={slug}
                 cart={cart}
                 defaultCountry={store.country}
+                requiresShipping={cart.items.some(
+                  (item) =>
+                    item.productType === "physical" ||
+                    item.productType === "bundle",
+                )}
               />
             </div>
           </div>

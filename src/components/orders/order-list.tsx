@@ -171,6 +171,8 @@ function QuickAction({
   labels: Dictionary["dashboard"]["orders"];
   locale: Locale;
 }) {
+  if (!order.has_physical) return null;
+
   if (order.status === "processing") {
     return (
       <Link

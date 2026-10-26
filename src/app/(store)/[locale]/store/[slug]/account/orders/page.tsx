@@ -11,7 +11,6 @@ import { LOCALE_META, resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { formatMoney } from "@/lib/money";
 import {
-  claimGuestOrders,
   customerOrders,
   getCustomerUser,
 } from "@/lib/customer/queries";
@@ -29,8 +28,6 @@ export default async function CustomerOrdersPage({
 
   const user = await getCustomerUser();
   if (!user) redirect(`/${locale}/store/${slug}/account/login`);
-
-  await claimGuestOrders();
 
   const [orders, t] = await Promise.all([
     customerOrders(slug),

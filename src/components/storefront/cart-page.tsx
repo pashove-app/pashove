@@ -26,6 +26,12 @@ export function CartPage() {
 
   const items = cart?.items ?? [];
   const hasUnavailable = items.some((item) => !item.available);
+  const instantOnly =
+    items.length > 0 &&
+    items.every(
+      (item) =>
+        item.productType === "digital" || item.productType === "service",
+    );
   const canCheckout =
     items.length > 0 && Boolean(cart?.codEligible) && !hasUnavailable;
 
@@ -74,8 +80,8 @@ export function CartPage() {
         </p>
       ) : null}
 
-      <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
-        <ul className="divide-y divide-border rounded-2xl border border-border bg-surface px-4 sm:px-5">
+      <div className="mt-6 grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
+        <ul className="min-w-0 divide-y divide-border rounded-2xl border border-border bg-surface px-4 sm:px-5">
           {items.map((item) => (
             <li key={item.id} className="flex gap-4 py-5">
               <CartThumb item={item} mediaBase={mediaBase} wide />
@@ -166,7 +172,7 @@ export function CartPage() {
           ))}
         </ul>
 
-        <aside className="rounded-2xl border border-border bg-surface p-5 lg:sticky lg:top-6">
+        <aside className="min-w-0 rounded-2xl border border-border bg-surface p-5 lg:sticky lg:top-6">
           <h2 className="text-[0.9375rem] font-medium text-fg">{labels.summaryTitle}</h2>
 
           <div className="mt-4 border-t border-hairline pt-4">
@@ -234,7 +240,7 @@ export function CartPage() {
           )}
 
           <p className="mt-3 text-center text-[0.6875rem] leading-relaxed text-faint">
-            {labels.codInfo}
+            {instantOnly ? labels.cartInstantInfo : labels.codInfo}
           </p>
         </aside>
       </div>

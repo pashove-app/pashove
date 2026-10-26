@@ -12,13 +12,14 @@ import type { Dictionary } from "@/i18n/get-dictionary";
 import { formatMoney } from "@/lib/money";
 import { publicUrl } from "@/lib/r2/media";
 import type { PublicStore } from "@/lib/storefront/queries";
+import { readCart } from "@/lib/storefront/cart";
 import { path } from "@/components/ui/types";
 
 /**
  * En-tête de la vitrine : bandeau d'annonce, logo cliquable, navigation
  * réelle, panier et menu mobile.
  */
-export function StorefrontHeader({
+export async function StorefrontHeader({
   store,
   locale,
   t,
@@ -35,12 +36,24 @@ export function StorefrontHeader({
     LOCALE_META[locale].tag,
   );
 
-  const messages = [
-    store.shipping_flat_amount === 0
-      ? labels.announcementFreeShipping
-      : labels.announcementShipping.replace("{amount}", price),
-    ...(store.cod_enabled ? [labels.announcementCod] : []),
-  ];
+  const cart = await readCart(LOCALE_META[locale].tag);
+  const instantOnly = Boolean(
+    cart &&
+      cart.items.length > 0 &&
+      cart.items.every(
+        (item) =>
+          item.productType === "digital" || item.productType === "service",
+      ),
+  );
+
+  const messages = instantOnly
+    ? [labels.announcementInstant]
+    : [
+        store.shipping_flat_amount === 0
+          ? labels.announcementFreeShipping
+          : labels.announcementShipping.replace("{amount}", price),
+        ...(store.cod_enabled ? [labels.announcementCod] : []),
+      ];
 
   const links = [
     { href: home, label: labels.navHome },
@@ -59,7 +72,7 @@ export function StorefrontHeader({
       <AnnouncementBar messages={messages} />
 
       <header className="sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur-xl">
-        <Container className="grid h-16 grid-cols-[1fr_auto_1fr] items-center gap-3">
+        <Container className="grid h-16 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 sm:gap-3">
           <Link
             href={home}
             className="flex min-w-0 items-center justify-self-start gap-2.5"

@@ -7,6 +7,7 @@ import { StorefrontShell } from "@/components/storefront/storefront-shell";
 import { isLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { loadStorefront } from "@/lib/storefront/queries";
+import { claimCustomerOrders } from "@/lib/customer/queries";
 
 /** Coquille de l'espace client d'une boutique. */
 export default async function CustomerLayout({
@@ -25,6 +26,10 @@ export default async function CustomerLayout({
   const t = await getDictionary(locale);
   if (status === "suspended") return <StorefrontClosed t={t} />;
   if (!store) notFound();
+
+  // Rattache ici les achats invités (e-mail et navigateur) avant toute page de
+  // l'espace client, y compris les téléchargements et les rendez-vous.
+  await claimCustomerOrders();
 
   return (
     <StorefrontShell store={store} locale={locale} t={t}>

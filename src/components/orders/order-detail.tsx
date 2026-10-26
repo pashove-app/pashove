@@ -97,6 +97,7 @@ export function OrderDetail({
         status={order.status}
         paymentStatus={order.payment_status}
         paymentMethod={order.payment_method}
+        hasPhysical={order.has_physical}
         labels={labels}
       />
 
@@ -298,6 +299,7 @@ export function OrderDetail({
             </div>
           </section>
 
+          {order.has_physical ? (
           <section className="rounded-2xl border border-border bg-surface p-5">
             <h2 className="text-[0.9375rem] font-medium text-fg">{labels.addressTitle}</h2>
             <address className="mt-3 text-[0.8125rem] not-italic leading-relaxed text-subtle">
@@ -317,6 +319,7 @@ export function OrderDetail({
               ) : null}
             </address>
           </section>
+          ) : null}
 
           <section className="rounded-2xl border border-border bg-surface p-5">
             <h2 className="text-[0.9375rem] font-medium text-fg">{labels.paymentTitle}</h2>

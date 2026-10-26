@@ -49,12 +49,14 @@ export function OrderActions({
   status,
   paymentStatus,
   paymentMethod,
+  hasPhysical,
   labels,
 }: {
   orderId: string;
   status: OrderStatus;
   paymentStatus: OrderPaymentStatus;
   paymentMethod: string;
+  hasPhysical: boolean;
   labels: Labels;
 }) {
   const [advanceState, advance, advancing] = useActionState(
@@ -78,7 +80,7 @@ export function OrderActions({
   const [cancelOpen, setCancelOpen] = useState(false);
   const [refundOpen, setRefundOpen] = useState(false);
 
-  const nextKey = NEXT[status];
+  const nextKey = hasPhysical ? NEXT[status] : undefined;
   const canPay =
     paymentMethod === "cod" &&
     paymentStatus === "pending" &&

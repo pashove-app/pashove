@@ -56,12 +56,14 @@ export function CheckoutForm({
   slug,
   cart,
   defaultCountry,
+  requiresShipping,
 }: {
   t: Dictionary;
   locale: Locale;
   slug: string;
   cart: CartView;
   defaultCountry: string;
+  requiresShipping: boolean;
 }) {
   const labels = t.storefront;
   const [state, formAction, pending] = useActionState<
@@ -158,6 +160,7 @@ export function CheckoutForm({
         </div>
       </Step>
 
+      {requiresShipping ? (
       <Step number={2} title={labels.checkoutShippingTitle} text={labels.checkoutShippingText}>
         <div className="grid gap-4 sm:grid-cols-2">
           <SelectField
@@ -212,8 +215,27 @@ export function CheckoutForm({
           </div>
         </div>
       </Step>
+      ) : (
+        <div className="flex items-start gap-3 rounded-3xl border border-emerald-400/25 bg-emerald-400/[0.06] p-5 sm:p-6">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+            <Icon path={icons.check} className="h-4 w-4" strokeWidth={2.2} />
+          </span>
+          <div>
+            <p className="text-[0.9375rem] font-medium text-fg">
+              {labels.checkoutNoShippingTitle}
+            </p>
+            <p className="mt-1 text-[0.8125rem] leading-relaxed text-subtle">
+              {labels.checkoutNoShippingText}
+            </p>
+          </div>
+        </div>
+      )}
 
-      <Step number={3} title={labels.checkoutSummaryTitle} text="">
+      <Step
+        number={requiresShipping ? 3 : 2}
+        title={labels.checkoutSummaryTitle}
+        text=""
+      >
         <div className="divide-y divide-hairline">
           {cart.items.map((item) => (
             <div key={item.id} className="flex items-start justify-between gap-3 py-3 first:pt-0">
@@ -274,17 +296,21 @@ export function CheckoutForm({
         </dl>
       </Step>
 
-      <Step number={4} title={labels.checkoutPaymentTitle} text={labels.checkoutPaymentText}>
+      <Step number={requiresShipping ? 4 : 3} title={labels.checkoutPaymentTitle} text={labels.checkoutPaymentText}>
         <div className="flex items-start gap-3 rounded-2xl border border-brand-500 bg-brand-500/[0.06] p-4">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white">
             <Icon path={icons.bag} className="h-4 w-4" strokeWidth={1.9} />
           </span>
           <div>
             <p className="text-[0.875rem] font-medium text-fg">
-              {labels.checkoutCodLabel}
+              {requiresShipping
+                ? labels.checkoutCodLabel
+                : labels.checkoutInstantPayLabel}
             </p>
             <p className="mt-0.5 text-[0.75rem] leading-relaxed text-subtle">
-              {labels.checkoutCodText}
+              {requiresShipping
+                ? labels.checkoutCodText
+                : labels.checkoutInstantPayText}
             </p>
           </div>
         </div>

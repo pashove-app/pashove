@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { rememberedOrderTokens } from "@/lib/customer/order-cookie";
 
 export type CustomerOrderSummary = {
   id: string;
@@ -77,10 +78,27 @@ export async function getCustomerUser() {
   return user;
 }
 
-/** Réclame les commandes invitées ; appelé à l'ouverture de l'espace client. */
+/** Réclame les commandes invitées par e-mail ; appelé à l'ouverture de l'espace client. */
 export async function claimGuestOrders(): Promise<void> {
   const supabase = await createClient();
   await supabase.rpc("claim_guest_orders");
+}
+
+/** Rattache les achats faits dans ce navigateur, même avec un autre e-mail. */
+export async function claimRememberedOrders(): Promise<void> {
+  const tokens = await rememberedOrderTokens();
+  if (tokens.length === 0) return;
+
+  const supabase = await createClient();
+  for (const token of tokens) {
+    await supabase.rpc("link_order_to_customer", { p_token: token });
+  }
+}
+
+/** Les deux rattachements, idempotents, avant toute lecture de l'espace client. */
+export async function claimCustomerOrders(): Promise<void> {
+  await claimGuestOrders();
+  await claimRememberedOrders();
 }
 
 export async function customerOrders(

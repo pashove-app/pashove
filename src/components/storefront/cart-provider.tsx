@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -55,6 +56,7 @@ type CartContextValue = {
   removeDiscount: () => Promise<{ ok: boolean; error?: string }>;
   update: (itemId: string, quantity: number) => void;
   remove: (itemId: string) => void;
+  reset: () => void;
   slug: string;
   locale: Locale;
   mediaBase: string;
@@ -102,6 +104,12 @@ export function CartProvider({
     () => (cart?.items ?? []).reduce((total, item) => total + item.quantity, 0),
     [cart],
   );
+
+  const reset = useCallback(() => {
+    setCart(null);
+    setOpen(false);
+    setError(null);
+  }, []);
 
   async function add(
     productId: string,
@@ -251,6 +259,7 @@ export function CartProvider({
         removeDiscount,
         update,
         remove,
+        reset,
         slug,
         locale,
         mediaBase,

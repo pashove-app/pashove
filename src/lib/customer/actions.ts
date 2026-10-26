@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import type { CustomerAuthState } from "@/lib/customer/types";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { loginSchema, registerSchema, toFieldErrors } from "@/lib/validation";
+import { rememberedOrderTokens } from "@/lib/customer/order-cookie";
 
 function field(formData: FormData, key: string): string {
   const value = formData.get(key);
@@ -40,6 +41,10 @@ function messageKeyFor(error: {
 async function claimOrders(): Promise<void> {
   const supabase = await createClient();
   await supabase.rpc("claim_guest_orders");
+
+  for (const token of await rememberedOrderTokens()) {
+    await supabase.rpc("link_order_to_customer", { p_token: token });
+  }
 }
 
 export async function customerSignInAction(

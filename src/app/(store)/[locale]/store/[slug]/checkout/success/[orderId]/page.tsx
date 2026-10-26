@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CartReset } from "@/components/storefront/cart-reset";
 import { Container } from "@/components/storefront/container";
 import { StorefrontHeader } from "@/components/storefront/storefront-header";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
@@ -72,9 +73,13 @@ export default async function CheckoutSuccessPage({
 
   const tag = LOCALE_META[locale].tag;
   const money = (amount: number) => formatMoney(amount, order.currency, tag);
+  const hasPhysical = order.items.some((item) => item.productType === "physical");
+  const hasDigital = order.items.some((item) => item.productType === "digital");
+  const hasService = order.items.some((item) => item.productType === "service");
 
   return (
     <StorefrontShell store={store} locale={locale} t={t}>
+      <CartReset />
       <StorefrontHeader store={store} locale={locale} t={t} />
       <main>
         <Container className="py-12 sm:py-16">
@@ -149,28 +154,74 @@ export default async function CheckoutSuccessPage({
               </dl>
             </section>
 
-            <section className="mt-4 rounded-3xl border border-border bg-surface p-5 sm:p-6">
-              <h2 className="text-[0.9375rem] font-medium text-fg">
-                {t.storefront.checkoutDeliveryTitle}
-              </h2>
-              <p className="mt-2 text-[0.875rem] leading-relaxed text-body">
-                {order.customerName}
-                <br />
-                {order.address}
-                {order.extra ? (
-                  <>
-                    <br />
-                    {order.extra}
-                  </>
-                ) : null}
-                <br />
-                {order.city}, {order.country}
-              </p>
-              <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-brand-500/[0.08] px-3 py-1.5 text-[0.75rem] font-medium text-accent">
-                <Icon path={icons.bag} className="h-3.5 w-3.5" strokeWidth={2} />
-                {t.storefront.checkoutCodLabel}
-              </p>
-            </section>
+            {hasDigital ? (
+              <section className="mt-4 rounded-3xl border border-brand-500/25 bg-brand-500/[0.06] p-5 sm:p-6">
+                <h2 className="text-[0.9375rem] font-medium text-fg">
+                  {t.storefront.checkoutDigitalTitle}
+                </h2>
+                <p className="mt-1.5 text-[0.875rem] leading-relaxed text-muted">
+                  {t.storefront.checkoutDigitalText}
+                </p>
+                <Link
+                  href={path(locale, `/store/${slug}/account/downloads`)}
+                  className="mt-4 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-[0.8125rem] font-medium text-white transition-colors hover:bg-brand-600"
+                >
+                  <Icon path={icons.file} className="h-4 w-4" strokeWidth={1.9} />
+                  {t.storefront.checkoutDigitalCta}
+                </Link>
+                <p className="mt-2 text-[0.75rem] text-subtle">
+                  <Link
+                    href={path(locale, `/store/${slug}/account/login`)}
+                    className="font-medium text-accent hover:underline"
+                  >
+                    {t.storefront.checkoutLoginCta}
+                  </Link>
+                </p>
+              </section>
+            ) : null}
+
+            {hasService ? (
+              <section className="mt-4 rounded-3xl border border-emerald-400/25 bg-emerald-400/[0.06] p-5 sm:p-6">
+                <h2 className="text-[0.9375rem] font-medium text-fg">
+                  {t.customer.bookings}
+                </h2>
+                <p className="mt-1.5 text-[0.875rem] leading-relaxed text-muted">
+                  {t.customer.bookingsHint}
+                </p>
+                <Link
+                  href={path(locale, `/store/${slug}/account/bookings`)}
+                  className="mt-4 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-[0.8125rem] font-medium text-white transition-colors hover:bg-brand-600"
+                >
+                  <Icon path={icons.calendar} className="h-4 w-4" strokeWidth={1.9} />
+                  {t.customer.bookings}
+                </Link>
+              </section>
+            ) : null}
+
+            {hasPhysical ? (
+              <section className="mt-4 rounded-3xl border border-border bg-surface p-5 sm:p-6">
+                <h2 className="text-[0.9375rem] font-medium text-fg">
+                  {t.storefront.checkoutDeliveryTitle}
+                </h2>
+                <p className="mt-2 text-[0.875rem] leading-relaxed text-body">
+                  {order.customerName}
+                  <br />
+                  {order.address}
+                  {order.extra ? (
+                    <>
+                      <br />
+                      {order.extra}
+                    </>
+                  ) : null}
+                  <br />
+                  {order.city}, {order.country}
+                </p>
+                <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-brand-500/[0.08] px-3 py-1.5 text-[0.75rem] font-medium text-accent">
+                  <Icon path={icons.bag} className="h-3.5 w-3.5" strokeWidth={2} />
+                  {t.storefront.checkoutCodLabel}
+                </p>
+              </section>
+            ) : null}
 
             <div className="mt-6 text-center">
               <Link

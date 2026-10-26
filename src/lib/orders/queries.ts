@@ -30,24 +30,28 @@ export type OrderSummary = {
   customer_phone: string;
   created_at: string;
   item_count: number;
+  has_physical: boolean;
 };
 
 const COLUMNS = [
   "id, number, status, payment_status, payment_method, total_amount, currency",
   "customer_name, customer_phone, created_at",
-  "order_items(quantity)",
+  "order_items(quantity, product_type)",
 ].join(", ");
 
-type Row = Omit<OrderSummary, "item_count"> & {
-  order_items?: { quantity: number }[] | null;
+type Row = Omit<OrderSummary, "item_count" | "has_physical"> & {
+  order_items?: { quantity: number; product_type: string }[] | null;
 };
 
 function toSummary(row: Row): OrderSummary {
+  const items = row.order_items ?? [];
+
   return {
     ...row,
-    item_count: (row.order_items ?? []).reduce(
-      (total, item) => total + item.quantity,
-      0,
+    item_count: items.reduce((total, item) => total + item.quantity, 0),
+    has_physical: items.some(
+      (item) =>
+        item.product_type === "physical" || item.product_type === "bundle",
     ),
   };
 }
@@ -216,6 +220,7 @@ export type OrderDetail = {
   created_at: string;
   confirmed_at: string | null;
   cancelled_at: string | null;
+  has_physical: boolean;
   items: {
     id: string;
     product_name: string;
@@ -285,10 +290,15 @@ export async function getOrder(
   if (!data) return null;
 
   const row = data as unknown as DetailRow;
+  const items = row.order_items ?? [];
 
   return {
     ...row,
-    items: row.order_items ?? [],
+    has_physical: items.some(
+      (item) =>
+        item.product_type === "physical" || item.product_type === "bundle",
+    ),
+    items,
     events: [...(row.order_events ?? [])].sort(
       (left, right) =>
         new Date(left.created_at).getTime() - new Date(right.created_at).getTime(),

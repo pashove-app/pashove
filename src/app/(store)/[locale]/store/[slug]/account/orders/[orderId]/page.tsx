@@ -42,6 +42,12 @@ export default async function CustomerOrderPage({
   const labels = t.customer;
   const tag = LOCALE_META[locale].tag;
   const money = (amount: number) => formatMoney(amount, order.currency, tag);
+  const hasPhysical = order.items.some(
+    (item) => item.productType === "physical",
+  );
+  const hasDigital = order.items.some(
+    (item) => item.productType === "digital",
+  );
 
   const date = (value: string, time = false) =>
     new Intl.DateTimeFormat(tag, {
@@ -142,24 +148,43 @@ export default async function CustomerOrderPage({
         </dl>
       </section>
 
-      <section className="mt-4 rounded-3xl border border-border bg-surface p-5">
-        <h2 className="text-[0.9375rem] font-medium text-fg">
-          {labels.delivery}
-        </h2>
-        <p className="mt-2 text-[0.8125rem] leading-relaxed text-subtle">
-          {order.customerName}
-          <br />
-          {order.address}
-          {order.extra ? (
-            <>
-              <br />
-              {order.extra}
-            </>
-          ) : null}
-          <br />
-          {order.city} · {order.country}
-        </p>
-      </section>
+      {hasPhysical ? (
+        <section className="mt-4 rounded-3xl border border-border bg-surface p-5">
+          <h2 className="text-[0.9375rem] font-medium text-fg">
+            {labels.delivery}
+          </h2>
+          <p className="mt-2 text-[0.8125rem] leading-relaxed text-subtle">
+            {order.customerName}
+            <br />
+            {order.address}
+            {order.extra ? (
+              <>
+                <br />
+                {order.extra}
+              </>
+            ) : null}
+            <br />
+            {order.city} · {order.country}
+          </p>
+        </section>
+      ) : null}
+
+      {hasDigital ? (
+        <Link
+          href={path(locale, `/store/${slug}/account/downloads`)}
+          className="mt-4 flex items-center justify-between gap-3 rounded-3xl border border-brand-500/25 bg-brand-500/[0.06] p-5 transition-colors hover:border-brand-500/50"
+        >
+          <span>
+            <span className="block text-[0.9375rem] font-medium text-fg">
+              {labels.downloads}
+            </span>
+            <span className="mt-0.5 block text-[0.8125rem] text-subtle">
+              {labels.downloadsHint}
+            </span>
+          </span>
+          <Icon path={icons.arrowRight} className="h-4 w-4 shrink-0 text-accent rtl:rotate-180" />
+        </Link>
+      ) : null}
     </div>
   );
 }

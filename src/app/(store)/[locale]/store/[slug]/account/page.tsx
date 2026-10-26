@@ -7,7 +7,6 @@ import { resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { customerSignOutAction } from "@/lib/customer/actions";
 import {
-  claimGuestOrders,
   customerBookings,
   customerEntitlements,
   customerOrders,
@@ -26,8 +25,6 @@ export default async function CustomerAccountPage({
 
   const user = await getCustomerUser();
   if (!user) redirect(`/${locale}/store/${slug}/account/login`);
-
-  await claimGuestOrders();
 
   const [orders, entitlements, bookings, t] = await Promise.all([
     customerOrders(slug),
@@ -98,11 +95,12 @@ export default async function CustomerAccountPage({
       </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-3">
-        {cards.map((card) => (
+        {cards.map((card, index) => (
           <Link
             key={card.title}
             href={card.href}
-            className="group rounded-3xl border border-border bg-surface p-5 transition-colors hover:border-border-strong"
+            style={{ animationDelay: `${index * 70}ms` }}
+            className="group animate-rise rounded-3xl border border-border bg-surface p-5 transition-[border-color,transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:border-border-strong hover:shadow-[0_18px_40px_-28px_rgba(0,0,0,0.45)] motion-reduce:animate-none"
           >
             <div className="flex items-center justify-between">
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500/[0.1] text-accent">
