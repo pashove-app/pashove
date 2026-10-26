@@ -6,6 +6,7 @@ export type ChatSession = {
   storeId: string;
   storeName: string;
   customerName: string | null;
+  merchantName?: string | null;
   authRequired?: boolean;
   merchant?: boolean;
 };
@@ -17,6 +18,8 @@ export type ChatConversation = {
   storeName: string;
   customerName: string | null;
   customerEmail: string | null;
+  merchantName: string | null;
+  orderNumber: number | null;
   lastMessage: string | null;
   lastAt: string;
 };

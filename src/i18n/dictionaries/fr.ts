@@ -2359,6 +2359,7 @@ const fr = {
     placeholder: "Écris un message…",
     send: "Envoyer",
     attach: "Joindre une image ou une vidéo",
+    order: "Commande",
     sending: "Envoi…",
     loginRequired: "Connecte-toi pour discuter avec la boutique.",
     merchantSelf: "Tu gères cette boutique. Retrouve le support dans ton dashboard.",

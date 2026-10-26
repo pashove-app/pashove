@@ -122,3 +122,45 @@ restait donc avec `customer_user_id = null` et les compteurs affichaient 0.
 - Modération, signalement, suppression, pièces jointes multiples.
 - Tickets, SLA, macros et base de connaissances côté plateforme.
 - Recherche et pagination des conversations.
+
+---
+
+## 6. Correctif d’interface du 26/10 (deuxième passage)
+
+### Cause de l’alignement faux
+
+`mine` était calculé en base avec `sender_user_id = auth.uid()`. Or le compte
+marchand est aussi administrateur plateforme : dans la vue plateforme, un
+message envoyé par le marchand avait le même `sender_user_id` que l’admin et
+s’affichait donc à droite, en bleu. Le rôle réel dans le fil n’était pas pris en
+compte.
+
+### Correction
+
+- L’alignement et la couleur sont décidés côté client par
+  `senderRole === viewerRole` (`customer`, `merchant`, `platform`), jamais par
+  l’identifiant utilisateur.
+- Avatars à initiales pour le client et le marchand ; icône bouclier pour la
+  plateforme.
+- Nom de l’expéditeur au-dessus des messages reçus ; heure dans chaque bulle.
+- Liste : avatar, nom, e-mail ou **numéro de commande**, dernier message et
+  date/heure ; rafraîchissement toutes les 8 s.
+- Vue plateforme : nom de la boutique et nom du marchand.
+- État de chargement explicite au lieu d’afficher « Dis bonjour » avant l’arrivée
+  des messages.
+- Relance automatique de `chat_messages` et `chat_send_message` après une
+  migration (cache PostgREST), pour éviter le faux échec d’envoi.
+- Le fil est remonté par `key={conversation.id}` pour ne pas conserver l’état du
+  fil précédent.
+
+### Tests réels
+
+1. **Client → marchand → client** : Awa Traoré envoie, le marchand voit le
+   message à gauche et répond ; Awa voit la réponse à gauche et son message à
+   droite.
+2. **Marchand → support → plateforme** : message marchand à droite, réponse
+   plateforme à gauche avec le bouclier Pashove dans la vue marchand ; la vue
+   plateforme applique le miroir par le rôle `platform`.
+3. **Deux clients** : Awa Traoré, Moussa Diarra et Test Envoi apparaissent dans
+   trois fils distincts, avec leur e-mail ou `Commande #1020`, leur dernier
+   message et leur heure.

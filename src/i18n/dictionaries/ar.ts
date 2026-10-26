@@ -2270,6 +2270,7 @@ const ar: Dictionary = {
     placeholder: "اكتب رسالة…",
     send: "إرسال",
     attach: "أرفق صورة أو فيديو",
+    order: "الطلب",
     sending: "جارٍ الإرسال…",
     loginRequired: "سجّل الدخول للتحدث مع المتجر.",
     merchantSelf: "أنت تدير هذا المتجر. تجد الدعم في لوحة التحكم.",

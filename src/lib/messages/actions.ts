@@ -8,6 +8,7 @@ import {
   MAX_CHAT_BYTES,
 } from "@/lib/r2/media";
 import type {
+  ChatConversation,
   ChatMessage,
   ChatRole,
   ChatSession,
@@ -97,14 +98,38 @@ async function withSignedAttachment(
   }
 }
 
+export async function listConversationsAction(
+  scope: "merchant" | "platform",
+): Promise<ChatConversation[]> {
+  if (!isSupabaseConfigured()) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("chat_conversations", {
+    p_scope: scope,
+  });
+  return (data ?? []) as ChatConversation[];
+}
+
 export async function loadMessagesAction(
   conversationId: string,
 ): Promise<ChatMessage[]> {
   if (!isUuid(conversationId) || !isSupabaseConfigured()) return [];
   const supabase = await createClient();
-  const { data } = await supabase.rpc("chat_messages", {
-    p_conversation_id: conversationId,
-  });
+  let data: unknown = null;
+
+  // Même protection que l'envoi : une relance si le cache PostgREST vient
+  // d'être rechargé, sinon le fil paraît vide jusqu'au prochain rafraîchissement.
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const result = await supabase.rpc("chat_messages", {
+      p_conversation_id: conversationId,
+    });
+
+    data = result.data;
+
+    if (!result.error && result.data) break;
+    if (attempt === 0) {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+  }
 
   return Promise.all(
     ((data ?? []) as RawMessage[]).map((message) =>
@@ -139,14 +164,32 @@ export async function sendMessageAction(input: {
   }
 
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("chat_send_message", {
-    p_conversation_id: input.conversationId,
-    p_body: body,
-    p_role: input.role,
-    p_attachment: null,
-  });
+  let data: unknown = null;
+  let lastError: { message?: string } | null = null;
 
-  if (error || !data) {
+  // Une relance couvre le rechargement du cache PostgREST juste après une
+  // migration, sans jamais dupliquer : la RPC est atomique par message.
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const result = await supabase.rpc("chat_send_message", {
+      p_conversation_id: input.conversationId,
+      p_body: body,
+      p_role: input.role,
+      p_attachment: null,
+    });
+
+    data = result.data;
+    lastError = result.error;
+
+    if (!result.error && result.data) break;
+    if (attempt === 0) {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+  }
+
+  if (lastError || !data) {
+    if (process.env.NODE_ENV !== "production") {
+      console.error("chat_send_message", lastError?.message);
+    }
     return { ok: false, error: "unavailable" };
   }
 
@@ -203,18 +246,34 @@ export async function sendChatAttachmentAction(
     body: new Uint8Array(await file.arrayBuffer()),
   });
 
-  const { data, error } = await supabase.rpc("chat_send_message", {
-    p_conversation_id: conversationId,
-    p_body: body,
-    p_role: role,
-    p_attachment: {
-      objectKey,
-      contentType: file.type,
-      fileName: file.name.slice(0, 255),
-    },
-  });
+  let data: unknown = null;
+  let lastError: { message?: string } | null = null;
 
-  if (error || !data) {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const result = await supabase.rpc("chat_send_message", {
+      p_conversation_id: conversationId,
+      p_body: body,
+      p_role: role,
+      p_attachment: {
+        objectKey,
+        contentType: file.type,
+        fileName: file.name.slice(0, 255),
+      },
+    });
+
+    data = result.data;
+    lastError = result.error;
+
+    if (!result.error && result.data) break;
+    if (attempt === 0) {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+  }
+
+  if (lastError || !data) {
+    if (process.env.NODE_ENV !== "production") {
+      console.error("chat_send_message attachment", lastError?.message);
+    }
     return { ok: false, error: "unavailable" };
   }
 

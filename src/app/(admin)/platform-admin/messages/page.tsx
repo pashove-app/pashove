@@ -25,6 +25,7 @@ export default async function PlatformMessagesPage() {
         placeholder: "Écris une réponse…",
         send: "Envoyer",
         attach: "Joindre une image ou une vidéo",
+        order: "Commande",
         sending: "Envoi…",
         loginRequired: "Connecte-toi pour discuter.",
         merchantSelf: "Tu gères cette boutique.",

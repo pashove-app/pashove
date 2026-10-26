@@ -2293,6 +2293,7 @@ const en: Dictionary = {
     placeholder: "Write a message…",
     send: "Send",
     attach: "Attach an image or video",
+    order: "Order",
     sending: "Sending…",
     loginRequired: "Sign in to chat with the store.",
     merchantSelf: "You manage this store. Find support in your dashboard.",

@@ -2297,6 +2297,7 @@ const ln: Dictionary = {
     placeholder: "Koma message…",
     send: "Tinda",
     attach: "Kobakisa foto to video",
+    order: "Commande",
     sending: "Ezali kotinda…",
     loginRequired: "Kokota mpo na kosolola na magasin.",
     merchantSelf: "Yo nde ozali kokamba magasin oyo. Support ezali na dashboard na yo.",

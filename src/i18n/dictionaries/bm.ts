@@ -2289,6 +2289,7 @@ const bm: Dictionary = {
     placeholder: "Messagi sɛbɛn…",
     send: "Ci",
     attach: "Fɔto walima videwo jɔ",
+    order: "Komande",
     sending: "A bɛ ci…",
     loginRequired: "I don walisa ka baro butiki ni.",
     merchantSelf: "I bɛ nin butiki mara. Support bɛ i ka dashboard kɔnɔ.",

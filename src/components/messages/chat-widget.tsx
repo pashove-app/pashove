@@ -13,6 +13,7 @@ import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import { cn } from "@/lib/cn";
 import {
+  listConversationsAction,
   loadMessagesAction,
   openCustomerChatAction,
   openSupportChatAction,
@@ -20,6 +21,7 @@ import {
   sendMessageAction,
 } from "@/lib/messages/actions";
 import type {
+  ChatConversation,
   ChatMessage,
   ChatRole,
   ChatSession,
@@ -27,10 +29,26 @@ import type {
 
 type Labels = Dictionary["messages"];
 
-function roleLabel(role: ChatRole, labels: Labels): string {
-  if (role === "customer") return labels.customer;
-  if (role === "platform") return labels.platform;
-  return labels.merchant;
+function senderName(
+  senderRole: ChatRole,
+  viewerRole: ChatRole,
+  session: Pick<ChatSession, "customerName" | "storeName" | "merchantName">,
+  labels: Labels,
+): string {
+  if (senderRole === "customer") {
+    return session.customerName ?? labels.customer;
+  }
+  if (senderRole === "platform") return labels.platform;
+
+  return viewerRole === "merchant"
+    ? session.merchantName ?? session.storeName
+    : session.storeName;
+}
+
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean).slice(0, 2);
+  const value = parts.map((part) => part[0]?.toUpperCase() ?? "").join("");
+  return value || "?";
 }
 
 function timeOf(value: string, localeTag: string): string {
@@ -38,6 +56,22 @@ function timeOf(value: string, localeTag: string): string {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(value));
+}
+
+function dateOf(value: string, localeTag: string): string {
+  const date = new Date(value);
+  const now = new Date();
+  const sameDay =
+    date.getDate() === now.getDate() &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear();
+
+  return sameDay
+    ? timeOf(value, localeTag)
+    : new Intl.DateTimeFormat(localeTag, {
+        day: "2-digit",
+        month: "short",
+      }).format(date);
 }
 
 /** Fil de discussion partagé par la vitrine, le dashboard et l'administration. */
@@ -48,6 +82,7 @@ export function ChatThread({
   localeTag,
   className,
   compact = false,
+  onSent,
 }: {
   session: ChatSession;
   role: ChatRole;
@@ -55,8 +90,10 @@ export function ChatThread({
   localeTag: string;
   className?: string;
   compact?: boolean;
+  onSent?: (message: ChatMessage) => void;
 }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [value, setValue] = useState("");
   const [error, setError] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -69,7 +106,10 @@ export function ChatThread({
 
     const load = async () => {
       const next = await loadMessagesAction(session.id);
-      if (active) setMessages(next);
+      if (active) {
+        setMessages(next);
+        setLoaded(true);
+      }
     };
 
     void load();
@@ -108,6 +148,7 @@ export function ChatThread({
     }
 
     setMessages((current) => [...current, result.message!]);
+    onSent?.(result.message);
     setValue("");
   }
 
@@ -130,6 +171,7 @@ export function ChatThread({
       }
 
       setMessages((current) => [...current, result.message!]);
+      onSent?.(result.message!);
       setValue("");
     });
   }
@@ -138,73 +180,113 @@ export function ChatThread({
     <div className={cn("flex min-h-0 flex-col", className)}>
       <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-4 py-4">
         {messages.length === 0 ? (
-          <p className="py-8 text-center text-[0.8125rem] text-subtle">
-            {labels.noMessages}
-          </p>
+          !loaded ? (
+            <div className="flex flex-col items-center justify-center gap-2 py-10">
+              <Spinner />
+              <p className="text-[0.75rem] text-subtle">{labels.loading}</p>
+            </div>
+          ) : (
+            <p className="py-8 text-center text-[0.8125rem] text-subtle">
+              {labels.noMessages}
+            </p>
+          )
         ) : (
-          messages.map((message) => (
-            <div
-              key={message.id}
-              className={cn("flex", message.mine ? "justify-end" : "justify-start")}
-            >
+          messages.map((message) => {
+            const mine = message.senderRole === role;
+            const name = senderName(message.senderRole, role, session, labels);
+
+            return (
               <div
+                key={message.id}
                 className={cn(
-                  "max-w-[85%] rounded-2xl px-3.5 py-2.5",
-                  message.mine
-                    ? "rounded-br-md bg-brand-500 text-white"
-                    : "rounded-bl-md border border-border bg-surface text-body",
+                  "flex items-end gap-2",
+                  mine ? "flex-row-reverse" : "flex-row",
                 )}
               >
-                {!message.mine ? (
-                  <p className="mb-0.5 text-[0.625rem] font-semibold uppercase tracking-[0.1em] opacity-60">
-                    {roleLabel(message.senderRole, labels)}
-                  </p>
-                ) : null}
-                {message.attachment ? (
-                  <div className="mb-2 overflow-hidden rounded-xl">
-                    {message.attachment.contentType.startsWith("image/") ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={message.attachment.url}
-                        alt={message.attachment.fileName ?? ""}
-                        className="max-h-64 w-full object-cover"
-                      />
-                    ) : message.attachment.contentType.startsWith("video/") ? (
-                      <video
-                        src={message.attachment.url}
-                        controls
-                        className="max-h-64 w-full rounded-xl"
-                      />
-                    ) : (
-                      <a
-                        href={message.attachment.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center gap-2 rounded-lg bg-black/10 px-3 py-2 text-[0.75rem] font-medium underline"
-                      >
-                        <Icon path={icons.paperclip} className="h-3.5 w-3.5" strokeWidth={2} />
-                        {message.attachment.fileName ?? labels.attach}
-                      </a>
-                    )}
-                  </div>
-                ) : null}
-
-                {message.body ? (
-                  <p className="whitespace-pre-wrap break-words text-[0.8125rem] leading-relaxed">
-                    {message.body}
-                  </p>
-                ) : null}
-                <p
+                <span
+                  aria-hidden="true"
                   className={cn(
-                    "mt-1 text-[0.5625rem] tabular-nums",
-                    message.mine ? "text-white/70" : "text-faint",
+                    "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[0.625rem] font-semibold",
+                    mine
+                      ? "bg-brand-500/15 text-accent"
+                      : "border border-border bg-hairline text-subtle",
                   )}
                 >
-                  {timeOf(message.createdAt, localeTag)}
-                </p>
+                  {message.senderRole === "platform" ? (
+                    <Icon path={icons.shield} className="h-3.5 w-3.5" strokeWidth={1.8} />
+                  ) : (
+                    initials(name)
+                  )}
+                </span>
+
+                <div
+                  className={cn(
+                    "flex min-w-0 max-w-[82%] flex-col",
+                    mine ? "items-end" : "items-start",
+                  )}
+                >
+                  {!mine ? (
+                    <p className="mb-1 ps-1 text-[0.6875rem] font-medium text-subtle">
+                      {name}
+                    </p>
+                  ) : null}
+
+                  <div
+                    className={cn(
+                      "rounded-2xl px-3.5 py-2.5",
+                      mine
+                        ? "rounded-br-md bg-brand-500 text-white"
+                        : "rounded-bl-md border border-border bg-surface text-body",
+                    )}
+                  >
+                    {message.attachment ? (
+                      <div className="mb-2 overflow-hidden rounded-xl">
+                        {message.attachment.contentType.startsWith("image/") ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={message.attachment.url}
+                            alt={message.attachment.fileName ?? ""}
+                            className="max-h-64 w-full object-cover"
+                          />
+                        ) : message.attachment.contentType.startsWith("video/") ? (
+                          <video
+                            src={message.attachment.url}
+                            controls
+                            className="max-h-64 w-full rounded-xl"
+                          />
+                        ) : (
+                          <a
+                            href={message.attachment.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center gap-2 rounded-lg bg-black/10 px-3 py-2 text-[0.75rem] font-medium underline"
+                          >
+                            <Icon path={icons.paperclip} className="h-3.5 w-3.5" strokeWidth={2} />
+                            {message.attachment.fileName ?? labels.attach}
+                          </a>
+                        )}
+                      </div>
+                    ) : null}
+
+                    {message.body ? (
+                      <p className="whitespace-pre-wrap break-words text-[0.8125rem] leading-relaxed">
+                        {message.body}
+                      </p>
+                    ) : null}
+
+                    <p
+                      className={cn(
+                        "mt-1 text-end text-[0.5625rem] tabular-nums",
+                        mine ? "text-white/70" : "text-faint",
+                      )}
+                    >
+                      {timeOf(message.createdAt, localeTag)}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
         <div ref={endRef} />
       </div>
@@ -387,16 +469,7 @@ export function MessagesWorkspace({
   labels,
   localeTag,
 }: {
-  conversations: {
-    id: string;
-    kind: "support" | "customer";
-    storeId: string;
-    storeName: string;
-    customerName: string | null;
-    customerEmail: string | null;
-    lastMessage: string | null;
-    lastAt: string;
-  }[];
+  conversations: ChatConversation[];
   scope: "merchant" | "platform";
   storeId?: string;
   labels: Labels;
@@ -409,6 +482,45 @@ export function MessagesWorkspace({
   const [creating, setCreating] = useState(false);
 
   const selected = items.find((item) => item.id === selectedId) ?? null;
+
+  useEffect(() => {
+    let active = true;
+
+    const load = async () => {
+      const next = await listConversationsAction(scope);
+      if (active) setItems(next);
+    };
+
+    const timer = setInterval(load, 8000);
+
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
+  }, [scope]);
+
+  function noteSent(message: ChatMessage) {
+    if (!selected) return;
+    const preview = message.body || labels.attach;
+
+    setItems((current) =>
+      [...current]
+        .map((conversation) =>
+          conversation.id === selected.id
+            ? {
+                ...conversation,
+                lastMessage: preview,
+                lastAt: message.createdAt,
+              }
+            : conversation,
+        )
+        .sort(
+          (left, right) =>
+            new Date(right.lastAt).getTime() -
+            new Date(left.lastAt).getTime(),
+        ),
+    );
+  }
 
   async function contactSupport() {
     if (!storeId || creating) return;
@@ -427,6 +539,8 @@ export function MessagesWorkspace({
           storeName: session.storeName,
           customerName: null,
           customerEmail: null,
+          merchantName: null,
+          orderNumber: null,
           lastMessage: null,
           lastAt: new Date().toISOString(),
         },
@@ -477,10 +591,20 @@ export function MessagesWorkspace({
                 const active = conversation.id === selectedId;
                 const title =
                   conversation.kind === "support"
-                    ? labels.support
+                    ? scope === "platform"
+                      ? conversation.storeName
+                      : labels.support
                     : conversation.customerName ??
                       conversation.customerEmail ??
                       labels.customer;
+                const subtitle =
+                  conversation.kind === "support"
+                    ? scope === "platform"
+                      ? conversation.merchantName ?? labels.support
+                      : conversation.storeName
+                    : conversation.orderNumber
+                      ? `${labels.order} #${conversation.orderNumber}`
+                      : conversation.customerEmail;
 
                 return (
                   <li key={conversation.id}>
@@ -500,11 +624,13 @@ export function MessagesWorkspace({
                             : "bg-brand-500/10 text-accent",
                         )}
                       >
-                        <Icon
-                          path={conversation.kind === "support" ? icons.chat : icons.user}
-                          className="h-4 w-4"
-                          strokeWidth={1.8}
-                        />
+                        {conversation.kind === "support" ? (
+                          <Icon path={icons.chat} className="h-4 w-4" strokeWidth={1.8} />
+                        ) : (
+                          <span className="text-[0.6875rem] font-semibold">
+                            {initials(title)}
+                          </span>
+                        )}
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="flex items-center justify-between gap-2">
@@ -512,8 +638,11 @@ export function MessagesWorkspace({
                             {title}
                           </span>
                           <span className="shrink-0 text-[0.625rem] text-faint">
-                            {timeOf(conversation.lastAt, localeTag)}
+                            {dateOf(conversation.lastAt, localeTag)}
                           </span>
+                        </span>
+                        <span className="mt-0.5 block truncate text-[0.625rem] text-faint">
+                          {subtitle}
                         </span>
                         <span className="mt-0.5 block truncate text-[0.6875rem] text-subtle">
                           {conversation.lastMessage ?? labels.noMessages}
@@ -547,30 +676,41 @@ export function MessagesWorkspace({
                 <div className="min-w-0">
                   <p className="truncate text-[0.9375rem] font-medium text-fg">
                     {selected.kind === "support"
-                      ? labels.support
+                      ? scope === "platform"
+                        ? selected.storeName
+                        : labels.support
                       : selected.customerName ??
                         selected.customerEmail ??
                         labels.customer}
                   </p>
                   <p className="truncate text-[0.6875rem] text-subtle">
                     {selected.kind === "support"
-                      ? selected.storeName
-                      : selected.storeName}
+                      ? scope === "platform"
+                        ? [selected.storeName, selected.merchantName]
+                            .filter(Boolean)
+                            .join(" · ")
+                        : selected.storeName
+                      : selected.orderNumber
+                        ? `${labels.order} #${selected.orderNumber}`
+                        : selected.customerEmail}
                   </p>
                 </div>
               </header>
               <ChatThread
+                key={selected.id}
                 session={{
                   id: selected.id,
                   kind: selected.kind,
                   storeId: selected.storeId,
                   storeName: selected.storeName,
                   customerName: selected.customerName,
+                  merchantName: selected.merchantName,
                 }}
                 role={scope === "platform" ? "platform" : "merchant"}
                 labels={labels}
                 localeTag={localeTag}
                 className="min-h-0 flex-1"
+                onSent={noteSent}
               />
             </>
           ) : (
