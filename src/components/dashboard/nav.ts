@@ -75,7 +75,7 @@ export const NAV_GROUPS: NavGroup[] = [
 export const NAV_SYSTEM: NavItem[] = [
   { key: "settings", href: "/app/settings", icon: "settings" },
   { key: "apps", href: "/app/apps", icon: "grid", soon: true },
-  { key: "support", href: "/app/support", icon: "chat", soon: true },
+  { key: "support", href: "/app/support", icon: "chat" },
 ];
 
 export const NAV_ALL: NavItem[] = [

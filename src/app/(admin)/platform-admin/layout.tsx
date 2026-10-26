@@ -16,6 +16,7 @@ const NAV = [
   { href: "/platform-admin/payouts", label: "Retraits", icon: icons.wallet },
   { href: "/platform-admin/reconciliation", label: "Réconciliation", icon: icons.chart },
   { href: "/platform-admin/audit", label: "Audit", icon: icons.list },
+  { href: "/platform-admin/messages", label: "Messages", icon: icons.chat },
 ];
 
 /** Coquille interne de l'administration plateforme. */

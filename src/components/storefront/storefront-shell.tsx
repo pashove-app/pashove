@@ -9,6 +9,7 @@ import type { Dictionary } from "@/i18n/get-dictionary";
 import { formatMoney } from "@/lib/money";
 import { publicUrl } from "@/lib/r2/media";
 import type { PublicStore } from "@/lib/storefront/queries";
+import { StorefrontChat } from "@/components/messages/chat-widget";
 import { POLICY_PAGES, policyUrlSlug, type PolicySlug } from "@/lib/policies/pages";
 import { listPublishedPolicySlugs } from "@/lib/policies/queries";
 
@@ -34,6 +35,12 @@ export async function StorefrontShell({
         locale={locale}
         t={t}
         policySlugs={policySlugs}
+      />
+      <StorefrontChat
+        slug={store.slug}
+        locale={locale}
+        labels={t.messages}
+        localeTag={LOCALE_META[locale].tag}
       />
     </div>
   );
