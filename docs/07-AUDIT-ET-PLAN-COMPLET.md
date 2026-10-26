@@ -1,6 +1,10 @@
 # PASHOVE — Audit complet et plan directeur
 
-> Date : 25/10/2026 · Dernier commit : `6bf1e22`
+> Date : 25/10/2026 · Mise à jour : 26/10/2026 · Dernier commit : `8ff9cf6`
+> **Nouveautés du 26/10** : rattachement des achats au compte client, livraison
+> automatique du numérique, messagerie marchand/client/plateforme, pièces
+> jointes R2, correctifs panier mobile et code promo repliable. Détail et tests :
+> `docs/09-CORRECTIFS-MESSAGERIE.md`.
 > Sources : code du dépôt, `docs/00` → `docs/06`, blueprint `AGENTSb.md`.
 > Méthode : lecture des routes, des écrans, des RPC et tests réels (SQL + navigateur).
 > **Détail module par module (pages, données, flux, dépendances)** :
@@ -34,15 +38,19 @@
 - **Site public Pashove** : `/fr` et toutes les pages marketing répondent 404.
   Le blueprint (accueil, tarifs, fonctionnalités, thèmes, aide, statut) n'est
   pas construit.
-- **Multi-boutiques** : la base le permet, l'interface ne gère qu'une boutique
-  à la fois (pas de sélecteur, pas de création, pas de limites par plan).
-- **Produits numériques** : le type existe, mais pas l'envoi de fichier, ni les
-  droits d'accès, ni les liens signés, ni le filigrane.
-- **Services** : type de produit seulement, pas de calendrier ni de réservation.
-- **Cadeaux, partenaires/affiliation, marketing, analyses, applications,
-  support** : pages « à venir ».
+- **Multi-boutiques** : le socle, les plans, les invitations et le sélecteur
+  sont livrés (25/10). Restent les réglages avancés par boutique.
+- **Produits numériques** : droits d’accès, quota de 3 téléchargements, liens
+  R2 signés 15 minutes et révocation au remboursement sont livrés. Filigrane
+  et protection anti-partage renforcée restent à faire.
+- **Services** : calendrier serveur, créneaux réservables et rendez-vous sont
+  livrés ; l’éditeur de disponibilités du marchand reste à faire.
+- **Cadeaux, marketing, analyses, applications** : pages « à venir ».
+  **Partenaires** : V1 livrée le 25/10. **Support** : messagerie livrée le
+  26/10 ; tickets, SLA et base de connaissances restent à faire.
 - **Thèmes, éditeur, domaines, blog, SEO** : absents.
-- **Comptes clients** : la page `/store/[slug]/account` est un écran d'attente.
+- **Comptes clients** : livrés le 26/10 (commandes, téléchargements, rendez-vous,
+  rattachement des achats invités). L’e-mail de confirmation dépend du SMTP.
 - **E-mails transactionnels, SMS, notifications, rate limiting, Turnstile,
   monitoring, sauvegardes testées** : absents ou non vérifiables.
 - **Tests automatisés** : aucun. Les validations sont manuelles (SQL + navigateur).
