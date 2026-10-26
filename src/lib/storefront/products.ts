@@ -20,6 +20,7 @@ export type StoreProduct = {
   compare_at_amount: number | null;
   product_type: "physical" | "digital" | "service";
   stock_quantity: number | null;
+  duration_minutes: number | null;
   tags: string[];
   shipping_countries: string[];
   options: ProductOption[];
@@ -32,7 +33,7 @@ export type StoreProduct = {
 
 const COLUMNS = [
   "id, name, slug, description, price_amount, compare_at_amount",
-  "product_type, stock_quantity, tags, options, shipping_countries",
+  "product_type, stock_quantity, duration_minutes, tags, options, shipping_countries",
   "description_image:media_assets!description_media_id(object_key)",
   "images:product_images(position, media:media_assets(object_key))",
   "variants:product_variants(id, option_values, sku, price_amount, stock_quantity, position)",

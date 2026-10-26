@@ -1,7 +1,13 @@
 "use client";
 
-import { useActionState } from "react";
-import { SelectField, TextAreaField, TextField } from "@/components/ui/field";
+import { useActionState, useState } from "react";
+import {
+  Checkbox,
+  PasswordField,
+  SelectField,
+  TextAreaField,
+  TextField,
+} from "@/components/ui/field";
 import { Icon, icons, Spinner } from "@/components/ui/primitives";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import { interpolate } from "@/i18n/get-dictionary";
@@ -62,12 +68,17 @@ export function CheckoutForm({
     CheckoutFormState,
     FormData
   >(placeCodOrderAction, INITIAL);
+  const [createAccount, setCreateAccount] = useState(false);
 
   const fieldError = (key: string) => {
     const messageKey = state.fieldErrors?.[key];
-    return messageKey
-      ? labels[messageKey as keyof typeof labels] ?? messageKey
-      : undefined;
+    if (!messageKey) return undefined;
+
+    return (
+      labels[messageKey as keyof typeof labels] ??
+      t.auth.errors[messageKey as keyof typeof t.auth.errors] ??
+      messageKey
+    );
   };
 
   const serverMessage = state.messageKey
@@ -111,6 +122,38 @@ export function CheckoutForm({
               maxLength={254}
               error={fieldError("email")}
             />
+          </div>
+
+          <div className="sm:col-span-2 border-t border-hairline pt-4">
+            <Checkbox
+              name="createAccount"
+              checked={createAccount}
+              onChange={(event) => setCreateAccount(event.target.checked)}
+              label={
+                <span>
+                  <span className="block font-medium text-body">
+                    {t.customer.createAccount}
+                  </span>
+                  <span className="mt-0.5 block text-[0.75rem] text-subtle">
+                    {t.customer.createAccountHint}
+                  </span>
+                </span>
+              }
+            />
+
+            {createAccount ? (
+              <div className="mt-4">
+                <PasswordField
+                  name="password"
+                  label={t.customer.passwordLabel}
+                  autoComplete="new-password"
+                  help={t.customer.passwordShort}
+                  revealLabel={t.auth.showPassword}
+                  concealLabel={t.auth.hidePassword}
+                  error={fieldError("password")}
+                />
+              </div>
+            ) : null}
           </div>
         </div>
       </Step>
@@ -185,6 +228,11 @@ export function CheckoutForm({
                 </p>
                 {item.variantLabel ? (
                   <p className="mt-0.5 text-[0.75rem] text-subtle">{item.variantLabel}</p>
+                ) : null}
+                {item.serviceStartsAtLabel ? (
+                  <p className="mt-0.5 text-[0.75rem] text-subtle">
+                    {item.serviceStartsAtLabel}
+                  </p>
                 ) : null}
                 <p className="mt-0.5 text-[0.75rem] text-faint">
                   {labels.quantity} : {item.quantity}

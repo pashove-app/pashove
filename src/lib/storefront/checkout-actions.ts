@@ -6,6 +6,7 @@ import { LOCALE_META, resolveLocale } from "@/i18n/config";
 import { checkoutSchema } from "@/lib/storefront/checkout-schema";
 import { readCart, readCartToken } from "@/lib/storefront/cart";
 import { loadStorefront } from "@/lib/storefront/queries";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import { toFieldErrors } from "@/lib/validation";
 
@@ -22,6 +23,12 @@ const UUID_PATTERN =
 function field(formData: FormData, key: string): string {
   const value = formData.get(key);
   return typeof value === "string" ? value : "";
+}
+
+function siteUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? "http://localhost:3000"
+  );
 }
 
 function errorKey(error: { message?: string }): string {
@@ -69,6 +76,16 @@ export async function placeCodOrderAction(
     return { status: "error", messageKey: "checkoutStoreUnavailable" };
   }
 
+  const createAccount = field(formData, "createAccount") === "on";
+  const password = field(formData, "password");
+
+  if (createAccount && password.length < 8) {
+    return {
+      status: "invalid",
+      fieldErrors: { password: "passwordShort" },
+    };
+  }
+
   const cart = await readCart(LOCALE_META[locale].tag);
   const cartToken = await readCartToken();
   if (!cart || !cartToken || cart.items.length === 0) {
@@ -113,6 +130,26 @@ export async function placeCodOrderAction(
   const result = data as { token?: string } | null;
   if (!result?.token) {
     return { status: "error", messageKey: "checkoutGeneric" };
+  }
+
+  // Création de compte facultative : la commande est déjà enregistrée. Si la
+  // confirmation d'e-mail est active, la session s'ouvrira après le clic.
+  if (createAccount && isSupabaseConfigured()) {
+    const authClient = await createClient();
+    const { data: auth } = await authClient.auth.signUp({
+      email: parsed.data.email,
+      password,
+      options: {
+        data: { full_name: parsed.data.name },
+        emailRedirectTo: `${siteUrl()}/${locale}/auth/callback?next=${encodeURIComponent(
+          `/${locale}/store/${storefront.store.slug}/account`,
+        )}`,
+      },
+    });
+
+    if (auth.session) {
+      await authClient.rpc("claim_guest_orders");
+    }
   }
 
   (await cookies()).delete("pashove_cart");

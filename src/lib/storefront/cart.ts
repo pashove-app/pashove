@@ -30,6 +30,13 @@ export function decorateCart(cart: CartPayload, localeTag: string): CartView {
         item.compareAt && item.compareAt > item.unitPrice
           ? price(item.compareAt)
           : null,
+      serviceStartsAtLabel: item.serviceStartsAt
+        ? new Intl.DateTimeFormat(localeTag, {
+            dateStyle: "medium",
+            timeStyle: "short",
+            timeZone: "Africa/Abidjan",
+          }).format(new Date(item.serviceStartsAt))
+        : null,
     })),
   };
 }

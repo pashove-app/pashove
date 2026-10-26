@@ -21,6 +21,8 @@ function cartError(error: { message?: string }): string {
   if (message.includes("out_of_stock")) return "out_of_stock";
   if (message.includes("variant_required")) return "variant_required";
   if (message.includes("invalid_variant")) return "variant_required";
+  if (message.includes("service_slot_taken")) return "service_slot_taken";
+  if (message.includes("service_slot_invalid")) return "service_slot_invalid";
   if (message.includes("bundle_unavailable")) return "product_unavailable";
   if (message.includes("product_unavailable")) return "product_unavailable";
   if (message.includes("store_unavailable")) return "store_unavailable";
@@ -171,6 +173,49 @@ export async function removeDiscountAction(input: {
   }
 
   return { cart: decorateCart(data as CartPayload, localeTag) };
+}
+
+export async function addServiceToCartAction(input: {
+  slug: string;
+  productId: string;
+  startsAt: string;
+  localeTag: string;
+}): Promise<CartActionResult> {
+  const slug = typeof input.slug === "string" ? input.slug.trim() : "";
+  const localeTag =
+    typeof input.localeTag === "string" ? input.localeTag.slice(0, 20) : "fr-FR";
+
+  if (!slug || !isUuid(input.productId)) {
+    return { cart: null, error: "product_unavailable" };
+  }
+
+  const startsAt = new Date(input.startsAt);
+  if (Number.isNaN(startsAt.getTime())) {
+    return { cart: null, error: "service_slot_invalid" };
+  }
+
+  try {
+    const opened = await openCart(slug);
+    const supabase = createPublicClient();
+
+    const { data, error } = await supabase.rpc("cart_add_service", {
+      p_token: opened.token,
+      p_product_id: input.productId,
+      p_starts_at: startsAt.toISOString(),
+    });
+
+    if (error || !data) {
+      return {
+        cart: decorateCart(withoutToken(opened), localeTag),
+        error: cartError(error ?? {}),
+      };
+    }
+
+    const view: CartView = decorateCart(data as CartPayload, localeTag);
+    return { cart: view };
+  } catch {
+    return { cart: null, error: "cart_unavailable" };
+  }
 }
 
 export async function updateCartItemAction(input: {

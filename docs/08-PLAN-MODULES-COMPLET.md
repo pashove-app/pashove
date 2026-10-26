@@ -174,7 +174,7 @@ livraison, collections manuelles, paquets.
 
 ---
 
-## 6. Produits numériques protégés — 🔴 (le module que tu réclames)
+## 6. Produits numériques protégés — ✅ V1 livrée le 26/10/2026
 
 ### Objectif
 
@@ -220,7 +220,7 @@ Vendre un PDF/EPUB/ZIP/audio/vidéo sans jamais exposer une URL publique.
 
 ---
 
-## 7. Services et réservation — 🔴 (le module que tu réclames)
+## 7. Services et réservation — ✅ V1 livrée le 26/10/2026
 
 ### Objectif
 
@@ -258,7 +258,7 @@ Vendre une consultation, une formation ou une prestation avec créneau.
 
 ---
 
-## 8. Comptes clients — 🔴 (le module que tu réclames)
+## 8. Comptes clients — ✅ V1 livrée le 26/10/2026
 
 ### Pages
 
@@ -284,6 +284,23 @@ Un compte client est **global** (un seul login) mais chaque commande reste
 rattachée à sa boutique. Les boutiques ne voient que leurs propres clients.
 
 **Effort** : 2 semaines (après digital/services pour les onglets).
+
+### V1 livrée le 26/10/2026
+
+- Pages `/store/[slug]/account/login`, `register`, tableau de bord, commandes,
+  détail de commande, téléchargements, rendez-vous.
+- Les commandes invitées sont rattachées au compte par l'e-mail, à la
+  connexion et à l'ouverture de l'espace client.
+- Téléchargements : droit créé à l'encaissement, 3 téléchargements maximum,
+  lien R2 signé 15 minutes, compteur incrémenté côté serveur, révocation au
+  remboursement, accès refusé à tout autre client.
+- Services : créneaux du lundi au samedi, 9 h–17 h (Africa/Abidjan), sur
+  14 jours ; créneau enregistré dans la commande et rendez-vous créé à
+  l'encaissement.
+- **Décision temporaire** : le COD accepte aussi les produits numériques et les
+  services, faute de paiement en ligne. À restreindre quand le PSP sera branché.
+- L'envoi d'e-mails de confirmation dépend de la configuration SMTP Supabase /
+  Brevo.
 
 ---
 

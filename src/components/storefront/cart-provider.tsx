@@ -18,6 +18,7 @@ import type { Dictionary } from "@/i18n/get-dictionary";
 import { cn } from "@/lib/cn";
 import {
   addBundleToCartAction,
+  addServiceToCartAction,
   addToCartAction,
   applyDiscountAction,
   removeCartItemAction,
@@ -43,6 +44,10 @@ type CartContextValue = {
   addBundle: (
     bundleId: string,
     quantity: number,
+  ) => Promise<{ ok: boolean; error?: string }>;
+  addService: (
+    productId: string,
+    startsAt: string,
   ) => Promise<{ ok: boolean; error?: string }>;
   applyDiscount: (
     code: string,
@@ -184,6 +189,34 @@ export function CartProvider({
     return { ok: true };
   }
 
+  async function addService(
+    productId: string,
+    startsAt: string,
+  ): Promise<{ ok: boolean; error?: string }> {
+    setError(null);
+
+    const result = await addServiceToCartAction({
+      slug,
+      productId,
+      startsAt,
+      localeTag,
+    });
+
+    if (!result.cart) {
+      setError(labels.addError);
+      return { ok: false, error: result.error };
+    }
+
+    setCart(result.cart);
+
+    if (result.error) {
+      return { ok: false, error: result.error };
+    }
+
+    setOpen(true);
+    return { ok: true };
+  }
+
   function update(itemId: string, quantity: number) {
     setError(null);
     startTransition(async () => {
@@ -213,6 +246,7 @@ export function CartProvider({
         error,
         add,
         addBundle,
+        addService,
         applyDiscount,
         removeDiscount,
         update,
@@ -487,6 +521,13 @@ function DrawerLine({
             {item.compareAtLabel ? (
               <span className="text-faint line-through">{item.compareAtLabel}</span>
             ) : null}
+          </p>
+        ) : null}
+
+        {item.serviceStartsAtLabel ? (
+          <p className="mt-0.5 flex items-center gap-1.5 text-[0.75rem] text-subtle">
+            <Icon path={icons.calendar} className="h-3.5 w-3.5" strokeWidth={1.8} />
+            {item.serviceStartsAtLabel}
           </p>
         ) : null}
 

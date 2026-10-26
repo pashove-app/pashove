@@ -116,6 +116,12 @@ export function CartPage() {
                           .join(" · ")}
                       </p>
                     ) : null}
+                    {item.serviceStartsAtLabel ? (
+                      <p className="mt-0.5 flex items-center gap-1.5 text-[0.75rem] text-subtle">
+                        <Icon path={icons.calendar} className="h-3.5 w-3.5" strokeWidth={1.8} />
+                        {item.serviceStartsAtLabel}
+                      </p>
+                    ) : null}
                     <p className="mt-1 flex flex-wrap items-center gap-2 text-[0.8125rem] tabular-nums text-muted">
                       <span>{item.unitPriceLabel}</span>
                       {item.compareAtLabel ? (

@@ -37,6 +37,8 @@ export function ProductBuyBox({
     : undefined;
 
   const physical = product.product_type === "physical";
+  const digital = product.product_type === "digital";
+  const purchasable = physical || digital;
   const stock = physical
     ? variant
       ? variant.stock_quantity
@@ -44,7 +46,7 @@ export function ProductBuyBox({
     : null;
   const soldOut = physical && (stock ?? 0) <= 0;
   const ready = !hasOptions || Boolean(variant);
-  const canAdd = physical && ready && !soldOut;
+  const canAdd = purchasable && (!physical || (ready && !soldOut));
 
   const priceLabel = variant?.priceLabel ?? product.priceLabel;
   const compareAtLabel = variant
@@ -204,33 +206,35 @@ export function ProductBuyBox({
         </div>
       ) : null}
 
-      {physical ? (
+      {purchasable ? (
         <div className="mt-6 flex flex-wrap items-center gap-3">
-          <div className="inline-flex h-12 items-center rounded-xl border border-border bg-surface">
-            <button
-              type="button"
-              onClick={() => setQuantity((current) => Math.max(1, current - 1))}
-              disabled={quantity <= 1}
-              aria-label={`${labels.quantity} −`}
-              className="flex h-full w-10 items-center justify-center text-subtle transition-colors hover:text-fg disabled:opacity-35"
-            >
-              <span aria-hidden="true" className="text-[1.125rem] leading-none">−</span>
-            </button>
-            <span className="min-w-8 text-center text-[0.875rem] font-medium tabular-nums text-fg">
-              {quantity}
-            </span>
-            <button
-              type="button"
-              onClick={() =>
-                setQuantity((current) => Math.min(maxQuantity, current + 1))
-              }
-              disabled={quantity >= maxQuantity}
-              aria-label={`${labels.quantity} +`}
-              className="flex h-full w-10 items-center justify-center text-subtle transition-colors hover:text-fg disabled:opacity-35"
-            >
-              <span aria-hidden="true" className="text-[1.125rem] leading-none">+</span>
-            </button>
-          </div>
+          {physical ? (
+            <div className="inline-flex h-12 items-center rounded-xl border border-border bg-surface">
+              <button
+                type="button"
+                onClick={() => setQuantity((current) => Math.max(1, current - 1))}
+                disabled={quantity <= 1}
+                aria-label={`${labels.quantity} −`}
+                className="flex h-full w-10 items-center justify-center text-subtle transition-colors hover:text-fg disabled:opacity-35"
+              >
+                <span aria-hidden="true" className="text-[1.125rem] leading-none">−</span>
+              </button>
+              <span className="min-w-8 text-center text-[0.875rem] font-medium tabular-nums text-fg">
+                {quantity}
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  setQuantity((current) => Math.min(maxQuantity, current + 1))
+                }
+                disabled={quantity >= maxQuantity}
+                aria-label={`${labels.quantity} +`}
+                className="flex h-full w-10 items-center justify-center text-subtle transition-colors hover:text-fg disabled:opacity-35"
+              >
+                <span aria-hidden="true" className="text-[1.125rem] leading-none">+</span>
+              </button>
+            </div>
+          ) : null}
 
           <button
             type="button"
@@ -248,7 +252,7 @@ export function ProductBuyBox({
                 <Spinner />
                 {labels.adding}
               </>
-            ) : !ready ? (
+            ) : physical && !ready ? (
               labels.chooseOption
             ) : soldOut ? (
               labels.outOfStock

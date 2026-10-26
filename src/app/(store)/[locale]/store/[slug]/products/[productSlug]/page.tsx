@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/storefront/container";
 import { ProductBuyBox } from "@/components/storefront/product-buy-box";
+import { ServiceBookingBox } from "@/components/storefront/service-booking-box";
 import { ProductGallery } from "@/components/storefront/product-gallery";
 import { ProductGrid } from "@/components/storefront/product-grid";
 import { ProductTabs, type ProductTab } from "@/components/storefront/product-tabs";
@@ -24,7 +25,12 @@ import {
   listStoreProducts,
   type PricedStoreProduct,
 } from "@/lib/storefront/products";
+import {
+  generateServiceSlots,
+  type ServiceSlot,
+} from "@/lib/storefront/service-slots";
 import { loadStorefront } from "@/lib/storefront/queries";
+import { createPublicClient } from "@/lib/supabase/public";
 
 export const revalidate = 30;
 
@@ -116,6 +122,22 @@ export default async function ProductPage({
   };
 
   const images = product.images.map((image) => publicUrl(image.object_key));
+
+  let serviceSlots: ServiceSlot[] = [];
+  if (product.product_type === "service") {
+    const supabase = createPublicClient();
+    const { data } = await supabase.rpc("booked_service_slots", {
+      p_product_id: product.id,
+    });
+    const booked = new Set(
+      ((data ?? []) as string[]).map((value) => new Date(value).toISOString()),
+    );
+    serviceSlots = generateServiceSlots(
+      product.duration_minutes ?? 60,
+      booked,
+      localeTag,
+    );
+  }
   const editorialImage = product.description_image
     ? publicUrl(product.description_image.object_key)
     : null;
@@ -282,7 +304,11 @@ export default async function ProductPage({
             ) : null}
 
             <div className="mt-6">
-              <ProductBuyBox product={priced} codEnabled={store.cod_enabled} />
+              {product.product_type === "service" ? (
+                <ServiceBookingBox productId={product.id} slots={serviceSlots} />
+              ) : (
+                <ProductBuyBox product={priced} codEnabled={store.cod_enabled} />
+              )}
             </div>
           </Reveal>
         </div>

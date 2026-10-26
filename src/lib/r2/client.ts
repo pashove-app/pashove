@@ -102,15 +102,16 @@ export async function inspectObject(
   }
 }
 
-/** Lien de lecture temporaire pour un objet privé (documents KYC). */
+/** Lien de lecture temporaire pour un objet privé (documents KYC, fichiers). */
 export async function signDownload(
   key: string,
   kind: MediaKind,
+  expiresIn = PRESIGN_TTL_SECONDS,
 ): Promise<string> {
   return getSignedUrl(
     client(),
     new GetObjectCommand({ Bucket: bucketFor(kind), Key: key }),
-    { expiresIn: PRESIGN_TTL_SECONDS },
+    { expiresIn },
   );
 }
 

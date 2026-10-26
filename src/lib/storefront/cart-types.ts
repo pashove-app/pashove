@@ -17,6 +17,7 @@ export type CartItem = {
   compareAt: number | null;
   imageKey: string | null;
   quantity: number;
+  serviceStartsAt: string | null;
   stock: number | null;
   available: boolean;
   lineTotal: number;
@@ -52,6 +53,7 @@ export type CartItemView = CartItem & {
   unitPriceLabel: string;
   lineTotalLabel: string;
   compareAtLabel: string | null;
+  serviceStartsAtLabel: string | null;
 };
 
 /** Panier prêt à afficher : les montants sont formatés par le serveur. */
