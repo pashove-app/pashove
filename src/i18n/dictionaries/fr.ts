@@ -2357,6 +2357,7 @@ const fr = {
     startSupport: "Contacter Pashove",
     placeholder: "Écris un message…",
     send: "Envoyer",
+    attach: "Joindre une image ou une vidéo",
     sending: "Envoi…",
     loginRequired: "Connecte-toi pour discuter avec la boutique.",
     loginCta: "Se connecter",

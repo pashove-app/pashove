@@ -2,6 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { signDownload, uploadObject } from "@/lib/r2/client";
+import {
+  isAllowedChatType,
+  MAX_CHAT_BYTES,
+} from "@/lib/r2/media";
 import type {
   ChatMessage,
   ChatRole,
@@ -39,6 +44,59 @@ export async function openSupportChatAction(
   return (data as ChatSession | null) ?? null;
 }
 
+const signedAttachments = new Map<
+  string,
+  { url: string; expiresAt: number }
+>();
+
+async function signChatAttachment(objectKey: string): Promise<string> {
+  const now = Date.now();
+  const cached = signedAttachments.get(objectKey);
+
+  if (cached && cached.expiresAt > now + 60_000) {
+    return cached.url;
+  }
+
+  const url = await signDownload(objectKey, "chat_attachment", 3600);
+  signedAttachments.set(objectKey, {
+    url,
+    expiresAt: now + 3_600_000,
+  });
+
+  return url;
+}
+
+type RawMessage = Omit<ChatMessage, "attachment"> & {
+  attachment?: {
+    objectKey: string;
+    contentType: string;
+    fileName: string | null;
+  } | null;
+};
+
+async function withSignedAttachment(
+  message: RawMessage,
+): Promise<ChatMessage> {
+  if (!message.attachment) {
+    return { ...message, attachment: null };
+  }
+
+  try {
+    const url = await signChatAttachment(message.attachment.objectKey);
+
+    return {
+      ...message,
+      attachment: {
+        url,
+        contentType: message.attachment.contentType,
+        fileName: message.attachment.fileName,
+      },
+    };
+  } catch {
+    return { ...message, attachment: null };
+  }
+}
+
 export async function loadMessagesAction(
   conversationId: string,
 ): Promise<ChatMessage[]> {
@@ -47,7 +105,12 @@ export async function loadMessagesAction(
   const { data } = await supabase.rpc("chat_messages", {
     p_conversation_id: conversationId,
   });
-  return (data ?? []) as ChatMessage[];
+
+  return Promise.all(
+    ((data ?? []) as RawMessage[]).map((message) =>
+      withSignedAttachment(message),
+    ),
+  );
 }
 
 export type SendMessageResult = {
@@ -80,6 +143,7 @@ export async function sendMessageAction(input: {
     p_conversation_id: input.conversationId,
     p_body: body,
     p_role: input.role,
+    p_attachment: null,
   });
 
   if (error || !data) {
@@ -87,5 +151,76 @@ export async function sendMessageAction(input: {
   }
 
   revalidatePath("/", "layout");
-  return { ok: true, message: data as ChatMessage };
+  return {
+    ok: true,
+    message: await withSignedAttachment(data as RawMessage),
+  };
+}
+
+/** Envoie une image, une vidéo courte ou un PDF avec un texte facultatif. */
+export async function sendChatAttachmentAction(
+  formData: FormData,
+): Promise<SendMessageResult> {
+  const conversationId = formData.get("conversationId");
+  const role = formData.get("role");
+  const body =
+    typeof formData.get("body") === "string"
+      ? String(formData.get("body")).trim().slice(0, 4000)
+      : "";
+  const file = formData.get("file");
+
+  if (
+    !isUuid(conversationId) ||
+    !isRole(role) ||
+    !(file instanceof File) ||
+    file.size <= 0
+  ) {
+    return { ok: false, error: "invalid" };
+  }
+
+  if (file.size > MAX_CHAT_BYTES || !isAllowedChatType(file.type)) {
+    return { ok: false, error: "invalid" };
+  }
+
+  if (!isSupabaseConfigured()) {
+    return { ok: false, error: "unavailable" };
+  }
+
+  const supabase = await createClient();
+  const { data: storeId } = await supabase.rpc("chat_attachment_store", {
+    p_conversation_id: conversationId,
+    p_role: role,
+  });
+
+  if (typeof storeId !== "string" || !isUuid(storeId)) {
+    return { ok: false, error: "unavailable" };
+  }
+
+  const objectKey = await uploadObject({
+    storeId,
+    kind: "chat_attachment",
+    contentType: file.type,
+    body: new Uint8Array(await file.arrayBuffer()),
+  });
+
+  const { data, error } = await supabase.rpc("chat_send_message", {
+    p_conversation_id: conversationId,
+    p_body: body,
+    p_role: role,
+    p_attachment: {
+      objectKey,
+      contentType: file.type,
+      fileName: file.name.slice(0, 255),
+    },
+  });
+
+  if (error || !data) {
+    return { ok: false, error: "unavailable" };
+  }
+
+  revalidatePath("/", "layout");
+  return {
+    ok: true,
+    message: await withSignedAttachment(data as RawMessage),
+  };
 }

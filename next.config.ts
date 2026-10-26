@@ -10,6 +10,10 @@ const publicMediaUrl = process.env.R2_PUBLIC_URL;
 const nextConfig: NextConfig = {
   experimental: {
     agentUpgrade: "security",
+    serverActions: {
+      // Pièces jointes de la messagerie : 25 Mo maximum.
+      bodySizeLimit: "25mb",
+    },
   },
 
   images: publicMediaUrl

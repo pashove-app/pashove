@@ -566,13 +566,21 @@ OTP, commande, retrait, sécurité.
 
 ---
 
-## 18. Support — 🔴
+## 18. Support — 🟡
 
-`/app/support` : accueil, tickets, nouveau ticket, messages, aide, statut.
-`/platform-admin/support` : boîte, tickets, escalades, SLA, macros, base de
-connaissances.
+### Livré (26/10/2026)
 
-**Effort** : 2 semaines.
+Messagerie réelle entre le marchand et la plateforme, et entre le marchand et
+ses clients : conversations, texte, images/vidéos courtes/PDF, accès vérifié par
+RPC, widget vitrine, boîte `/app/support`, console `/platform-admin/messages`.
+Détail et tests : `docs/09-CORRECTIFS-MESSAGERIE.md`.
+
+### Reste
+
+Tickets, escalades, SLA, macros, base de connaissances, non-lus, notifications,
+temps réel et chat invité sans compte.
+
+**Effort restant** : 1 à 2 semaines.
 
 ---
 

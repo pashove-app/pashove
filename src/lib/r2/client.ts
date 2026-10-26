@@ -83,6 +83,27 @@ export async function signUpload(params: {
   return { key, uploadUrl, expiresIn: PRESIGN_TTL_SECONDS };
 }
 
+/** Envoie un objet côté serveur (pièce jointe de messagerie). */
+export async function uploadObject(params: {
+  storeId: string;
+  kind: MediaKind;
+  contentType: string;
+  body: Uint8Array;
+}): Promise<string> {
+  const key = buildObjectKey(params.storeId, params.kind, params.contentType);
+
+  await client().send(
+    new PutObjectCommand({
+      Bucket: bucketFor(params.kind),
+      Key: key,
+      Body: params.body,
+      ContentType: params.contentType,
+    }),
+  );
+
+  return key;
+}
+
 /** Relit l'objet après l'envoi : la seule preuve qu'il est bien arrivé. */
 export async function inspectObject(
   key: string,

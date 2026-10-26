@@ -2268,6 +2268,7 @@ const ar: Dictionary = {
     startSupport: "تواصل مع Pashove",
     placeholder: "اكتب رسالة…",
     send: "إرسال",
+    attach: "أرفق صورة أو فيديو",
     sending: "جارٍ الإرسال…",
     loginRequired: "سجّل الدخول للتحدث مع المتجر.",
     loginCta: "تسجيل الدخول",

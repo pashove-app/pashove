@@ -2291,6 +2291,7 @@ const en: Dictionary = {
     startSupport: "Contact Pashove",
     placeholder: "Write a message…",
     send: "Send",
+    attach: "Attach an image or video",
     sending: "Sending…",
     loginRequired: "Sign in to chat with the store.",
     loginCta: "Sign in",

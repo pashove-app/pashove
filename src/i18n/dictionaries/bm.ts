@@ -2287,6 +2287,7 @@ const bm: Dictionary = {
     startSupport: "Pashove wele",
     placeholder: "Messagi sɛbɛn…",
     send: "Ci",
+    attach: "Fɔto walima videwo jɔ",
     sending: "A bɛ ci…",
     loginRequired: "I don walisa ka baro butiki ni.",
     loginCta: "Don",

@@ -16,6 +16,7 @@ import {
   loadMessagesAction,
   openCustomerChatAction,
   openSupportChatAction,
+  sendChatAttachmentAction,
   sendMessageAction,
 } from "@/lib/messages/actions";
 import type {
@@ -58,8 +59,10 @@ export function ChatThread({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [value, setValue] = useState("");
   const [error, setError] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [pending, startTransition] = useTransition();
   const endRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let active = true;
@@ -82,10 +85,36 @@ export function ChatThread({
     endRef.current?.scrollIntoView({ block: "end" });
   }, [messages.length]);
 
+  async function attach(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || uploading) return;
+
+    setError(false);
+    setUploading(true);
+
+    const data = new FormData();
+    data.set("conversationId", session.id);
+    data.set("role", role);
+    data.set("body", value);
+    data.set("file", file);
+
+    const result = await sendChatAttachmentAction(data);
+    setUploading(false);
+
+    if (!result.ok || !result.message) {
+      setError(true);
+      return;
+    }
+
+    setMessages((current) => [...current, result.message!]);
+    setValue("");
+  }
+
   function send(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const body = value.trim();
-    if (!body || pending) return;
+    if (!body || pending || uploading) return;
 
     setError(false);
     startTransition(async () => {
@@ -131,9 +160,40 @@ export function ChatThread({
                     {roleLabel(message.senderRole, labels)}
                   </p>
                 ) : null}
-                <p className="whitespace-pre-wrap break-words text-[0.8125rem] leading-relaxed">
-                  {message.body}
-                </p>
+                {message.attachment ? (
+                  <div className="mb-2 overflow-hidden rounded-xl">
+                    {message.attachment.contentType.startsWith("image/") ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={message.attachment.url}
+                        alt={message.attachment.fileName ?? ""}
+                        className="max-h-64 w-full object-cover"
+                      />
+                    ) : message.attachment.contentType.startsWith("video/") ? (
+                      <video
+                        src={message.attachment.url}
+                        controls
+                        className="max-h-64 w-full rounded-xl"
+                      />
+                    ) : (
+                      <a
+                        href={message.attachment.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-2 rounded-lg bg-black/10 px-3 py-2 text-[0.75rem] font-medium underline"
+                      >
+                        <Icon path={icons.paperclip} className="h-3.5 w-3.5" strokeWidth={2} />
+                        {message.attachment.fileName ?? labels.attach}
+                      </a>
+                    )}
+                  </div>
+                ) : null}
+
+                {message.body ? (
+                  <p className="whitespace-pre-wrap break-words text-[0.8125rem] leading-relaxed">
+                    {message.body}
+                  </p>
+                ) : null}
                 <p
                   className={cn(
                     "mt-1 text-[0.5625rem] tabular-nums",
@@ -156,6 +216,23 @@ export function ChatThread({
           compact && "p-2.5",
         )}
       >
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm,application/pdf"
+          onChange={attach}
+          className="hidden"
+        />
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading || pending}
+          aria-label={labels.attach}
+          title={labels.attach}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-faint transition-colors hover:bg-hairline hover:text-fg disabled:opacity-50"
+        >
+          {uploading ? <Spinner /> : <Icon path={icons.paperclip} className="h-4 w-4" strokeWidth={1.9} />}
+        </button>
         <textarea
           value={value}
           onChange={(event) => {
@@ -176,7 +253,7 @@ export function ChatThread({
         />
         <button
           type="submit"
-          disabled={pending || !value.trim()}
+          disabled={pending || uploading || !value.trim()}
           aria-label={labels.send}
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-500 text-white transition-colors hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
         >
@@ -232,7 +309,7 @@ export function StorefrontChat({
       </button>
 
       {open ? (
-        <div className="fixed inset-x-0 bottom-0 z-[75] flex h-[min(32rem,85dvh)] flex-col border-t border-border bg-bg shadow-2xl sm:inset-x-auto sm:bottom-24 sm:end-5 sm:w-[23rem] sm:rounded-3xl sm:border">
+        <div className="fixed inset-x-0 bottom-0 z-[75] flex h-[min(32rem,85dvh)] animate-rise flex-col border-t border-border bg-bg shadow-2xl motion-reduce:animate-none sm:inset-x-auto sm:bottom-24 sm:end-5 sm:w-[23rem] sm:rounded-3xl sm:border">
           <header className="flex items-start justify-between gap-3 border-b border-border px-4 py-3.5">
             <div>
               <p className="text-[0.9375rem] font-medium text-fg">{labels.chatTitle}</p>

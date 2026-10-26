@@ -20,10 +20,17 @@ export type ChatConversation = {
   lastAt: string;
 };
 
+export type ChatAttachment = {
+  url: string;
+  contentType: string;
+  fileName: string | null;
+};
+
 export type ChatMessage = {
   id: string;
-  body: string;
+  body: string | null;
   senderRole: ChatRole;
   mine: boolean;
   createdAt: string;
+  attachment?: ChatAttachment | null;
 };

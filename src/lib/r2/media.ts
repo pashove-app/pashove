@@ -11,6 +11,7 @@ export const MEDIA_KINDS = [
   "product",
   "digital_file",
   "kyc_document",
+  "chat_attachment",
 ] as const;
 export type MediaKind = (typeof MEDIA_KINDS)[number];
 
@@ -29,6 +30,13 @@ export const FILE_EXTENSIONS = {
   "audio/mpeg": "mp3",
 } as const;
 
+export const CHAT_EXTENSIONS = {
+  ...IMAGE_EXTENSIONS,
+  "video/mp4": "mp4",
+  "video/webm": "webm",
+  "application/pdf": "pdf",
+} as const;
+
 export type AllowedImageType = keyof typeof IMAGE_EXTENSIONS;
 export type AllowedFileType = keyof typeof FILE_EXTENSIONS;
 
@@ -38,9 +46,16 @@ export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 /** 100 Mo : un PDF, un ZIP ou un EPUB vendu. */
 export const MAX_FILE_BYTES = 100 * 1024 * 1024;
 
+/** 25 Mo : une photo ou une courte vidéo envoyée dans la messagerie. */
+export const MAX_CHAT_BYTES = 25 * 1024 * 1024;
+
 /** Un fichier vendu ou un document KYC ne doit jamais être public. */
 export function isPrivateKind(kind: MediaKind): boolean {
-  return kind === "digital_file" || kind === "kyc_document";
+  return (
+    kind === "digital_file" ||
+    kind === "kyc_document" ||
+    kind === "chat_attachment"
+  );
 }
 
 /** Seul un fichier vendu accepte les formats documentaires. */
@@ -62,6 +77,7 @@ export function isMediaKind(value: unknown): value is MediaKind {
 
 /** Taille maximale selon la nature de l'objet. */
 export function maxBytesFor(kind: MediaKind): number {
+  if (kind === "chat_attachment") return MAX_CHAT_BYTES;
   return isFileKind(kind) ? MAX_FILE_BYTES : MAX_IMAGE_BYTES;
 }
 
@@ -72,6 +88,7 @@ export function maxLabelFor(kind: MediaKind): string {
 const ALL_EXTENSIONS: Record<string, string> = {
   ...IMAGE_EXTENSIONS,
   ...FILE_EXTENSIONS,
+  ...CHAT_EXTENSIONS,
 };
 
 /**
@@ -90,7 +107,7 @@ export function buildObjectKey(
 }
 
 const KEY_PATTERN =
-  /^stores\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/(logo|banner|product|digital_file|kyc_document)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.[a-z0-9]+$/i;
+  /^stores\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/(logo|banner|product|digital_file|kyc_document|chat_attachment)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.[a-z0-9]+$/i;
 
 /** Relit une clé et vérifie qu'elle respecte la forme attendue. */
 export function parseObjectKey(
@@ -106,4 +123,9 @@ export function parseObjectKey(
 export function publicUrl(key: string): string {
   const base = (process.env.R2_PUBLIC_URL ?? "").replace(/\/+$/, "");
   return `${base}/${key}`;
+}
+
+/** Types acceptés dans une pièce jointe de messagerie. */
+export function isAllowedChatType(value: unknown): value is keyof typeof CHAT_EXTENSIONS {
+  return typeof value === "string" && value in CHAT_EXTENSIONS;
 }

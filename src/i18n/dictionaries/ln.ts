@@ -2295,6 +2295,7 @@ const ln: Dictionary = {
     startSupport: "Kokutana na Pashove",
     placeholder: "Koma message…",
     send: "Tinda",
+    attach: "Kobakisa foto to video",
     sending: "Ezali kotinda…",
     loginRequired: "Kokota mpo na kosolola na magasin.",
     loginCta: "Kokota",

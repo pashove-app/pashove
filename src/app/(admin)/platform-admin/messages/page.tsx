@@ -24,6 +24,7 @@ export default async function PlatformMessagesPage() {
         startSupport: "Contacter Pashove",
         placeholder: "Écris une réponse…",
         send: "Envoyer",
+        attach: "Joindre une image ou une vidéo",
         sending: "Envoi…",
         loginRequired: "Connecte-toi pour discuter.",
         loginCta: "Se connecter",
