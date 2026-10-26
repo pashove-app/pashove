@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "motion/react";
-import { BRAND_GRADIENT, BRAND_GRID } from "@/components/storefront/brand";
+import { BRAND_GRID } from "@/components/storefront/brand";
 import { Container } from "@/components/storefront/container";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import type { PublicStore } from "@/lib/storefront/queries";
@@ -33,7 +33,7 @@ export function StorefrontHero({
   });
 
   return (
-    <section className="relative isolate overflow-hidden bg-[#0a1330]">
+    <section className="relative isolate overflow-hidden bg-[var(--color-panel-to)]">
       {bannerUrl ? (
         <Image
           src={bannerUrl}
@@ -45,7 +45,14 @@ export function StorefrontHero({
         />
       ) : (
         <>
-          <div className={`absolute inset-0 ${BRAND_GRADIENT}`} aria-hidden="true" />
+          <div
+            className="absolute inset-0"
+            aria-hidden="true"
+            style={{
+              background:
+                "radial-gradient(120% 85% at 16% 6%, var(--color-grad-1) 0%, transparent 52%), radial-gradient(110% 80% at 100% 100%, var(--color-grad-3) 0%, transparent 62%), linear-gradient(158deg, var(--color-grad-1) 0%, var(--color-grad-2) 52%, var(--color-grad-3) 100%)",
+            }}
+          />
           <div className={`absolute inset-0 ${BRAND_GRID}`} aria-hidden="true" />
           <svg
             viewBox="0 0 40 40"

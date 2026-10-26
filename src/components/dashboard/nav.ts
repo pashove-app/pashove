@@ -56,7 +56,7 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     labelKey: "store",
     items: [
-      { key: "onlineStore", href: "/app/online-store", icon: "store", soon: true },
+      { key: "onlineStore", href: "/app/online-store/themes", icon: "store" },
       { key: "salesChannels", href: "/app/sales-channels", icon: "globe", soon: true },
       { key: "partners", href: "/app/partners", icon: "route" },
       { key: "gifts", href: "/app/gifts", icon: "gift", soon: true },

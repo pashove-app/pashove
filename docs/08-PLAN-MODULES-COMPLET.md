@@ -124,7 +124,17 @@ une boutique précise**. Aujourd'hui l'interface suppose une seule boutique.
 
 ---
 
-## 4. Thèmes, éditeur, pages, navigation, domaines, SEO — 🔴
+## 4. Thèmes, éditeur, pages, navigation, domaines, SEO — 🟡
+
+### V1 livrée le 26/10/2026
+
+`/app/online-store/themes` (bibliothèque de 4 modèles) et
+`/app/online-store/editor` (couleurs, typographie, ordre et visibilité des
+sections). Le thème est appliqué à la vitrine et aux portails (panier, menu).
+Détail et tests : `docs/10-THEMES-V1.md`.
+
+Reste : éditeur de blocs libre, versions, pages, menus, blog, domaines, SEO,
+polices personnalisées.
 
 ### Pages marchand
 

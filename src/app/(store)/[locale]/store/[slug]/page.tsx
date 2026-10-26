@@ -19,6 +19,7 @@ import { listStoreProducts } from "@/lib/storefront/products";
 import { listPublicBundles } from "@/lib/storefront/bundles";
 import { listPublicCollections } from "@/lib/storefront/collections";
 import { loadStorefront } from "@/lib/storefront/queries";
+import { getPublicStoreTheme } from "@/lib/theme/queries";
 
 /**
  * La vitrine est publique et ne dépend d'aucune session : elle peut être mise
@@ -79,11 +80,13 @@ export default async function StorefrontPage({
   if (status === "suspended") return <StorefrontClosed t={t} />;
   if (!store) notFound();
 
-  const [products, collections, bundles] = await Promise.all([
+  const [products, collections, bundles, theme] = await Promise.all([
     listStoreProducts(store.id),
     listPublicCollections(store.id),
     listPublicBundles(store.id, store.currency, LOCALE_META[locale].tag),
+    getPublicStoreTheme(store.slug),
   ]);
+  const sections = theme.sections.filter((section) => section.enabled);
   const bannerUrl = store.banner ? publicUrl(store.banner.object_key) : null;
 
   return (
@@ -100,38 +103,50 @@ export default async function StorefrontPage({
         <TrustStrip store={store} locale={locale} t={t} />
 
         <Container className="mt-16 space-y-16 sm:mt-20 sm:space-y-24">
-          <Reveal>
-            <ProductGrid
-              t={t}
-              locale={locale}
-              slug={slug}
-              products={products.slice(0, 8)}
-              currency={store.currency}
-              localeTag={LOCALE_META[locale].tag}
-            />
-          </Reveal>
+          {sections.map((section) => {
+            if (section.key === "products") {
+              return (
+                <Reveal key={section.key}>
+                  <ProductGrid
+                    t={t}
+                    locale={locale}
+                    slug={slug}
+                    products={products.slice(0, 8)}
+                    currency={store.currency}
+                    localeTag={LOCALE_META[locale].tag}
+                  />
+                </Reveal>
+              );
+            }
 
-          {collections.length > 0 ? (
-            <Reveal>
-              <CollectionsSection
-                collections={collections}
-                storeSlug={slug}
-                locale={locale}
-                labels={t.storefront}
-              />
-            </Reveal>
-          ) : null}
+            if (section.key === "collections" && collections.length > 0) {
+              return (
+                <Reveal key={section.key}>
+                  <CollectionsSection
+                    collections={collections}
+                    storeSlug={slug}
+                    locale={locale}
+                    labels={t.storefront}
+                  />
+                </Reveal>
+              );
+            }
 
-          {bundles.length > 0 ? (
-            <Reveal>
-              <BundlesSection
-                bundles={bundles}
-                storeSlug={slug}
-                locale={locale}
-                labels={t.storefront}
-              />
-            </Reveal>
-          ) : null}
+            if (section.key === "bundles" && bundles.length > 0) {
+              return (
+                <Reveal key={section.key}>
+                  <BundlesSection
+                    bundles={bundles}
+                    storeSlug={slug}
+                    locale={locale}
+                    labels={t.storefront}
+                  />
+                </Reveal>
+              );
+            }
+
+            return null;
+          })}
         </Container>
       </main>
     </StorefrontShell>

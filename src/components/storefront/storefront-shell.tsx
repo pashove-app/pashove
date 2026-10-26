@@ -10,6 +10,9 @@ import { formatMoney } from "@/lib/money";
 import { publicUrl } from "@/lib/r2/media";
 import type { PublicStore } from "@/lib/storefront/queries";
 import { StorefrontChat } from "@/components/messages/chat-widget";
+import { getPublicStoreTheme } from "@/lib/theme/queries";
+import { themeStyle } from "@/lib/theme/style";
+import { ThemeScope } from "@/components/theme/theme-scope";
 import { POLICY_PAGES, policyUrlSlug, type PolicySlug } from "@/lib/policies/pages";
 import { listPublishedPolicySlugs } from "@/lib/policies/queries";
 
@@ -25,10 +28,16 @@ export async function StorefrontShell({
   t: Dictionary;
   children: ReactNode;
 }) {
-  const policySlugs = await listPublishedPolicySlugs(store.id);
+  const [policySlugs, theme] = await Promise.all([
+    listPublishedPolicySlugs(store.id),
+    getPublicStoreTheme(store.slug),
+  ]);
+
+  const style = themeStyle(theme);
 
   return (
-    <div className="flex min-h-dvh flex-col bg-bg">
+    <div className="flex min-h-dvh flex-col bg-bg" style={style}>
+      <ThemeScope style={style} />
       <div className="flex-1">{children}</div>
       <StorefrontFooter
         store={store}

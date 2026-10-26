@@ -48,7 +48,8 @@
 - **Cadeaux, marketing, analyses, applications** : pages « à venir ».
   **Partenaires** : V1 livrée le 25/10. **Support** : messagerie livrée le
   26/10 ; tickets, SLA et base de connaissances restent à faire.
-- **Thèmes, éditeur, domaines, blog, SEO** : absents.
+- **Thèmes** : V1 livrée le 26/10 (bibliothèque, couleurs, typographie, sections).
+  Restent l’éditeur de blocs libre, les pages/menus, domaines, blog et SEO.
 - **Comptes clients** : livrés le 26/10 (commandes, téléchargements, rendez-vous,
   rattachement des achats invités). L’e-mail de confirmation dépend du SMTP.
 - **E-mails transactionnels, SMS, notifications, rate limiting, Turnstile,
