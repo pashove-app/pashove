@@ -32,10 +32,23 @@ export function MarketingContainer({
   );
 }
 
-export function Eyebrow({ children }: { children: ReactNode }) {
+export function Eyebrow({
+  children,
+  tone = "dark",
+}: {
+  children: ReactNode;
+  tone?: "dark" | "light";
+}) {
   return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-[0.625rem] font-semibold uppercase tracking-[0.18em] text-brand-200">
-      <span className="h-1.5 w-1.5 rounded-full bg-brand-400" />
+    <span
+      className={cn(
+        "inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[0.625rem] font-semibold uppercase tracking-[0.18em]",
+        tone === "dark"
+          ? "border-white/10 bg-white/[0.05] text-brand-200"
+          : "border-slate-200 bg-white text-brand-600 shadow-sm",
+      )}
+    >
+      <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
       {children}
     </span>
   );
@@ -63,16 +76,23 @@ export function SectionHeading({
         align === "center" && "mx-auto text-center",
       )}
     >
-      <Eyebrow>{eyebrow}</Eyebrow>
+      <Eyebrow tone={dark ? "dark" : "light"}>{eyebrow}</Eyebrow>
       <h2
         className={cn(
-          "mt-5 text-[clamp(2rem,4vw,3.5rem)] font-medium leading-[1.02] tracking-[-0.045em]",
-          dark ? "text-white" : "text-[#0B101B]",
+          "font-display mt-5 text-[clamp(2rem,4vw,3.5rem)] leading-[1.04] tracking-[-0.035em]",
+          dark ? "text-white" : "text-[#0A0E1A]",
         )}
       >
         {titleA}
         <br />
-        <span className="bg-gradient-to-r from-brand-200 via-brand-300 to-white bg-clip-text text-transparent">
+        <span
+          className={cn(
+            "bg-gradient-to-r bg-clip-text text-transparent",
+            dark
+              ? "from-brand-200 via-brand-300 to-white"
+              : "from-brand-600 via-brand-500 to-brand-400",
+          )}
+        >
           {titleB}
         </span>
       </h2>
@@ -104,7 +124,7 @@ export function PrimaryLink({
     <Link
       href={href}
       className={cn(
-        "inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white px-6 text-[0.8125rem] font-semibold text-[#05070F] shadow-[0_18px_45px_-18px_rgba(255,255,255,0.45)] transition-transform duration-200 hover:-translate-y-0.5",
+        "inline-flex h-12 items-center justify-center gap-2 rounded-full bg-brand-500 px-6 text-[0.8125rem] font-semibold text-white shadow-[0_18px_45px_-16px_rgba(47,92,255,0.8)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_50px_-16px_rgba(47,92,255,0.9)]",
         className,
       )}
     >
@@ -118,16 +138,24 @@ export function SecondaryLink({
   href,
   children,
   className,
+  tone = "dark",
+  target,
 }: {
   href: string;
   children: ReactNode;
   className?: string;
+  tone?: "dark" | "light";
+  target?: string;
 }) {
   return (
     <Link
       href={href}
+      target={target}
       className={cn(
-        "inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-6 text-[0.8125rem] font-medium text-white transition-colors hover:border-white/30 hover:bg-white/[0.08]",
+        "inline-flex h-12 items-center justify-center gap-2 rounded-full border px-6 text-[0.8125rem] font-medium transition-[transform,border-color,background-color] duration-200 hover:-translate-y-0.5",
+        tone === "dark"
+          ? "border-white/15 bg-white/[0.04] text-white hover:border-white/30 hover:bg-white/[0.08]"
+          : "border-slate-300 bg-white text-[#0A0E1A] hover:border-slate-400 hover:bg-slate-50",
         className,
       )}
     >
@@ -139,14 +167,19 @@ export function SecondaryLink({
 export function FeatureIcon({
   icon,
   className,
+  tone = "dark",
 }: {
   icon: IconKey;
   className?: string;
+  tone?: "dark" | "light";
 }) {
   return (
     <span
       className={cn(
-        "flex h-11 w-11 items-center justify-center rounded-2xl border border-brand-400/20 bg-brand-500/10 text-brand-200",
+        "flex h-11 w-11 items-center justify-center rounded-2xl border",
+        tone === "dark"
+          ? "border-brand-400/20 bg-brand-500/10 text-brand-200"
+          : "border-brand-500/15 bg-brand-50 text-brand-600",
         className,
       )}
     >

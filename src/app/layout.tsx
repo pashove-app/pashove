@@ -1,5 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Noto_Sans_Arabic } from "next/font/google";
+import {
+  Geist,
+  Geist_Mono,
+  Inter,
+  Noto_Sans_Arabic,
+  Playfair_Display,
+} from "next/font/google";
 import { ThemeWatcher } from "@/components/theme/theme-watcher";
 import "./globals.css";
 
@@ -11,6 +17,18 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
   subsets: ["latin"],
   display: "swap",
 });
@@ -59,7 +77,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       dir="ltr"
       data-theme="dark"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${notoArabic.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${notoArabic.variable} ${inter.variable} ${playfair.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-bg text-fg">
         {/*

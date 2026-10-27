@@ -7,6 +7,7 @@ import { Icon, icons } from "@/components/ui/primitives";
 import type { Locale } from "@/i18n/config";
 import type { SiteContent } from "@/lib/marketing/content";
 import { MarketingLogo, publicHref } from "@/components/marketing/ui";
+import { PublicLanguageSwitch } from "@/components/marketing/language-switch";
 
 export function PublicHeader({
   locale,
@@ -64,7 +65,7 @@ export function PublicHeader({
           </Link>
           <Link
             href={publicHref(locale, "/auth/register")}
-            className="inline-flex h-10 items-center gap-1.5 rounded-full bg-white px-5 text-[0.8125rem] font-semibold text-[#05070F] transition-transform hover:-translate-y-0.5"
+            className="inline-flex h-10 items-center gap-1.5 rounded-full bg-brand-500 px-5 text-[0.8125rem] font-semibold text-white shadow-[0_12px_30px_-12px_rgba(47,92,255,0.8)] transition-[transform,box-shadow] hover:-translate-y-0.5 hover:bg-brand-600"
           >
             {content.nav.cta}
             <Icon path={icons.arrowRight} className="h-3.5 w-3.5" strokeWidth={2.2} />
@@ -118,11 +119,29 @@ export function PublicHeader({
             </Link>
           </nav>
 
+          <div className="mx-5 mt-6 border-t border-white/10 pt-5">
+            <Link
+              href={publicHref(locale, content.hero.demoHref)}
+              target="_blank"
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-between rounded-2xl border border-white/10 px-4 py-3.5 text-[0.875rem] font-medium text-white/70"
+            >
+              {content.hero.secondary}
+              <Icon path={icons.arrowUpRight} className="h-4 w-4" strokeWidth={2} />
+            </Link>
+            <div className="mt-4 flex items-center justify-between">
+              <span className="text-[0.625rem] uppercase tracking-[0.14em] text-white/30">
+                {content.footer.languageLabel}
+              </span>
+              <PublicLanguageSwitch locale={locale === "en" ? "en" : "fr"} />
+            </div>
+          </div>
+
           <div className="absolute inset-x-5 bottom-8">
             <Link
               href={publicHref(locale, "/auth/register")}
               onClick={() => setOpen(false)}
-              className="flex h-12 items-center justify-center gap-2 rounded-full bg-white text-[0.875rem] font-semibold text-[#05070F]"
+              className="flex h-12 items-center justify-center gap-2 rounded-full bg-brand-500 text-[0.875rem] font-semibold text-white"
             >
               {content.nav.cta}
               <Icon path={icons.arrowRight} className="h-4 w-4" strokeWidth={2.2} />

@@ -77,3 +77,62 @@ vitrine.
 - Bambara, lingala et arabe utilisent le contenu français.
 - Les montants et promesses commerciales restent à valider avant lancement
   public ; le blueprint et la table `plans` font foi pour les limites.
+
+---
+
+## Refonte premium PUB1 v2 — 26/10/2026
+
+### Typographie et identité
+
+- **Playfair Display** pour tous les grands titres, **Inter** pour le corps.
+- Bleu Pashove conservé comme accent unique ; aucun rouge.
+- Alternance de sections sombres `#05070D` / `#0A0E1A` et claires
+  `#FAFAFA` / `#F4F6FB`.
+
+### Accueil
+
+- Hero sombre centré, titre serif avec le mot **croissance** sur un aplat bleu,
+  boutons « Créer ma boutique » (bleu) et « Voir la démo » (ghost).
+- Mini-stats : +10 pays, 0 FCFA, +64 méthodes (à venir), 2 boutiques.
+- Section 6 grands chiffres avec icônes et **compteurs animés au scroll**.
+- « Pourquoi Pashove ? » en quatre blocs alternés texte/mockup : Afrique,
+  multi-boutiques, paiement à la livraison, partenaires.
+- Témoignages de démonstration (3 cartes, initiales, boutique).
+- Logo cloud structuré en huit emplacements vides, prêt pour les logos.
+- CTA finale sombre, newsletter au-dessus du footer.
+
+### Footer
+
+Produit, Entreprise, Légal, Développeurs (API/Webhooks marqués « Bientôt »),
+sélecteur FR/EN, contact, réseaux et copyright. Les liens sont réellement
+localisés ; les pages non construites sont signalées au lieu de pointer dans le
+vide.
+
+### Animations
+
+- Reveal fade + slide au scroll sur les sections (Framer Motion).
+- Compteurs animés déclenchés à l’entrée dans le viewport, avec repli immédiat
+  pour les onglets en arrière-plan.
+- Parallaxe légère du mockup hero.
+- Hover : élévation, ombre et bordure bleue sur les cartes ; boutons avec
+  translation et ombre.
+- `prefers-reduced-motion` respecté par CSS et par Framer Motion.
+
+### Tarifs / fonctionnalités
+
+Même langage visuel : hero serif sombre, cartes claires, CTA bleu, newsletter et
+footer communs. Les plans restent alignés sur `plans` et les paiements en ligne
+restent annoncés comme **en cours d’intégration**.
+
+### Vérifications v2
+
+- `/fr` et `/fr/pricing`, `/fr/features` répondent avec les bons titres.
+- Compteurs à 2, +10, +64, +5 après passage dans le viewport ; valeurs finales
+  affichées même dans un onglet non visible.
+- Reveal : opacité 1 et transform none après scroll, testé dans un onglet
+  visible simulé.
+- Newsletter : soumission UI, message de confirmation, aucun envoi réseau.
+- Sélecteur EN : `/fr` → `/en`, titre et contenu anglais.
+- Aucun débordement à 390 px sur l’accueil, les tarifs et les fonctionnalités.
+- Menu mobile plein écran avec liens, démo, langue et CTA.
+- Build, types et lint verts.

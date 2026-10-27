@@ -24,7 +24,7 @@ export type MarketingPlan = {
 
 const fr = {
   meta: {
-    homeTitle: "Pashove — Ta boutique en ligne, prête avant ton prochain client",
+    homeTitle: "Pashove — Propulse ta croissance",
     homeDescription:
       "Crée ta boutique, vends des produits physiques, numériques ou des services, encaisse à la livraison et pilote ton activité depuis un seul espace. Pensé pour l’Afrique de l’Ouest.",
     pricingTitle: "Tarifs Pashove — Commence gratuitement",
@@ -45,18 +45,19 @@ const fr = {
   },
   hero: {
     eyebrow: "Le Commerce OS africain",
-    titleA: "Ta boutique en ligne,",
-    titleB: "prête avant ton prochain client.",
+    titleBefore: "Propulse ta",
+    titleHighlight: "croissance",
+    titleAfter: "avec Pashove.",
     description:
-      "Crée ta boutique, ajoute tes produits, partage ton lien. Pashove gère les commandes, la livraison, les clients et tes chiffres — sans agence, sans développeur, sans friction.",
+      "Crée ta boutique, vends tes produits physiques, numériques ou tes services, et encaisse dès la livraison. Pensé pour les marchands d’Afrique de l’Ouest.",
     primary: "Créer ma boutique",
-    secondary: "Se connecter",
-    trust: ["0 FCFA pour démarrer", "Sans carte bancaire", "En ligne en 5 minutes"],
-    stats: [
-      { value: "2", label: "boutiques incluses dès le Free" },
-      { value: "5", label: "langues, dont l’arabe en RTL" },
-      { value: "0 FCFA", label: "pour ouvrir ta première boutique" },
-      { value: "COD", label: "paiement à la livraison disponible" },
+    secondary: "Voir la démo",
+    demoHref: "/store/maboutie",
+    miniStats: [
+      { value: "+10", label: "pays d’Afrique" },
+      { value: "0 FCFA", label: "pour commencer" },
+      { value: "+64", label: "méthodes à venir" },
+      { value: "2", label: "boutiques incluses" },
     ],
     mock: {
       store: "maboutie.pashove.com",
@@ -78,6 +79,69 @@ const fr = {
       codLabel: "Paiement à la livraison",
     },
   },
+  impactStats: [
+    { icon: "sparkle" as IconKey, value: 0, prefix: "", suffix: " FCFA", label: "pour commencer", detail: "Sans carte bancaire" },
+    { icon: "store" as IconKey, value: 2, prefix: "", suffix: "", label: "boutiques incluses", detail: "Dans le plan Free" },
+    { icon: "globe" as IconKey, value: 10, prefix: "+", suffix: "", label: "pays d’Afrique", detail: "UEMOA, puis CEMAC" },
+    { icon: "wallet" as IconKey, value: 64, prefix: "+", suffix: "", label: "méthodes de paiement", detail: "En cours d’intégration" },
+    { icon: "box" as IconKey, text: "COD", label: "Paiement à la livraison", detail: "Déjà actif" },
+    { icon: "list" as IconKey, value: 5, prefix: "+", suffix: "", label: "langues", detail: "FR, EN, BM, LN, AR" },
+  ],
+  impact: {
+    eyebrow: "Pashove en chiffres",
+    titleA: "Une plateforme déjà",
+    titleB: "concrète.",
+    description:
+      "Pas une maquette : les briques essentielles sont livrées, testées et utilisées. Les paiements en ligne arrivent comme prochaine brique.",
+  },
+  testimonials: {
+    eyebrow: "Témoignages",
+    titleA: "Ils construisent",
+    titleB: "avec Pashove.",
+    description:
+      "Quelques retours de marchands qui testent la plateforme. Les témoignages de démonstration seront remplacés par des clients réels.",
+    items: [
+      {
+        quote:
+          "J’ai créé ma boutique un dimanche soir. Le lendemain, je partageais déjà mon lien sur WhatsApp et je recevais ma première commande.",
+        initials: "AT",
+        name: "Awa Traoré",
+        store: "Atelier Awa · Mode",
+      },
+      {
+        quote:
+          "Le paiement à la livraison et la messagerie intégrée changent tout : je réponds au client sans sortir du dashboard.",
+        initials: "MD",
+        name: "Moussa Diarra",
+        store: "Diarra Store · Maison",
+      },
+      {
+        quote:
+          "Mes e-books sont protégés et mes clientes peuvent réserver une consultation en quelques clics. Tout est au même endroit.",
+        initials: "FK",
+        name: "Fatou Koné",
+        store: "Maison Koné · Conseil",
+      },
+    ],
+  },
+  trustLogos: {
+    eyebrow: "Ils nous font confiance",
+    titleA: "Les premières marques",
+    titleB: "arrivent bientôt.",
+    description:
+      "Cet espace est prêt à accueillir les logos des boutiques et partenaires qui nous font confiance.",
+    note: "Votre marque ici ? Écrivez-nous à hello@pashove.com.",
+  },
+  newsletter: {
+    eyebrow: "Newsletter",
+    title: "Les nouveautés Pashove, dans ta boîte mail.",
+    description:
+      "Produits, paiements, thèmes et conseils pour vendre plus : une lettre courte, jamais de spam.",
+    placeholder: "Votre adresse email",
+    cta: "S’inscrire",
+    success: "Merci ! L’inscription est enregistrée pour cette démonstration.",
+    note: "Pas encore de vrai envoi : l’interface est prête, le service arrive.",
+  },
   why: {
     eyebrow: "Pourquoi Pashove ?",
     titleA: "Un outil qui comprend",
@@ -87,23 +151,27 @@ const fr = {
     items: [
       {
         icon: "globe" as IconKey,
+        mock: "africa" as const,
         title: "Pensé pour l’Afrique",
-        text: "FCFA, mobile-first, cinq langues, mise en page adaptée aux connexions réelles. Ta boutique est rapide avant d’être belle.",
+        text: "Une plateforme mobile-first, en FCFA, avec cinq langues et un checkout qui reste rapide sur les connexions réelles.",
       },
       {
-        icon: "download" as IconKey,
-        title: "Sans stock obligatoire",
-        text: "Vends du physique, du numérique ou des services. Un e-book, une consultation ou un stock de sacs : le même moteur.",
+        icon: "store" as IconKey,
+        mock: "multi" as const,
+        title: "Multi-boutiques",
+        text: "Vêtements, numérique, services : chaque boutique garde son catalogue, son thème et ses clients. Un seul compte pour tout piloter.",
       },
       {
         icon: "wallet" as IconKey,
+        mock: "cod" as const,
         title: "Paiement à la livraison",
-        text: "Encaisse dès aujourd’hui en espèces à la réception. Les paiements mobile money et carte arrivent ensuite, sans réécrire ta boutique.",
+        text: "Encaisse à la réception dès aujourd’hui. Les paiements mobile money et carte arrivent ensuite, sans changer ta boutique.",
       },
       {
-        icon: "chat" as IconKey,
-        title: "Messagerie intégrée",
-        text: "Tes clients t’écrivent depuis la boutique. Tu réponds depuis ton dashboard, avec l’historique et les pièces jointes.",
+        icon: "route" as IconKey,
+        mock: "partners" as const,
+        title: "Réseau de partenaires",
+        text: "D’autres boutiques vendent ton catalogue. Les commissions sont calculées côté serveur, avec un ledger lisible.",
       },
     ],
   },
@@ -306,7 +374,7 @@ const fr = {
     titleB: "avant ton prochain client.",
     description:
       "Crée ton compte, ajoute un produit, partage le lien. Tu peux encaisser dès la première commande.",
-    primary: "Créer ma boutique",
+    primary: "Créer ma boutique gratuitement",
     secondary: "Voir les tarifs",
   },
   footer: {
@@ -315,21 +383,33 @@ const fr = {
     productTitle: "Produit",
     companyTitle: "Entreprise",
     legalTitle: "Légal",
+    developerTitle: "Développeurs",
     product: [
       { label: "Fonctionnalités", href: "/features" },
       { label: "Tarifs", href: "/pricing" },
       { label: "Thèmes", href: "/features#boutique" },
-      { label: "Messagerie", href: "/features#vendre" },
     ],
     company: [
-      { label: "Créer ma boutique", href: "/auth/register" },
-      { label: "Se connecter", href: "/auth/login" },
-      { label: "Nous écrire", href: "mailto:hello@pashove.com" },
+      { label: "À propos", href: "/#why" },
+      { label: "Blog", href: "/features", soon: true },
+      { label: "Contact", href: "mailto:hello@pashove.com" },
     ],
     legal: [
       { label: "Mentions légales", href: "/legal/mentions" },
       { label: "CGU", href: "/legal/cgu" },
       { label: "Confidentialité", href: "/legal/confidentialite" },
+    ],
+    developers: [
+      { label: "API", href: "/features#vendre", soon: true },
+      { label: "Webhooks", href: "/features#vendre", soon: true },
+    ],
+    socialLabel: "Suivez-nous",
+    languageLabel: "Langue",
+    soonLabel: "Bientôt",
+    social: [
+      { label: "LinkedIn", href: "https://www.linkedin.com/" },
+      { label: "Instagram", href: "https://www.instagram.com/" },
+      { label: "X", href: "https://x.com/" },
     ],
     contact: "hello@pashove.com",
     rights: "Tous droits réservés.",
@@ -341,7 +421,7 @@ type SiteContent = typeof fr;
 
 const en: SiteContent = {
   meta: {
-    homeTitle: "Pashove — Your online store, ready before your next customer",
+    homeTitle: "Pashove — Grow your business",
     homeDescription:
       "Create your store, sell physical products, digital files or services, collect cash on delivery and run your business from one place. Built for West Africa.",
     pricingTitle: "Pashove pricing — Start for free",
@@ -354,18 +434,19 @@ const en: SiteContent = {
   nav: { home: "Home", features: "Features", pricing: "Pricing", login: "Sign in", cta: "Create my store", menu: "Open menu", close: "Close menu" },
   hero: {
     eyebrow: "The African Commerce OS",
-    titleA: "Your online store,",
-    titleB: "ready before your next customer.",
+    titleBefore: "Grow your",
+    titleHighlight: "business",
+    titleAfter: "with Pashove.",
     description:
-      "Create your store, add products, share your link. Pashove handles orders, delivery, customers and your numbers — without an agency or a developer.",
+      "Create your store, sell physical products, digital files or services, and collect payment on delivery. Built for West African merchants.",
     primary: "Create my store",
-    secondary: "Sign in",
-    trust: ["Start for 0 FCFA", "No credit card", "Online in 5 minutes"],
-    stats: [
-      { value: "2", label: "stores included in Free" },
-      { value: "5", label: "languages, including RTL Arabic" },
-      { value: "0 FCFA", label: "to open your first store" },
-      { value: "COD", label: "cash on delivery available" },
+    secondary: "See the demo",
+    demoHref: "/store/maboutie",
+    miniStats: [
+      { value: "+10", label: "African countries" },
+      { value: "0 FCFA", label: "to get started" },
+      { value: "+64", label: "payment methods coming" },
+      { value: "2", label: "stores included" },
     ],
     mock: {
       store: "maboutie.pashove.com",
@@ -387,6 +468,49 @@ const en: SiteContent = {
       codLabel: "Cash on delivery",
     },
   },
+  impactStats: [
+    { icon: "sparkle" as IconKey, value: 0, prefix: "", suffix: " FCFA", label: "to get started", detail: "No credit card" },
+    { icon: "store" as IconKey, value: 2, prefix: "", suffix: "", label: "stores included", detail: "On the Free plan" },
+    { icon: "globe" as IconKey, value: 10, prefix: "+", suffix: "", label: "African countries", detail: "UEMOA, then CEMAC" },
+    { icon: "wallet" as IconKey, value: 64, prefix: "+", suffix: "", label: "payment methods", detail: "Being integrated" },
+    { icon: "box" as IconKey, text: "COD", label: "Cash on delivery", detail: "Available today" },
+    { icon: "list" as IconKey, value: 5, prefix: "+", suffix: "", label: "languages", detail: "FR, EN, BM, LN, AR" },
+  ],
+  impact: {
+    eyebrow: "Pashove in numbers",
+    titleA: "A platform that is",
+    titleB: "already real.",
+    description:
+      "Not a mockup: the essential pieces are shipped, tested and in use. Online payments are the next building block.",
+  },
+  testimonials: {
+    eyebrow: "Testimonials",
+    titleA: "They build",
+    titleB: "with Pashove.",
+    description:
+      "Early feedback from merchants testing the platform. Demo testimonials will be replaced by real customers.",
+    items: [
+      { quote: "I created my store on a Sunday evening. The next day I was sharing my link on WhatsApp and got my first order.", initials: "AT", name: "Awa Traoré", store: "Atelier Awa · Fashion" },
+      { quote: "Cash on delivery and built-in messaging change everything: I answer customers without leaving my dashboard.", initials: "MD", name: "Moussa Diarra", store: "Diarra Store · Home" },
+      { quote: "My e-books are protected and customers can book a consultation in a few clicks. Everything is in one place.", initials: "FK", name: "Fatou Koné", store: "Maison Koné · Consulting" },
+    ],
+  },
+  trustLogos: {
+    eyebrow: "Trusted by",
+    titleA: "The first brands",
+    titleB: "are coming soon.",
+    description: "This space is ready for the stores and partners who trust us.",
+    note: "Your brand here? Write to hello@pashove.com.",
+  },
+  newsletter: {
+    eyebrow: "Newsletter",
+    title: "Pashove news, straight to your inbox.",
+    description: "Products, payments, themes and selling tips: a short letter, never spam.",
+    placeholder: "Your email address",
+    cta: "Subscribe",
+    success: "Thanks! Your subscription is recorded for this demo.",
+    note: "No real sending yet: the interface is ready, the service is coming.",
+  },
   why: {
     eyebrow: "Why Pashove?",
     titleA: "A tool that understands",
@@ -394,10 +518,10 @@ const en: SiteContent = {
     description:
       "Not an imported tool. A platform built for West African realities: mobile, FCFA, cash on delivery and a direct relationship with customers.",
     items: [
-      { icon: "globe" as IconKey, title: "Built for Africa", text: "FCFA, mobile-first, five languages, layouts that survive real connections. Fast before pretty." },
-      { icon: "download" as IconKey, title: "No inventory required", text: "Sell physical products, digital files or services. An e-book, a consultation or a bag collection — same engine." },
-      { icon: "wallet" as IconKey, title: "Cash on delivery", text: "Collect cash at the door today. Mobile money and cards come next, without rebuilding your store." },
-      { icon: "chat" as IconKey, title: "Built-in messaging", text: "Customers write from your storefront. You answer from your dashboard, with history and attachments." },
+      { icon: "globe" as IconKey, mock: "africa" as const, title: "Built for Africa", text: "Mobile-first, in FCFA, with five languages and a checkout that stays fast on real connections." },
+      { icon: "store" as IconKey, mock: "multi" as const, title: "Multi-store", text: "Fashion, digital, services: each store keeps its catalog, theme and customers. One account to run everything." },
+      { icon: "wallet" as IconKey, mock: "cod" as const, title: "Cash on delivery", text: "Collect at the door today. Mobile money and cards come next, without changing your store." },
+      { icon: "route" as IconKey, mock: "partners" as const, title: "Partner network", text: "Other stores sell your catalog. Commissions are calculated server-side, with a readable ledger." },
     ],
   },
   how: {
@@ -483,7 +607,7 @@ const en: SiteContent = {
     titleA: "Your store is ready",
     titleB: "before your next customer.",
     description: "Create your account, add a product, share the link. Collect from the first order.",
-    primary: "Create my store",
+    primary: "Create my store for free",
     secondary: "See pricing",
   },
   footer: {
@@ -491,21 +615,33 @@ const en: SiteContent = {
     productTitle: "Product",
     companyTitle: "Company",
     legalTitle: "Legal",
+    developerTitle: "Developers",
     product: [
       { label: "Features", href: "/features" },
       { label: "Pricing", href: "/pricing" },
       { label: "Themes", href: "/features#boutique" },
-      { label: "Messaging", href: "/features#vendre" },
     ],
     company: [
-      { label: "Create my store", href: "/auth/register" },
-      { label: "Sign in", href: "/auth/login" },
-      { label: "Contact us", href: "mailto:hello@pashove.com" },
+      { label: "About", href: "/#why" },
+      { label: "Blog", href: "/features", soon: true },
+      { label: "Contact", href: "mailto:hello@pashove.com" },
     ],
     legal: [
       { label: "Legal notice", href: "/legal/mentions" },
       { label: "Terms", href: "/legal/cgu" },
       { label: "Privacy", href: "/legal/confidentialite" },
+    ],
+    developers: [
+      { label: "API", href: "/features#vendre", soon: true },
+      { label: "Webhooks", href: "/features#vendre", soon: true },
+    ],
+    socialLabel: "Follow us",
+    languageLabel: "Language",
+    soonLabel: "Soon",
+    social: [
+      { label: "LinkedIn", href: "https://www.linkedin.com/" },
+      { label: "Instagram", href: "https://www.instagram.com/" },
+      { label: "X", href: "https://x.com/" },
     ],
     contact: "hello@pashove.com",
     rights: "All rights reserved.",

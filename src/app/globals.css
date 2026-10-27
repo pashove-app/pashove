@@ -590,3 +590,26 @@ body {
     background: var(--color-fill-strong);
   }
 }
+
+
+/* ------------------------------------------------------------------ *
+ *  Site public — typographies éditoriales
+ * ------------------------------------------------------------------ */
+
+.font-display {
+  font-family: var(--font-playfair), "Playfair Display", Georgia,
+    "Times New Roman", serif;
+}
+
+.font-body {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
