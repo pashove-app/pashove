@@ -61,7 +61,16 @@ une boutique précise**. Aujourd'hui l'interface suppose une seule boutique.
 
 ---
 
-## 2. Site public Pashove — 🔴
+## 2. Site public Pashove — 🟡
+
+### V1 livrée le 26/10/2026
+
+`/{locale}` (accueil), `/{locale}/pricing`, `/{locale}/features`, header et
+footer publics, contenu FR/EN, design nuit/bleu indépendant du thème de la
+vitrine. Détail et tests : `docs/11-SITE-PUBLIC-V1.md`.
+
+Reste : sous-pages `/themes`, `/payments`, `/help`, `/docs`, `/status`, `/blog`,
+formulaire de contact, contenu MDX/CMS et traductions bm/ln/ar.
 
 ### Pages (blueprint §3–21, docs/02 §1)
 

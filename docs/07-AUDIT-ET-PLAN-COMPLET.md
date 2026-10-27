@@ -35,9 +35,9 @@
 - **Paiements en ligne** : seuls les paiements à la livraison existent. Aucun
   prestataire (Flutterwave, CinetPay, PayDunya) n'est branché, aucune clé n'est
   présente. Donc **Orange Money, Wave, cartes ne peuvent pas s'afficher**.
-- **Site public Pashove** : `/fr` et toutes les pages marketing répondent 404.
-  Le blueprint (accueil, tarifs, fonctionnalités, thèmes, aide, statut) n'est
-  pas construit.
+- **Site public Pashove** : V1 livrée le 26/10 (`/fr` accueil, `/fr/pricing`,
+  `/fr/features`, header/footer). Les sous-pages thèmes, paiements, aide,
+  documentation, statut et blog restent à construire.
 - **Multi-boutiques** : le socle, les plans, les invitations et le sélecteur
   sont livrés (25/10). Restent les réglages avancés par boutique.
 - **Produits numériques** : droits d’accès, quota de 3 téléchargements, liens
