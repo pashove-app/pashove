@@ -19,7 +19,7 @@ export default async function PublicSiteLayout({
 
   return (
     <div
-      className="font-body min-h-dvh overflow-x-clip bg-[#04060D] text-white selection:bg-brand-500/35 selection:text-white"
+      className="font-body min-h-dvh overflow-x-clip bg-[#FAFAFA] text-[#0A0E1A] selection:bg-brand-500/25 selection:text-[#0A0E1A]"
       style={{ colorScheme: "dark" }}
     >
       <PublicHeader locale={locale} content={content} />

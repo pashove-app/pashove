@@ -13,8 +13,8 @@ export function NewsletterForm({
   const [done, setDone] = useState(false);
 
   return (
-    <section className="border-t border-white/10 bg-[#080D18] py-14 sm:py-16">
-      <div className="mx-auto grid w-full max-w-7xl gap-8 px-5 sm:px-8 lg:grid-cols-[1.05fr_1fr] lg:items-center">
+    <section className="bg-[#FAFAFA] px-3 pb-14 pt-4 sm:px-5 sm:pb-18 sm:pt-6">
+      <div className="mx-auto grid w-full max-w-7xl gap-8 rounded-[2rem] bg-[#0A0E1A] px-6 py-10 sm:px-10 sm:py-12 lg:grid-cols-[1.05fr_1fr] lg:items-center">
         <div>
           <p className="text-[0.625rem] font-semibold uppercase tracking-[0.18em] text-brand-300">
             {content.eyebrow}

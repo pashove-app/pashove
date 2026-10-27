@@ -48,7 +48,8 @@ export default async function FeaturesPage({
 
   return (
     <>
-      <section className="relative overflow-hidden border-b border-white/10 bg-[#05070D]">
+      <section className="bg-[#FAFAFA] px-3 pt-3 sm:px-5 sm:pt-5">
+        <div className="relative overflow-hidden rounded-[2rem] bg-[#0A0E1A]">
         <div
           className="pointer-events-none absolute inset-0"
           style={{
@@ -90,6 +91,7 @@ export default async function FeaturesPage({
             </div>
           </MarketingReveal>
         </MarketingContainer>
+        </div>
       </section>
 
       {c.featuresPage.groups.map((group, index) => (
@@ -169,21 +171,24 @@ export default async function FeaturesPage({
             </div>
           </MarketingReveal>
 
+        </MarketingContainer>
+      </section>
+
+      <section className="border-t border-slate-200 bg-white py-20 sm:py-24">
+        <MarketingContainer className="text-center">
           <MarketingReveal>
-            <div className="mt-14 text-center">
-              <Eyebrow>{c.cta.eyebrow}</Eyebrow>
-              <h2 className="font-display mx-auto mt-4 max-w-3xl text-[clamp(2rem,4vw,3.4rem)] leading-[1.02] tracking-[-0.04em] text-white">
-                {c.cta.titleA}{" "}
-                <span className="text-brand-300">{c.cta.titleB}</span>
-              </h2>
-              <div className="mt-7 flex flex-wrap justify-center gap-3">
-                <PrimaryLink href={publicHref(locale, "/auth/register")}>
-                  {c.cta.primary}
-                </PrimaryLink>
-                <SecondaryLink href={publicHref(locale, "/pricing")}>
-                  {c.cta.secondary}
-                </SecondaryLink>
-              </div>
+            <Eyebrow tone="light">{c.cta.eyebrow}</Eyebrow>
+            <h2 className="font-display mx-auto mt-4 max-w-3xl text-[clamp(2.2rem,4.4vw,3.8rem)] leading-[1.02] tracking-[-0.04em] text-[#0A0E1A]">
+              {c.cta.titleA}{" "}
+              <span className="text-brand-600">{c.cta.titleB}</span>
+            </h2>
+            <div className="mt-7 flex flex-wrap justify-center gap-3">
+              <PrimaryLink href={publicHref(locale, "/auth/register")}>
+                {c.cta.primary}
+              </PrimaryLink>
+              <SecondaryLink href={publicHref(locale, "/pricing")} tone="light">
+                {c.cta.secondary}
+              </SecondaryLink>
             </div>
           </MarketingReveal>
         </MarketingContainer>

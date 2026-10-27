@@ -47,7 +47,8 @@ export default async function PricingPage({
 
   return (
     <>
-      <section className="relative overflow-hidden border-b border-white/10 bg-[#05070D]">
+      <section className="bg-[#FAFAFA] px-3 pt-3 sm:px-5 sm:pt-5">
+        <div className="relative overflow-hidden rounded-[2rem] bg-[#0A0E1A]">
         <div
           className="pointer-events-none absolute inset-0"
           style={{
@@ -77,6 +78,7 @@ export default async function PricingPage({
             </p>
           </MarketingReveal>
         </MarketingContainer>
+        </div>
       </section>
 
       <section className="bg-[#FAFAFA] py-14 sm:py-20">
@@ -171,18 +173,12 @@ export default async function PricingPage({
         </MarketingContainer>
       </section>
 
-      <section className="relative overflow-hidden bg-[#0A0E1A] py-20 sm:py-26">
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(55% 70% at 50% 100%, rgba(47,92,255,0.3) 0%, transparent 70%)",
-          }}
-        />
-        <MarketingContainer className="relative text-center">
+      <section className="border-t border-slate-200 bg-white py-20 sm:py-24">
+        <MarketingContainer className="text-center">
           <MarketingReveal>
             <SectionHeading
               align="center"
+              dark={false}
               eyebrow={c.cta.eyebrow}
               titleA={c.cta.titleA}
               titleB={c.cta.titleB}
@@ -192,7 +188,7 @@ export default async function PricingPage({
               <PrimaryLink href={publicHref(locale, "/auth/register")}>
                 {c.cta.primary}
               </PrimaryLink>
-              <SecondaryLink href={publicHref(locale, "/features")}>
+              <SecondaryLink href={publicHref(locale, "/features")} tone="light">
                 {c.nav.features}
               </SecondaryLink>
             </div>

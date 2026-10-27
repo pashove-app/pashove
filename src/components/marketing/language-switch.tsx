@@ -9,7 +9,13 @@ function persistLocale(next: "fr" | "en") {
   document.cookie = `${COOKIE}=${next};path=/;max-age=${60 * 60 * 24 * 365};samesite=lax`;
 }
 
-export function PublicLanguageSwitch({ locale }: { locale: "fr" | "en" }) {
+export function PublicLanguageSwitch({
+  locale,
+  tone = "dark",
+}: {
+  locale: "fr" | "en";
+  tone?: "dark" | "light";
+}) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -26,7 +32,14 @@ export function PublicLanguageSwitch({ locale }: { locale: "fr" | "en" }) {
   }
 
   return (
-    <div className="inline-flex rounded-full border border-white/10 bg-white/[0.04] p-1">
+    <div
+      className={cn(
+        "inline-flex rounded-full border p-1",
+        tone === "dark"
+          ? "border-white/10 bg-white/[0.04]"
+          : "border-slate-200 bg-white",
+      )}
+    >
       {(["fr", "en"] as const).map((code) => (
         <button
           key={code}
@@ -36,7 +49,9 @@ export function PublicLanguageSwitch({ locale }: { locale: "fr" | "en" }) {
             "rounded-full px-3 py-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] transition-colors",
             locale === code
               ? "bg-brand-500 text-white"
-              : "text-white/40 hover:text-white",
+              : tone === "dark"
+                ? "text-white/40 hover:text-white"
+                : "text-slate-400 hover:text-[#0A0E1A]",
           )}
         >
           {code}

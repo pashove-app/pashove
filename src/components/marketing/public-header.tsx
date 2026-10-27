@@ -38,10 +38,10 @@ export function PublicHeader({
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#04060D]/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur-xl">
       <div className="mx-auto flex h-[4.5rem] w-full max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
         <Link href={publicHref(locale, "/")} aria-label="Pashove">
-          <MarketingLogo />
+          <MarketingLogo tone="light" />
         </Link>
 
         <nav className="hidden items-center gap-8 lg:flex">
@@ -49,7 +49,7 @@ export function PublicHeader({
             <Link
               key={link.href}
               href={link.href}
-              className="text-[0.8125rem] font-medium text-white/55 transition-colors hover:text-white"
+              className="text-[0.8125rem] font-medium text-slate-500 transition-colors hover:text-[#0A0E1A]"
             >
               {link.label}
             </Link>
@@ -59,7 +59,7 @@ export function PublicHeader({
         <div className="hidden items-center gap-2 lg:flex">
           <Link
             href={publicHref(locale, "/auth/login")}
-            className="inline-flex h-10 items-center rounded-full px-4 text-[0.8125rem] font-medium text-white/65 transition-colors hover:text-white"
+            className="inline-flex h-10 items-center rounded-full px-4 text-[0.8125rem] font-medium text-slate-500 transition-colors hover:text-[#0A0E1A]"
           >
             {content.nav.login}
           </Link>
@@ -76,7 +76,7 @@ export function PublicHeader({
           type="button"
           onClick={() => setOpen(true)}
           aria-label={content.nav.menu}
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-white lg:hidden"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-[#0A0E1A] lg:hidden"
         >
           <Icon path={icons.list} className="h-5 w-5" strokeWidth={1.8} />
         </button>
@@ -84,16 +84,16 @@ export function PublicHeader({
 
       {open
         ? createPortal(
-        <div className="fixed inset-0 z-[100] bg-[#04060D] lg:hidden">
-          <div className="flex h-[4.5rem] items-center justify-between border-b border-white/10 px-5">
+        <div className="fixed inset-0 z-[100] bg-white lg:hidden">
+          <div className="flex h-[4.5rem] items-center justify-between border-b border-slate-200 px-5">
             <Link href={publicHref(locale, "/")} onClick={() => setOpen(false)}>
-              <MarketingLogo />
+              <MarketingLogo tone="light" />
             </Link>
             <button
               type="button"
               onClick={() => setOpen(false)}
               aria-label={content.nav.close}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-white"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-[#0A0E1A]"
             >
               <Icon path={icons.close} className="h-5 w-5" strokeWidth={2} />
             </button>
@@ -105,7 +105,7 @@ export function PublicHeader({
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="rounded-2xl px-4 py-4 text-[1.375rem] font-medium tracking-[-0.03em] text-white transition-colors hover:bg-white/[0.05]"
+                className="rounded-2xl px-4 py-4 text-[1.375rem] font-medium tracking-[-0.03em] text-[#0A0E1A] transition-colors hover:bg-slate-50"
               >
                 {link.label}
               </Link>
@@ -113,27 +113,27 @@ export function PublicHeader({
             <Link
               href={publicHref(locale, "/auth/login")}
               onClick={() => setOpen(false)}
-              className="rounded-2xl px-4 py-4 text-[1rem] font-medium text-white/60"
+              className="rounded-2xl px-4 py-4 text-[1rem] font-medium text-slate-500"
             >
               {content.nav.login}
             </Link>
           </nav>
 
-          <div className="mx-5 mt-6 border-t border-white/10 pt-5">
+          <div className="mx-5 mt-6 border-t border-slate-200 pt-5">
             <Link
               href={publicHref(locale, content.hero.demoHref)}
               target="_blank"
               onClick={() => setOpen(false)}
-              className="flex items-center justify-between rounded-2xl border border-white/10 px-4 py-3.5 text-[0.875rem] font-medium text-white/70"
+              className="flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-3.5 text-[0.875rem] font-medium text-slate-600"
             >
               {content.hero.secondary}
               <Icon path={icons.arrowUpRight} className="h-4 w-4" strokeWidth={2} />
             </Link>
             <div className="mt-4 flex items-center justify-between">
-              <span className="text-[0.625rem] uppercase tracking-[0.14em] text-white/30">
+              <span className="text-[0.625rem] uppercase tracking-[0.14em] text-slate-400">
                 {content.footer.languageLabel}
               </span>
-              <PublicLanguageSwitch locale={locale === "en" ? "en" : "fr"} />
+              <PublicLanguageSwitch locale={locale === "en" ? "en" : "fr"} tone="light" />
             </div>
           </div>
 

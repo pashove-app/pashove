@@ -188,13 +188,25 @@ export function FeatureIcon({
   );
 }
 
-export function MarketingLogo({ className }: { className?: string }) {
+export function MarketingLogo({
+  className,
+  tone = "dark",
+}: {
+  className?: string;
+  tone?: "dark" | "light";
+}) {
   return (
-    <span className={cn("inline-flex items-center text-white", className)}>
+    <span className={cn("inline-flex items-center", className)}>
       <PashoveLogo
         className="gap-2.5"
-        markClassName="h-7 w-7 text-brand-300"
-        wordClassName="text-[1.35rem] font-medium tracking-[-0.04em] text-white"
+        markClassName={cn(
+          "h-7 w-7",
+          tone === "dark" ? "text-brand-300" : "text-brand-600",
+        )}
+        wordClassName={cn(
+          "text-[1.35rem] font-medium tracking-[-0.04em]",
+          tone === "dark" ? "text-white" : "text-[#0A0E1A]",
+        )}
       />
     </span>
   );

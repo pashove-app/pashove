@@ -66,9 +66,10 @@ une boutique précise**. Aujourd'hui l'interface suppose une seule boutique.
 ### V1 puis refonte premium livrées le 26/10/2026
 
 `/{locale}` (accueil), `/{locale}/pricing`, `/{locale}/features`, header et
-footer publics, contenu FR/EN. La v2 ajoute Playfair Display/Inter, hero serif,
-compteurs animés, quatre sections alternées, témoignages, logo cloud, newsletter,
-footer développeurs et animations au scroll. Détail et tests :
+footer publics, contenu FR/EN. La v2.1 aligne la composition sur les captures de
+référence : header clair, hero sombre arrondi, vidéo de démonstration réelle,
+quatre blocs produit alternés avec captures Pashove et témoignages, logo cloud,
+panneau de statistiques sombre, CTA clair, newsletter et footer développeurs. Détail et tests :
 `docs/11-SITE-PUBLIC-V1.md`.
 
 Reste : sous-pages `/themes`, `/payments`, `/help`, `/docs`, `/status`, `/blog`,

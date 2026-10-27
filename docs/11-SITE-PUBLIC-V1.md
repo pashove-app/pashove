@@ -136,3 +136,46 @@ restent annoncés comme **en cours d’intégration**.
 - Aucun débordement à 390 px sur l’accueil, les tarifs et les fonctionnalités.
 - Menu mobile plein écran avec liens, démo, langue et CTA.
 - Build, types et lint verts.
+
+---
+
+## V2.1 — structure alignée sur les captures de référence
+
+La structure de la page d’accueil reprend celle des captures fournies, avec
+l’identité et les contenus Pashove :
+
+- header clair, logo Pashove, navigation, connexion et CTA bleu ;
+- hero dans une carte sombre arrondie, badge, grand titre serif, mot
+  « croissance » sur un aplat bleu, deux CTA, quatre mini-stats avec icônes ;
+- grand lecteur de démonstration sous le hero : vidéo réelle de 6 secondes
+  générée à partir de captures Pashove, poster et modale avec contrôles ;
+- quatre grands blocs produit alternés texte/image : boutique & catalogue,
+  commandes & COD, thèmes, messagerie. Chaque bloc a son icône, son titre serif,
+  son paragraphe, ses boutons et une carte de témoignage ;
+- logo cloud avant la section sombre ;
+- panneau sombre « Pourquoi choisir Pashove ? », titre avec mot « propulser »
+  sur aplat bleu et six statistiques animées ;
+- témoignages « Ils parlent de nous » ;
+- CTA clair, newsletter sombre arrondie, footer sombre multi-colonnes.
+
+### Actifs utilisés
+
+Les médias sont des **captures réelles de l’application Pashove**, stockées dans
+`public/marketing/` : vitrine, éditeur de thèmes, messagerie, commande, compte
+et panier. La vidéo `demo.mp4` est une démonstration de 6 secondes générée à
+partir de ces captures. Aucune image, vidéo, photo ou logo CinetPay n’est
+utilisé : seule la composition des sections est reprise.
+
+Les captures contiennent encore des données de démonstration (boutiques et
+prénoms de test). Elles seront remplacées par des captures de production avant
+le lancement public.
+
+### Vérifications
+
+- `demo.mp4` : `readyState = 4`, durée 5,49 s, lecture et modale de contrôle
+  testées.
+- Compteurs 0 FCFA / 2 / +10 / +64 / COD / +5 après scroll.
+- Révélations au scroll et parallaxe testées dans un onglet visible simulé.
+- Header et menu mobile clairs, CTA bleu, bascule FR/EN.
+- Aucun débordement à 390 px.
+- Build, TypeScript et lint verts.
