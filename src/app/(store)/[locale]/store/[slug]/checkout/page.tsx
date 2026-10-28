@@ -11,6 +11,7 @@ import { path } from "@/components/ui/types";
 import { LOCALE_META, isLocale, resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { readCart } from "@/lib/storefront/cart";
+import { getCheckoutPaymentMethods, paymentOptions } from "@/lib/payments/queries";
 import { loadStorefront } from "@/lib/storefront/queries";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -35,6 +36,16 @@ export default async function CheckoutPage({
   if (!cart || cart.items.length === 0) {
     redirect(path(locale, `/store/${slug}/cart`));
   }
+
+  const hasNonPhysical = cart.items.some(
+    (item) => item.productType === "digital" || item.productType === "service",
+  );
+  const paymentMethods = await getCheckoutPaymentMethods(
+    slug,
+    hasNonPhysical,
+    store.country,
+    cart.currency,
+  );
 
   return (
     <StorefrontShell store={store} locale={locale} t={t}>
@@ -72,6 +83,7 @@ export default async function CheckoutPage({
                     item.productType === "physical" ||
                     item.productType === "bundle",
                 )}
+                paymentMethods={paymentOptions(paymentMethods.methods)}
               />
             </div>
           </div>

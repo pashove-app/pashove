@@ -10,6 +10,9 @@ import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import { toFieldErrors } from "@/lib/validation";
 import { rememberOrderToken } from "@/lib/customer/order-cookie";
+import { paymentSchema } from "@/lib/payments/schema";
+import { getPaymentProvider } from "@/lib/payments/registry";
+import { isPaymentMethod, type PaymentMethod } from "@/lib/payments/types";
 
 export type CheckoutFormState = {
   status: "idle" | "invalid" | "error";
@@ -46,12 +49,14 @@ function errorKey(error: { message?: string }): string {
   if (message.includes("product_unavailable")) return "checkoutProductUnavailable";
   if (message.includes("store_unavailable")) return "checkoutStoreUnavailable";
   if (message.includes("cart_unavailable")) return "checkoutCartUnavailable";
+  if (message.includes("payment_method_unavailable")) return "checkoutPaymentUnavailable";
+  if (message.includes("payment_")) return "checkoutPaymentFailed";
 
   return "checkoutGeneric";
 }
 
 /** Crée la commande COD, décrémente le stock, poste le ledger et vide le panier. */
-export async function placeCodOrderAction(
+export async function placeOrderAction(
   _previous: CheckoutFormState,
   formData: FormData,
 ): Promise<CheckoutFormState> {
@@ -80,6 +85,40 @@ export async function placeCodOrderAction(
   const requiresShipping = cart.items.some(
     (item) => item.productType === "physical" || item.productType === "bundle",
   );
+
+  const supabase = createPublicClient();
+
+  const payment = paymentSchema.safeParse({
+    paymentMethod: field(formData, "paymentMethod"),
+    paymentPhone: field(formData, "paymentPhone"),
+    cardNumber: field(formData, "cardNumber"),
+    cardExpiry: field(formData, "cardExpiry"),
+    cardCvv: field(formData, "cardCvv"),
+  });
+
+  if (!payment.success) {
+    return { status: "invalid", fieldErrors: toFieldErrors(payment.error) };
+  }
+
+  const method = payment.data.paymentMethod as PaymentMethod;
+  if (!isPaymentMethod(method)) {
+    return { status: "error", messageKey: "checkoutPaymentInvalid" };
+  }
+
+  const { data: methodsData } = await supabase.rpc("checkout_payment_methods", {
+    p_slug: slug,
+    p_has_non_physical: !requiresShipping,
+    p_country: storefront.store.country,
+    p_currency: cart.currency,
+  });
+
+  const allowedMethods = Array.isArray((methodsData as { methods?: unknown })?.methods)
+    ? ((methodsData as { methods: PaymentMethod[] }).methods)
+    : [];
+
+  if (!allowedMethods.includes(method)) {
+    return { status: "error", messageKey: "checkoutPaymentUnavailable" };
+  }
 
   const parsed = buildCheckoutSchema(requiresShipping).safeParse({
     name: field(formData, "name"),
@@ -122,29 +161,97 @@ export async function placeCodOrderAction(
         address: "—",
       };
 
-  const supabase = createPublicClient();
-  const { data, error } = await supabase.rpc("place_cod_order", {
+  let orderData: unknown = null;
+
+  if (method === "cod") {
+    const { data, error } = await supabase.rpc("place_cod_order", {
     p_token: cartToken,
     p_customer: customer,
     p_idempotency_key: cart.checkoutKey,
   });
 
-  if (error) {
-    const message = error.message ?? "";
-    const bundleStock = message.match(/bundle_item_out_of_stock:(.+)$/);
+    if (error) {
+      const message = error.message ?? "";
+      const bundleStock = message.match(/bundle_item_out_of_stock:(.+)$/);
 
-    if (bundleStock) {
-      return {
-        status: "error",
-        messageKey: "checkoutBundleOutOfStock",
-        messageVars: { name: bundleStock[1].trim() },
-      };
+      if (bundleStock) {
+        return {
+          status: "error",
+          messageKey: "checkoutBundleOutOfStock",
+          messageVars: { name: bundleStock[1].trim() },
+        };
+      }
+
+      return { status: "error", messageKey: errorKey(error) };
     }
 
-    return { status: "error", messageKey: errorKey(error) };
+    orderData = data;
+  } else {
+    const { data, error } = await supabase.rpc("place_online_order", {
+      p_token: cartToken,
+      p_customer: customer,
+      p_idempotency_key: cart.checkoutKey,
+      p_method: method,
+    });
+
+    if (error) {
+      return { status: "error", messageKey: errorKey(error) };
+    }
+
+    const online = data as {
+      orderId?: string;
+      token?: string;
+      total?: number;
+      currency?: string;
+    } | null;
+
+    if (!online?.orderId || !online.token || typeof online.total !== "number") {
+      return { status: "error", messageKey: "checkoutGeneric" };
+    }
+
+    try {
+      const provider = getPaymentProvider("mock");
+      const intent = await provider.createIntent({
+        orderId: online.orderId,
+        amount: online.total,
+        currency: online.currency ?? cart.currency,
+        method,
+        customer: {
+          name: parsed.data.name,
+          email: parsed.data.email,
+          phone: parsed.data.phone,
+        },
+      });
+
+      await supabase.rpc("record_payment_intent", {
+        p_order_token: online.token,
+        p_reference: intent.reference,
+        p_provider: "mock",
+        p_method: method,
+      });
+
+      const confirmation = await provider.confirm(intent);
+
+      if (confirmation.status !== "succeeded") {
+        return { status: "error", messageKey: "checkoutPaymentFailed" };
+      }
+
+      const { error: confirmError } = await supabase.rpc("confirm_mock_payment", {
+        p_order_token: online.token,
+        p_reference: confirmation.reference,
+      });
+
+      if (confirmError) {
+        return { status: "error", messageKey: errorKey(confirmError) };
+      }
+
+      orderData = data;
+    } catch {
+      return { status: "error", messageKey: "checkoutPaymentFailed" };
+    }
   }
 
-  const result = data as { token?: string } | null;
+  const result = orderData as { token?: string } | null;
   if (!result?.token) {
     return { status: "error", messageKey: "checkoutGeneric" };
   }

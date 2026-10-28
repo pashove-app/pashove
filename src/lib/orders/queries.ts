@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import type { PaymentMethod } from "@/lib/payments/types";
 
 export type OrderStatus =
   | "pending"
@@ -23,7 +24,7 @@ export type OrderSummary = {
   number: number;
   status: OrderStatus;
   payment_status: OrderPaymentStatus;
-  payment_method: "cod";
+  payment_method: PaymentMethod;
   total_amount: number;
   currency: string;
   customer_name: string;
@@ -201,7 +202,7 @@ export type OrderDetail = {
   number: number;
   status: OrderStatus;
   payment_status: OrderPaymentStatus;
-  payment_method: "cod";
+  payment_method: PaymentMethod;
   currency: string;
   subtotal_amount: number;
   discount_amount: number;

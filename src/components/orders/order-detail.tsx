@@ -325,9 +325,13 @@ export function OrderDetail({
             <h2 className="text-[0.9375rem] font-medium text-fg">{labels.paymentTitle}</h2>
             <div className="mt-3 flex items-center justify-between gap-3 text-[0.8125rem]">
               <span className="text-subtle">
-                {order.has_physical
+                {order.payment_method === "cod"
                   ? labels.paymentCod
-                  : labels.paymentInstant}
+                  : order.payment_method === "orange_money"
+                    ? labels.paymentOrangeMoney
+                    : order.payment_method === "wave"
+                      ? labels.paymentWave
+                      : labels.paymentCard}
               </span>
               <PaymentStatus status={order.payment_status} t={t} />
             </div>

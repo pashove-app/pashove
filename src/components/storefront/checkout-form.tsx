@@ -14,9 +14,10 @@ import { interpolate } from "@/i18n/get-dictionary";
 import type { Locale } from "@/i18n/config";
 import { PAYOUT_COUNTRIES } from "@/lib/finance/providers";
 import {
-  placeCodOrderAction,
+  placeOrderAction,
   type CheckoutFormState,
 } from "@/lib/storefront/checkout-actions";
+import type { CheckoutPaymentOption, PaymentMethod } from "@/lib/payments/types";
 import type { CartView } from "@/lib/storefront/cart-types";
 
 const INITIAL: CheckoutFormState = { status: "idle" };
@@ -57,6 +58,7 @@ export function CheckoutForm({
   cart,
   defaultCountry,
   requiresShipping,
+  paymentMethods,
 }: {
   t: Dictionary;
   locale: Locale;
@@ -64,13 +66,46 @@ export function CheckoutForm({
   cart: CartView;
   defaultCountry: string;
   requiresShipping: boolean;
+  paymentMethods: CheckoutPaymentOption[];
 }) {
   const labels = t.storefront;
   const [state, formAction, pending] = useActionState<
     CheckoutFormState,
     FormData
-  >(placeCodOrderAction, INITIAL);
+  >(placeOrderAction, INITIAL);
   const [createAccount, setCreateAccount] = useState(false);
+  const [method, setMethod] = useState<PaymentMethod>(
+    paymentMethods[0]?.code ?? "cod",
+  );
+
+  const methodCopy: Record<
+    PaymentMethod,
+    { label: string; hint: string; icon: keyof typeof icons }
+  > = {
+    cod: {
+      label: labels.checkoutCodLabel,
+      hint: labels.paymentCodHint,
+      icon: "bag",
+    },
+    orange_money: {
+      label: labels.paymentOrangeMoney,
+      hint: labels.paymentOrangeHint,
+      icon: "phone",
+    },
+    wave: {
+      label: labels.paymentWave,
+      hint: labels.paymentWaveHint,
+      icon: "wallet",
+    },
+    card: {
+      label: labels.paymentCard,
+      hint: labels.paymentCardHint,
+      icon: "card",
+    },
+  };
+
+  const selectedMethod = methodCopy[method];
+  const selectedOption = paymentMethods.find((entry) => entry.code === method);
 
   const fieldError = (key: string) => {
     const messageKey = state.fieldErrors?.[key];
@@ -95,6 +130,7 @@ export function CheckoutForm({
     <form action={formAction} noValidate className="space-y-4">
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="slug" value={slug} />
+      <input type="hidden" name="paymentMethod" value={method} />
 
       <Step number={1} title={labels.checkoutContactTitle} text={labels.checkoutContactText}>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -296,30 +332,123 @@ export function CheckoutForm({
         </dl>
       </Step>
 
-      <Step number={requiresShipping ? 4 : 3} title={labels.checkoutPaymentTitle} text={labels.checkoutPaymentText}>
-        <div className="flex items-start gap-3 rounded-2xl border border-brand-500 bg-brand-500/[0.06] p-4">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white">
-            <Icon path={icons.bag} className="h-4 w-4" strokeWidth={1.9} />
-          </span>
-          <div>
-            <p className="text-[0.875rem] font-medium text-fg">
-              {requiresShipping
-                ? labels.checkoutCodLabel
-                : labels.checkoutInstantPayLabel}
-            </p>
-            <p className="mt-0.5 text-[0.75rem] leading-relaxed text-subtle">
-              {requiresShipping
-                ? labels.checkoutCodText
-                : labels.checkoutInstantPayText}
-            </p>
-          </div>
-        </div>
-
-        {!cart.codEligible ? (
-          <p className="mt-3 rounded-xl border border-amber-400/25 bg-amber-400/[0.06] px-3 py-2.5 text-[0.75rem] text-amber-700 dark:text-amber-300">
-            {labels.cartCodUnavailable}
+      <Step
+        number={requiresShipping ? 4 : 3}
+        title={labels.checkoutPaymentTitle}
+        text={labels.checkoutPaymentText}
+      >
+        {paymentMethods.length === 0 ? (
+          <p className="rounded-xl border border-amber-400/25 bg-amber-400/[0.06] px-3 py-2.5 text-[0.75rem] leading-relaxed text-amber-700 dark:text-amber-300">
+            {labels.checkoutPaymentUnavailable}
           </p>
-        ) : null}
+        ) : (
+          <>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {paymentMethods.map((option) => {
+                const copy = methodCopy[option.code];
+                const active = method === option.code;
+
+                return (
+                  <button
+                    key={option.code}
+                    type="button"
+                    onClick={() => setMethod(option.code)}
+                    aria-pressed={active}
+                    className={`flex items-start gap-3 rounded-2xl border p-3.5 text-start transition-colors ${
+                      active
+                        ? "border-brand-500 bg-brand-500/[0.07]"
+                        : "border-border bg-surface hover:border-border-strong"
+                    }`}
+                  >
+                    <span
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
+                        active
+                          ? "bg-brand-500 text-white"
+                          : "bg-hairline text-subtle"
+                      }`}
+                    >
+                      <Icon path={icons[copy.icon]} className="h-4 w-4" strokeWidth={1.8} />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="flex flex-wrap items-center gap-1.5 text-[0.8125rem] font-medium text-fg">
+                        {copy.label}
+                        {option.provider === "mock" ? (
+                          <span className="rounded-full border border-brand-500/25 bg-brand-500/10 px-1.5 py-0.5 text-[0.5rem] font-semibold uppercase tracking-wide text-accent">
+                            {labels.paymentMockBadge}
+                          </span>
+                        ) : null}
+                      </span>
+                      <span className="mt-0.5 block text-[0.6875rem] leading-relaxed text-subtle">
+                        {copy.hint}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {selectedMethod && method !== "cod" ? (
+              <p className="mt-3 rounded-xl border border-brand-500/20 bg-brand-500/[0.05] px-3 py-2.5 text-[0.75rem] leading-relaxed text-subtle">
+                {labels.paymentMockNote}
+              </p>
+            ) : null}
+
+            {method === "orange_money" || method === "wave" ? (
+              <div className="mt-4">
+                <TextField
+                  name="paymentPhone"
+                  label={labels.paymentPhoneLabel}
+                  type="tel"
+                  dir="ltr"
+                  autoComplete="tel"
+                  placeholder={labels.paymentPhoneHint}
+                  maxLength={40}
+                  error={fieldError("paymentPhone")}
+                />
+              </div>
+            ) : null}
+
+            {method === "card" ? (
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <TextField
+                    name="cardNumber"
+                    label={labels.cardNumberLabel}
+                    dir="ltr"
+                    autoComplete="cc-number"
+                    placeholder="4242 4242 4242 4242"
+                    maxLength={30}
+                    error={fieldError("cardNumber")}
+                  />
+                </div>
+                <TextField
+                  name="cardExpiry"
+                  label={labels.cardExpiryLabel}
+                  dir="ltr"
+                  autoComplete="cc-exp"
+                  placeholder="MM/AA"
+                  maxLength={7}
+                  error={fieldError("cardExpiry")}
+                />
+                <TextField
+                  name="cardCvv"
+                  label={labels.cardCvvLabel}
+                  dir="ltr"
+                  autoComplete="cc-csc"
+                  placeholder="123"
+                  maxLength={4}
+                  error={fieldError("cardCvv")}
+                />
+              </div>
+            ) : null}
+
+            {selectedOption ? null : (
+              <p className="mt-3 text-[0.75rem] font-medium text-red-500">
+                {labels.checkoutPaymentInvalid}
+              </p>
+            )}
+          </>
+        )}
       </Step>
 
       {serverMessage ? (
@@ -333,7 +462,7 @@ export function CheckoutForm({
 
       <button
         type="submit"
-        disabled={pending || !cart.codEligible}
+        disabled={pending || !selectedOption}
         className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-6 text-[0.875rem] font-medium text-white transition-colors hover:bg-brand-600 disabled:pointer-events-none disabled:opacity-50"
       >
         {pending ? <Spinner /> : <Icon path={icons.lock} className="h-4 w-4" strokeWidth={2} />}

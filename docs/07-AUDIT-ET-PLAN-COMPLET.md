@@ -32,9 +32,10 @@
 
 ### Ce qui ne fonctionne pas ou manque
 
-- **Paiements en ligne** : seuls les paiements à la livraison existent. Aucun
-  prestataire (Flutterwave, CinetPay, PayDunya) n'est branché, aucune clé n'est
-  présente. Donc **Orange Money, Wave, cartes ne peuvent pas s'afficher**.
+- **Paiements en ligne** : le moteur, le checkout multi-moyens et le ledger
+  `online_capture` sont livrés avec un fournisseur **Mock** (27/10). Aucun vrai
+  prestataire n'est encore branché : Orange Money, Wave et carte restent en mode
+  test jusqu’aux clés Flutterwave/CinetPay/PayDunya.
 - **Site public Pashove** : v2.1 alignée sur les captures de référence (header clair,
   hero sombre, vidéo, blocs produit réels, statistiques, témoignages, newsletter). Les sous-pages thèmes, paiements, aide,
   documentation, statut et blog restent à construire.

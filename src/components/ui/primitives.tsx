@@ -341,6 +341,12 @@ export const icons = {
       <path d="M8 13v7M16 13v7" />
     </>
   ),
+  card: (
+    <>
+      <rect x="2.5" y="5" width="19" height="14" rx="2.2" />
+      <path d="M2.5 10h19" />
+    </>
+  ),
   play: <path d="m8 5 11 7-11 7V5Z" fill="currentColor" stroke="none" />,
   paperclip: <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 1 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />,
   close: <path d="m6 6 12 12M18 6 6 18" />,

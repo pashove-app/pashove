@@ -468,11 +468,18 @@ livraison, annulation, remboursement.
 
 ---
 
-## 12. Paiements en ligne — 🔴 (bloquant commercial)
+## 12. Paiements en ligne — 🟡 (Mock livré, PSP réel à brancher)
 
-### Prérequis externes
+### V1 Mock livrée le 27/10/2026
 
-Compte Flutterwave (priorité), entité légale, compte bancaire, site public.
+Moteur d’éligibilité, checkout COD/Orange Money/Wave/carte, fournisseur Mock
+avec intention/confirmation/webhook, ledger `online_capture`, remboursement
+compensatoire, console transactions et fournisseurs avec clés chiffrées.
+Détail et tests : `docs/12-PAY1-MOCK.md`.
+
+### Prérequis externes restants
+
+Compte Flutterwave (priorité), entité légale, compte bancaire, clés réelles.
 
 ### Pages
 

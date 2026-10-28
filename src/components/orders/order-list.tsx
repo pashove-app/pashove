@@ -93,7 +93,15 @@ export function OrderList({
 
               <td className="px-4 py-3">
                 <PaymentStatus status={order.payment_status} t={t} />
-                <p className="mt-0.5 text-[0.6875rem] text-faint">{labels.paymentCod}</p>
+                <p className="mt-0.5 text-[0.6875rem] text-faint">
+                  {order.payment_method === "cod"
+                    ? labels.paymentCod
+                    : order.payment_method === "orange_money"
+                      ? labels.paymentOrangeMoney
+                      : order.payment_method === "wave"
+                        ? labels.paymentWave
+                        : labels.paymentCard}
+                </p>
               </td>
 
               <td className="px-4 py-3">
