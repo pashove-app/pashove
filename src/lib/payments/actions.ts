@@ -1,6 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { emailOrderRefunded } from "@/lib/email/events";
+import { loadOrderContextWithService } from "@/lib/email/order-context";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { encryptSensitive } from "@/lib/finance/crypto";
 
@@ -39,6 +42,15 @@ export async function refundAdminPaymentAction(
         : "paymentRefundFailed",
     };
   }
+
+  after(async () => {
+    try {
+      const context = await loadOrderContextWithService(orderId);
+      if (context) await emailOrderRefunded(context, "fr");
+    } catch (notifyError) {
+      console.error("[email] admin refund notification failed", notifyError);
+    }
+  });
 
   revalidatePath("/", "layout");
   return { ok: true };

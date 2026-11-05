@@ -62,6 +62,14 @@ export default async function SettingsHubPage({
         />
 
         <SettingsLink
+          href={path(locale, "/app/settings/notifications")}
+          icon="mail"
+          title={t.dashboard.settings.notificationsTitle}
+          text={t.dashboard.settings.notificationsText}
+          cta={t.dashboard.settings.notificationsCta}
+        />
+
+        <SettingsLink
           href={path(locale, "/auth/security")}
           icon="shield"
           title={t.dashboard.settings.securityTitle}

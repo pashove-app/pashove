@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { after } from "next/server";
+import { emailTeamInvitation } from "@/lib/email/events";
 import { createClient } from "@/lib/supabase/server";
 import {
   ACTIVE_STORE_COOKIE,
@@ -89,6 +91,27 @@ export async function inviteMemberAction(
     }
     return { status: "error", messageKey: "serverError" };
   }
+
+  const baseUrl = (
+    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
+  ).replace(/\/$/, "");
+
+  after(async () => {
+    await emailTeamInvitation({
+      to: parsed.data.email,
+      storeName: membership.store.name,
+      inviterName:
+        typeof user.user_metadata?.full_name === "string"
+          ? user.user_metadata.full_name
+          : null,
+      role:
+        parsed.data.role === "admin"
+          ? "Administrateur"
+          : "Gestionnaire de produits",
+      inviteUrl: `${baseUrl}/${locale}/auth/accept-invitation?token=${data.token}`,
+      locale,
+    });
+  });
 
   revalidatePath(`/${locale}/app/settings/users`);
 

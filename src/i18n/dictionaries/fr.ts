@@ -2384,6 +2384,30 @@ const fr = {
       soonTitle: "Paiements, livraison, domaine",
       soonText: "Ces réglages arrivent avec les lots correspondants.",
       soonBadge: "Bientôt",
+      notificationsTitle: "Notifications e-mail",
+      notificationsText:
+        "Choisis les alertes que tu veux recevoir par e-mail.",
+      notificationsCta: "Gérer mes alertes",
+      notifications: {
+        title: "Notifications e-mail",
+        subtitle:
+          "Les e-mails destinés à tes clients partent toujours. Ici, tu choisis ceux que tu reçois.",
+        newOrder: "Nouvelle commande",
+        newOrderText: "Quand un client commande sur ta boutique.",
+        cancellations: "Annulations et remboursements",
+        cancellationsText: "Quand une commande est annulée ou remboursée.",
+        kyc: "Vérification d’identité",
+        kycText: "Quand ton dossier est approuvé ou refusé.",
+        payouts: "Retraits",
+        payoutsText: "Demande reçue, retrait payé ou échoué.",
+        save: "Enregistrer",
+        saving: "Enregistrement…",
+        saved: "Préférences enregistrées.",
+        error: "Impossible d’enregistrer. Réessaie.",
+        deliveryNote: "Ces alertes partent à {email}.",
+        deliveryMissing:
+          "Ajoute une adresse de contact dans les réglages de la boutique pour recevoir ces alertes.",
+      },
     },
   },
 

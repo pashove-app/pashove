@@ -2314,6 +2314,30 @@ const bm: Dictionary = {
       soonTitle: "Sara, livrezɔn, domɛn",
       soonText: "Nin sigicogow bɛ na u ka lotw la.",
       soonBadge: "Sisan",
+      notificationsTitle: "Imɛyili kunnafoniw",
+      notificationsText:
+        "Kunnafoni minnu bɛ na imɛyili la, olu sugandi.",
+      notificationsCta: "N ka kunnafoniw mara",
+      notifications: {
+        title: "Imɛyili kunnafoniw",
+        subtitle:
+          "Imɛyili minnu bɛ taa i ka kliyanw fɛ, olu bɛ taa tuma bɛɛ. Yali, i bɛ minnu sɔn, olu sugandi.",
+        newOrder: "Kɔmandi kura",
+        newOrderText: "Ni kliyan bɛ kɔmandi kɛ i ka butiki la.",
+        cancellations: "Kɔmandi bila ni sara kɔsɛbɛ",
+        cancellationsText: "Ni kɔmandi bilala walima sara kɔsɛbɛra.",
+        kyc: "Yɛrɛ jirali",
+        kycText: "Ni i ka sɛbɛnw sɔnna walima baliyara.",
+        payouts: "Wari bɔli",
+        payoutsText: "Ɲinini sera, wari bɔra walima a ma se.",
+        save: "Mara",
+        saving: "A bɛ mara…",
+        saved: "I ka sugandi maralen don.",
+        error: "A ma se ka mara. I bɛ a lajɛ.",
+        deliveryNote: "Nin kunnafoniw bɛ taa {email} la.",
+        deliveryMissing:
+          "I ka imɛyili ladɔn butiki sigicogo la walisa nin kunnafoniw ka se.",
+      },
     },
   },
 

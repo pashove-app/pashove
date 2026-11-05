@@ -2,6 +2,8 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
+import { emailOrderPlaced, loadOrderEmailContext } from "@/lib/email/events";
 import { LOCALE_META, resolveLocale } from "@/i18n/config";
 import { buildCheckoutSchema } from "@/lib/storefront/checkout-schema";
 import { readCart, readCartToken } from "@/lib/storefront/cart";
@@ -256,7 +258,40 @@ export async function placeOrderAction(
     return { status: "error", messageKey: "checkoutGeneric" };
   }
 
-  await rememberOrderToken(result.token);
+  const storeSlug = storefront.store.slug;
+  const orderToken = result.token;
+  await rememberOrderToken(orderToken);
+
+  // Les e-mails partent après la réponse : le client voit sa page de succès
+  // sans attendre l'API Brevo, et un échec d'envoi ne casse pas la commande.
+  after(async () => {
+    try {
+      const context = await loadOrderEmailContext({
+        slug: storeSlug,
+        token: orderToken,
+        customerEmail: parsed.data.email,
+      });
+
+      if (!context) return;
+
+      const serviceItem = cart.items.find(
+        (item) => item.productType === "service" && item.serviceStartsAt,
+      );
+
+      await emailOrderPlaced(
+        context,
+        locale,
+        serviceItem?.serviceStartsAt
+          ? {
+              service: serviceItem.name,
+              startsAt: serviceItem.serviceStartsAt,
+            }
+          : null,
+      );
+    } catch (error) {
+      console.error("[email] checkout notification failed", error);
+    }
+  });
 
   // Si l'acheteur est déjà connecté (même un marchand sur sa propre vitrine),
   // la commande rejoint immédiatement son espace client, quel que soit l'e-mail

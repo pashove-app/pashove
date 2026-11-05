@@ -575,23 +575,24 @@ nouveaux/récurrents, top produits, top partenaires.
 
 ---
 
-## 17. Notifications, e-mails, SMS — 🔴
+## 17. Notifications, e-mails, SMS — 🟡 (E1 livré le 30/10/2026)
 
-### E-mails transactionnels (Brevo)
+### E-mails transactionnels (Brevo) — ✅ E1
 
-Compte créé, e-mail vérifié, commande créée, paiement réussi/échoué,
-expédition, livraison, remboursement, accès numérique, cadeau, réservation,
-KYC, retrait.
+Compte créé, commande confirmée (client + marchand), expédition, livraison,
+annulation, remboursement, accès numérique, rendez-vous, invitation d’équipe,
+KYC approuvé/refusé, retrait demandé/traité. Préférences marchand sur
+`/app/settings/notifications`, boîte d’envoi et reprise sur
+`/platform-admin/emails`. Détail : `docs/13-EMAILS-E1.md`.
 
-### SMS (Termii)
+### Reste
 
-OTP, commande, retrait, sécurité.
+- Traductions BM, LN, AR des e-mails (FR/EN aujourd’hui).
+- Modèles éditables par le marchand.
+- SMS Termii : OTP, commande, retrait, sécurité.
+- Centre de notifications in-app par catégories.
 
-### Centre marchand
-
-`/app/notifications` par catégories.
-
-**Effort** : 2 semaines.
+**Effort restant** : 1 semaine + SMS.
 
 ---
 

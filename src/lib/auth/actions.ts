@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { after } from "next/server";
+import { emailWelcome } from "@/lib/email/events";
 import { loginSchema, registerSchema, emailOnlySchema, resetPasswordSchema, changePasswordSchema, totpCodeSchema, verifyEmailSchema, toFieldErrors } from "@/lib/validation";
 import { clearPendingEmail, rememberPendingEmail } from "@/lib/auth/pending-email";
 import type { AuthState, RecoveryCodesState, TotpEnrollmentState } from "@/lib/auth/types";
@@ -114,6 +116,14 @@ export async function signUpAction(
   });
 
   if (error) return { status: "error", messageKey: messageKeyFor(error) };
+
+  after(async () => {
+    await emailWelcome({
+      email: parsed.data.email,
+      name: parsed.data.fullName,
+      locale,
+    });
+  });
 
   // Confirmation d'e-mail active : aucune session n'est ouverte tant que le
   // code ou le lien n'a pas été validé. On retient l'adresse pour que l'écran de

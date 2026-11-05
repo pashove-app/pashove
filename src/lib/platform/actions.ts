@@ -1,6 +1,8 @@
 "use server";
 
+import { after } from "next/server";
 import { revalidatePath } from "next/cache";
+import { emailKycDecision, emailPayoutProcessed } from "@/lib/email/events";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import type { AdminActionState } from "@/lib/platform/types";
 
@@ -37,6 +39,15 @@ function messageFor(error: { message?: string }): string {
   return "L'action a échoué. Réessaie.";
 }
 
+const PAYOUT_STATUS_LABEL: Record<string, string> = {
+  completed: "payé",
+  sent: "envoyé",
+  processing: "en cours de traitement",
+  failed: "échoué",
+  reversed: "annulé",
+  cancelled: "annulé",
+};
+
 export async function reviewKycAction(
   _previous: AdminActionState,
   formData: FormData,
@@ -57,6 +68,37 @@ export async function reviewKycAction(
   });
 
   if (error) return { status: "error", message: messageFor(error) };
+
+  after(async () => {
+    try {
+      const { data } = await supabase
+        .from("kyc_cases")
+        .select("store_id, status, rejection_reason, stores(name)")
+        .eq("id", caseId)
+        .maybeSingle();
+
+      const row = data as
+        | {
+            store_id: string;
+            status: string;
+            rejection_reason: string | null;
+            stores: { name: string } | null;
+          }
+        | null;
+
+      if (!row) return;
+
+      await emailKycDecision({
+        storeId: row.store_id,
+        storeName: row.stores?.name ?? "Pashove",
+        approved: row.status === "approved",
+        reason: row.rejection_reason,
+        locale: "fr",
+      });
+    } catch (notifyError) {
+      console.error("[email] kyc notification failed", notifyError);
+    }
+  });
 
   revalidatePath("/platform-admin", "layout");
   return { status: "saved", message: "Décision enregistrée." };
@@ -84,6 +126,45 @@ export async function transitionPayoutAction(
   });
 
   if (error) return { status: "error", message: messageFor(error) };
+
+  after(async () => {
+    try {
+      const { data } = await supabase
+        .from("payouts")
+        .select(
+          "store_id, amount, currency, status, provider_reference, failure_reason, stores(name)",
+        )
+        .eq("id", payoutId)
+        .maybeSingle();
+
+      const row = data as
+        | {
+            store_id: string;
+            amount: number;
+            currency: string;
+            status: string;
+            provider_reference: string | null;
+            failure_reason: string | null;
+            stores: { name: string } | null;
+          }
+        | null;
+
+      if (!row) return;
+
+      await emailPayoutProcessed({
+        storeId: row.store_id,
+        storeName: row.stores?.name ?? "Pashove",
+        amount: row.amount,
+        currency: row.currency,
+        statusLabel: PAYOUT_STATUS_LABEL[row.status] ?? row.status,
+        reference: row.provider_reference,
+        reason: row.failure_reason,
+        locale: "fr",
+      });
+    } catch (notifyError) {
+      console.error("[email] payout notification failed", notifyError);
+    }
+  });
 
   revalidatePath("/platform-admin", "layout");
   return { status: "saved", message: "Retrait mis à jour." };

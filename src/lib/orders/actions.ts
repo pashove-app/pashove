@@ -1,6 +1,17 @@
 "use server";
 
+import { after } from "next/server";
 import { revalidatePath } from "next/cache";
+import {
+  emailOrderCancelled,
+  emailOrderDelivered,
+  emailOrderRefunded,
+  emailOrderShipped,
+  formatAddress,
+  type OrderEmailContext,
+} from "@/lib/email/events";
+import { getOrder } from "@/lib/orders/queries";
+import { currentStore } from "@/lib/stores/queries";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 
 export type OrderActionState = {
@@ -34,6 +45,71 @@ function refresh() {
   revalidatePath("/", "layout");
 }
 
+/** Contexte minimal pour un e-mail, lu avec la session du marchand. */
+async function orderSnapshot(orderId: string): Promise<{
+  status: string;
+  context: OrderEmailContext;
+} | null> {
+  const store = await currentStore();
+  if (!store) return null;
+
+  const order = await getOrder(orderId, store.id);
+  if (!order) return null;
+
+  return {
+    status: order.status,
+    context: {
+      storeId: store.id,
+      storeName: store.name,
+      storeSlug: store.slug,
+      orderId: order.id,
+      orderNumber: order.number,
+      currency: order.currency,
+      total: order.total_amount,
+      subtotal: order.subtotal_amount,
+      discount: order.discount_amount,
+      shipping: order.shipping_amount,
+      customerName: order.customer_name,
+      customerEmail: order.customer_email,
+      paymentMethod: order.payment_method,
+      trackingNumber: order.tracking_number,
+      address: formatAddress({
+        address: order.shipping_address,
+        city: order.shipping_city,
+        country: order.shipping_country,
+      }),
+      items: order.items.map((item) => ({
+        name: item.product_name,
+        variantLabel: item.variant_label,
+        quantity: item.quantity,
+        lineTotal: item.line_total,
+      })),
+      hasDigital: order.items.some((item) => item.product_type === "digital"),
+      hasService: order.items.some((item) => item.product_type === "service"),
+    },
+  };
+}
+
+/** Prévient le client quand la commande atteint une étape qui le concerne. */
+async function notifyStatusChange(orderId: string): Promise<void> {
+  try {
+    const snapshot = await orderSnapshot(orderId);
+    if (!snapshot) return;
+
+    if (snapshot.status === "shipped") {
+      after(async () => {
+        await emailOrderShipped(snapshot.context, "fr");
+      });
+    } else if (snapshot.status === "delivered") {
+      after(async () => {
+        await emailOrderDelivered(snapshot.context, "fr");
+      });
+    }
+  } catch (error) {
+    console.error("[email] order status notification failed", error);
+  }
+}
+
 /** Fait avancer la commande d'une seule étape, avec un suivi facultatif. */
 export async function advanceOrderAction(
   _previous: OrderActionState,
@@ -60,6 +136,7 @@ export async function advanceOrderAction(
     return { status: "error", messageKey: messageKeyFor(error) };
   }
 
+  await notifyStatusChange(orderId);
   refresh();
   return { status: "saved", messageKey: "statusUpdated" };
 }
@@ -117,6 +194,17 @@ export async function cancelOrderAction(
     return { status: "error", messageKey: messageKeyFor(error) };
   }
 
+  try {
+    const snapshot = await orderSnapshot(orderId);
+    if (snapshot) {
+      after(async () => {
+        await emailOrderCancelled(snapshot.context, "fr");
+      });
+    }
+  } catch (notifyError) {
+    console.error("[email] cancel notification failed", notifyError);
+  }
+
   refresh();
   return { status: "saved", messageKey: "orderCancelled" };
 }
@@ -146,6 +234,17 @@ export async function refundOrderAction(
     return { status: "error", messageKey: messageKeyFor(error) };
   }
 
+  try {
+    const snapshot = await orderSnapshot(orderId);
+    if (snapshot) {
+      after(async () => {
+        await emailOrderRefunded(snapshot.context, "fr");
+      });
+    }
+  } catch (notifyError) {
+    console.error("[email] refund notification failed", notifyError);
+  }
+
   refresh();
   return { status: "saved", messageKey: "refundDone" };
 }
@@ -157,10 +256,12 @@ export async function quickAdvanceAction(formData: FormData): Promise<void> {
   if (!isSupabaseConfigured()) return;
 
   const supabase = await createClient();
-  await supabase.rpc("advance_order_status", {
+  const { error } = await supabase.rpc("advance_order_status", {
     p_order_id: orderId,
     p_tracking: null,
   });
+
+  if (!error) await notifyStatusChange(orderId);
 
   refresh();
 }

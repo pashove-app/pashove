@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
+import { emailPayoutRequested } from "@/lib/email/events";
 import {
   encryptPayoutNumber,
   fingerprintPayoutNumber,
@@ -352,6 +354,8 @@ export async function requestPayoutAction(
     };
   }
 
+  const method = await getPayoutMethod(methodId, store.id);
+
   const { data, error } = await supabase.rpc("request_payout", {
     p_store_id: store.id,
     p_method_id: methodId,
@@ -369,6 +373,18 @@ export async function requestPayoutAction(
   if (result?.status === "pin_invalid") {
     return { status: "invalid", fieldErrors: { pin: "pinInvalid" } };
   }
+
+  after(async () => {
+    await emailPayoutRequested({
+      storeId: store.id,
+      storeName: store.name,
+      amount,
+      currency: store.currency,
+      provider: method?.provider ?? "—",
+      last4: method?.account_last4 ?? "",
+      locale,
+    });
+  });
 
   revalidatePath("/", "layout");
   redirect(`/${locale}/app/finance/payouts?created=1`);
