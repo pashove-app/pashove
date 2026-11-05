@@ -18,6 +18,7 @@ function presetLabel(id: ThemePresetId, labels: Labels): string {
   if (id === "pashove") return labels.presetPashove;
   if (id === "ivoire") return labels.presetIvoire;
   if (id === "foret") return labels.presetForet;
+  if (id === "dwell") return "Dwell";
   return labels.presetMinuit;
 }
 

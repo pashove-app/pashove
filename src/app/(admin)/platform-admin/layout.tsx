@@ -12,11 +12,15 @@ export const metadata: Metadata = {
 
 const NAV = [
   { href: "/platform-admin", label: "Vue d’ensemble", icon: icons.chart },
+  { href: "/platform-admin/merchants", label: "Marchands", icon: icons.users },
+  { href: "/platform-admin/stores", label: "Boutiques", icon: icons.store },
+  { href: "/platform-admin/users", label: "Utilisateurs", icon: icons.user },
   { href: "/platform-admin/kyc", label: "KYC", icon: icons.shield },
   { href: "/platform-admin/payouts", label: "Retraits", icon: icons.wallet },
   { href: "/platform-admin/payments", label: "Paiements", icon: icons.wallet },
   { href: "/platform-admin/payment-providers", label: "Fournisseurs", icon: icons.code },
   { href: "/platform-admin/emails", label: "E-mails", icon: icons.mail },
+  { href: "/platform-admin/settings", label: "Réglages", icon: icons.settings },
   { href: "/platform-admin/reconciliation", label: "Réconciliation", icon: icons.chart },
   { href: "/platform-admin/audit", label: "Audit", icon: icons.list },
   { href: "/platform-admin/messages", label: "Messages", icon: icons.chat },
@@ -71,7 +75,7 @@ export default async function PlatformAdminLayout({
           </Link>
         </div>
 
-        <nav className="mx-auto flex w-full max-w-6xl gap-2 overflow-x-auto px-4 pb-3 sm:px-8">
+        <nav className="mx-auto flex w-full max-w-6xl flex-wrap gap-2 px-4 pb-3 sm:px-8">
           {NAV.map((item) => (
             <Link
               key={item.href}

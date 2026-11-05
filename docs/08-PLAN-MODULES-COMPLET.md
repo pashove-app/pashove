@@ -612,7 +612,13 @@ temps réel et chat invité sans compte.
 
 ## 19. Administration plateforme complète — 🟡
 
-### Déjà livré
+### ADM2 livrée le 5/11/2026
+
+Marchands, boutiques, utilisateurs, réglages (plans, limites, interrupteurs,
+rôles), dashboard GMV/commissions/ventes 30 jours/top marchands/alertes.
+Détail : `docs/17-ADM2-ADMINISTRATION.md`.
+
+### Déjà livré avant ADM2
 
 KYC, retraits, réconciliation, audit.
 

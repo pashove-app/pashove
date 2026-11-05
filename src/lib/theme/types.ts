@@ -1,4 +1,4 @@
-export type ThemePresetId = "pashove" | "ivoire" | "foret" | "minuit";
+export type ThemePresetId = "pashove" | "ivoire" | "foret" | "minuit" | "dwell";
 export type ThemeFont = "sans" | "serif" | "mono";
 export type ThemeSectionKey = "products" | "collections" | "bundles";
 

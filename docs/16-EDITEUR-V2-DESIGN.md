@@ -44,3 +44,10 @@ L’éditeur V1 ressemblait à un long formulaire. La V2 sépare clairement :
   latéral (les flèches restent disponibles).
 - Les couleurs du panneau sont volontairement claires ; la vitrine garde le
   thème du marchand.
+
+
+## Preset Dwell
+
+Ajouté le 5/11/2026 : fond ivoire `#F4F1EA`, surfaces blanches, texte
+`#1A1A1A`, accent terre cuite `#8B6F47`, titres en serif. Le preset est
+disponible dans la bibliothèque aux côtés de Pashove, Ivoire, Forêt et Minuit.

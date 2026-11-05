@@ -65,6 +65,17 @@ export const THEME_PRESETS: {
     foregroundColor: "#F5F7FF",
     font: "sans",
   },
+  {
+    id: "dwell",
+    name: "Dwell",
+    description:
+      "Ivoire, terre cuite et typographie éditoriale : une vitrine calme et haut de gamme.",
+    accentColor: "#8B6F47",
+    backgroundColor: "#F4F1EA",
+    surfaceColor: "#FFFFFF",
+    foregroundColor: "#1A1A1A",
+    font: "serif",
+  },
 ];
 
 export function presetById(id: ThemePresetId) {

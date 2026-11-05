@@ -20,7 +20,7 @@ export type ThemeActionResult = {
   error?: "invalid" | "unauthorized" | "failed";
 };
 
-const PRESETS: ThemePresetId[] = ["pashove", "ivoire", "foret", "minuit"];
+const PRESETS: ThemePresetId[] = ["pashove", "ivoire", "foret", "minuit", "dwell"];
 const FONTS: ThemeFont[] = ["sans", "serif", "mono"];
 const SECTION_KEYS: ThemeSectionKey[] = [
   "products",
