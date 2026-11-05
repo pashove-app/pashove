@@ -243,6 +243,30 @@ export async function emailGiftReceived(input: {
   await scheduleEmail(email, input.scheduledAt);
 }
 
+export async function emailContactMessage(input: {
+  to: string;
+  storeName: string;
+  name: string;
+  email: string;
+  message: string;
+  locale?: string | null;
+}): Promise<void> {
+  const tag = normalizedLocale(input.locale);
+
+  await sendEmail({
+    template: "contact_message",
+    to: input.to,
+    locale: tag,
+    data: {
+      storeName: input.storeName,
+      contactName: input.name,
+      contactEmail: input.email,
+      contactBody: input.message,
+      ctaUrl: `mailto:${input.email}`,
+    },
+  });
+}
+
 export async function emailGiftClaimed(input: {
   buyerEmail: string;
   buyerName: string;

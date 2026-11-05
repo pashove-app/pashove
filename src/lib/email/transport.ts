@@ -16,6 +16,7 @@ export type EmailDriver = "brevo" | "log";
 export type DeliveryResult = {
   ok: boolean;
   provider: EmailDriver;
+  status?: number;
   id?: string;
   error?: string;
 };
@@ -70,7 +71,7 @@ export async function deliverEmail(
       console.info(input.text.split("\n").slice(0, 14).join("\n"));
     }
 
-    return { ok: true, provider: "log", id: `log_${Date.now()}` };
+    return { ok: true, provider: "log", status: 200, id: `log_${Date.now()}` };
   }
 
   const apiKey = process.env.BREVO_API_KEY;
@@ -124,7 +125,7 @@ export async function deliverEmail(
       // Brevo répond parfois un corps vide sur les envois acceptés.
     }
 
-    return { ok: true, provider: "brevo", id };
+    return { ok: true, provider: "brevo", status: response.status, id };
   } catch (error) {
     return {
       ok: false,

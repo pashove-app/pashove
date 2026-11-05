@@ -12,6 +12,7 @@ export const DEFAULT_THEME: StoreTheme = {
     { key: "collections", enabled: true },
     { key: "bundles", enabled: true },
   ],
+  blocks: [],
 };
 
 export const THEME_PRESETS: {
@@ -73,6 +74,7 @@ export function presetById(id: ThemePresetId) {
 export function themeFromPreset(
   id: ThemePresetId,
   sections: StoreTheme["sections"],
+  blocks: StoreTheme["blocks"] = [],
 ): StoreTheme {
   const preset = presetById(id);
 
@@ -84,5 +86,6 @@ export function themeFromPreset(
     foregroundColor: preset.foregroundColor,
     font: preset.font,
     sections,
+    blocks,
   };
 }

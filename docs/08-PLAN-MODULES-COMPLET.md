@@ -138,6 +138,12 @@ formulaire de contact, contenu MDX/CMS et traductions bm/ln/ar.
 
 ## 4. Thèmes, éditeur, pages, navigation, domaines, SEO — 🟡
 
+### TH2 livrée le 5/11/2026
+
+Blocs (texte, image, vidéo, newsletter, FAQ, témoignages), pages Markdown,
+navigation personnalisée, blog et contact avec e-mail au marchand. Détail et
+tests : `docs/15-TH2-THEMES-PAGES.md`.
+
 ### V1 livrée le 26/10/2026
 
 `/app/online-store/themes` (bibliothèque de 4 modèles) et
@@ -145,8 +151,8 @@ formulaire de contact, contenu MDX/CMS et traductions bm/ln/ar.
 sections). Le thème est appliqué à la vitrine et aux portails (panier, menu).
 Détail et tests : `docs/10-THEMES-V1.md`.
 
-Reste : éditeur de blocs libre, versions, pages, menus, blog, domaines, SEO,
-polices personnalisées.
+Reste : versions/restauration, domaines, SEO avancé, polices personnalisées,
+upload direct des médias de blocs, newsletter collectée.
 
 ### Pages marchand
 

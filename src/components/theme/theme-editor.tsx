@@ -11,6 +11,8 @@ import { cn } from "@/lib/cn";
 import { saveThemeAction } from "@/lib/theme/actions";
 import { DEFAULT_THEME, THEME_PRESETS, presetById } from "@/lib/theme/presets";
 import { themeStyle } from "@/lib/theme/style";
+import { getBlockCopy } from "@/lib/theme/copy";
+import { BlockEditor } from "@/components/theme/block-editor";
 import type {
   StoreTheme,
   ThemeFont,
@@ -42,6 +44,7 @@ export function ThemeEditor({
 
   const storefront = path(locale, `/store/${slug}`);
   const preset = presetById(theme.preset);
+  const blockCopy = getBlockCopy(locale);
 
   function update(patch: Partial<StoreTheme>) {
     setTheme((current) => ({ ...current, ...patch }));
@@ -309,6 +312,12 @@ export function ThemeEditor({
             </p>
           </section>
 
+          <BlockEditor
+            blocks={theme.blocks}
+            onChange={(blocks) => update({ blocks })}
+            copy={blockCopy}
+          />
+
           <button
             type="button"
             onClick={() => {
@@ -320,6 +329,7 @@ export function ThemeEditor({
                 foregroundColor: DEFAULT_THEME.foregroundColor,
                 font: DEFAULT_THEME.font,
                 sections: DEFAULT_THEME.sections,
+                blocks: [],
               });
               setStatus("idle");
             }}

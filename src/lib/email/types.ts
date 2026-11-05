@@ -17,7 +17,8 @@ export type EmailTemplate =
   | "payout_requested"
   | "payout_processed"
   | "gift_received"
-  | "gift_claimed";
+  | "gift_claimed"
+  | "contact_message";
 
 /** Catégories de notifications que le marchand peut couper. */
 export type EmailKind = "new_order" | "order_cancelled" | "kyc" | "payout";
@@ -75,6 +76,9 @@ export type EmailData = {
   giftClaimUrl?: string | null;
   giftScheduledAt?: string | null;
   giftItemNames?: string[] | null;
+  contactName?: string | null;
+  contactEmail?: string | null;
+  contactBody?: string | null;
 };
 
 export type RenderedEmail = {

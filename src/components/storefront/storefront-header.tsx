@@ -13,6 +13,7 @@ import { formatMoney } from "@/lib/money";
 import { publicUrl } from "@/lib/r2/media";
 import type { PublicStore } from "@/lib/storefront/queries";
 import { readCart } from "@/lib/storefront/cart";
+import { listPublicNav } from "@/lib/storefront/navigation";
 import { path } from "@/components/ui/types";
 
 /**
@@ -56,12 +57,23 @@ export async function StorefrontHeader({
         ...(store.cod_enabled ? [labels.announcementCod] : []),
       ];
 
-  const links = [
-    { href: home, label: labels.navHome },
-    { href: path(locale, `/store/${store.slug}/collections`), label: labels.navCollections },
-    { href: `${home}#products`, label: labels.navNew },
-    { href: `${home}#contact`, label: labels.navContact },
-  ];
+  const customNav = await listPublicNav(store.id);
+
+  const links =
+    customNav.length > 0
+      ? customNav.map((item) => ({ href: item.href, label: item.label }))
+      : [
+          { href: home, label: labels.navHome },
+          {
+            href: path(locale, `/store/${store.slug}/collections`),
+            label: labels.navCollections,
+          },
+          { href: `${home}#products`, label: labels.navNew },
+          {
+            href: path(locale, `/store/${store.slug}/contact`),
+            label: labels.navContact,
+          },
+        ];
 
   const iconButton =
     "flex h-10 w-10 items-center justify-center rounded-xl text-body transition-colors hover:bg-hairline hover:text-fg";

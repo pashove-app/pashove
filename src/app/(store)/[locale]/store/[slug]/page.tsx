@@ -10,6 +10,7 @@ import { Reveal } from "@/components/storefront/reveal";
 import { StorefrontClosed } from "@/components/storefront/storefront-closed";
 import { StorefrontHeader } from "@/components/storefront/storefront-header";
 import { StorefrontHero } from "@/components/storefront/storefront-hero";
+import { ThemeBlocks } from "@/components/storefront/theme-blocks";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
 import { TrustStrip } from "@/components/storefront/trust-strip";
 import { LOCALE_META, isLocale } from "@/i18n/config";
@@ -147,6 +148,8 @@ export default async function StorefrontPage({
 
             return null;
           })}
+
+          <ThemeBlocks blocks={theme.blocks} />
         </Container>
       </main>
     </StorefrontShell>

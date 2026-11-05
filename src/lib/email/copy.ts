@@ -19,6 +19,7 @@ export type EmailCopy = {
     itemsLabel: string;
     addressLabel: string;
     paymentLabel: string;
+    emailLabel: string;
     amountLabel: string;
     dateLabel: string;
     referenceLabel: string;
@@ -47,6 +48,7 @@ const fr: EmailCopy = {
     itemsLabel: "Articles",
     addressLabel: "Adresse",
     paymentLabel: "Paiement",
+    emailLabel: "E-mail",
     amountLabel: "Montant",
     dateLabel: "Date",
     referenceLabel: "Référence",
@@ -161,6 +163,13 @@ const fr: EmailCopy = {
       lead: "Ta demande de retrait de {amount} est {status}. Consulte ta finance pour le détail.",
       cta: "Voir mes retraits",
     },
+    contact_message: {
+      subject: "Nouveau message de {contact} — {store}",
+      eyebrow: "Message client",
+      title: "Nouveau message",
+      lead: "{contact} t’a écrit depuis {store}.",
+      cta: "Répondre",
+    },
     gift_received: {
       subject: "{buyer} t’a offert un cadeau — {store}",
       eyebrow: "Un cadeau pour toi",
@@ -189,6 +198,7 @@ const en: EmailCopy = {
     itemsLabel: "Items",
     addressLabel: "Address",
     paymentLabel: "Payment",
+    emailLabel: "Email",
     amountLabel: "Amount",
     dateLabel: "Date",
     referenceLabel: "Reference",
@@ -302,6 +312,13 @@ const en: EmailCopy = {
       title: "Payout {status}",
       lead: "Your payout request for {amount} is {status}. See your finance page for details.",
       cta: "View my payouts",
+    },
+    contact_message: {
+      subject: "New message from {contact} — {store}",
+      eyebrow: "Customer message",
+      title: "New message",
+      lead: "{contact} wrote to you from {store}.",
+      cta: "Reply",
     },
     gift_received: {
       subject: "{buyer} sent you a gift — {store}",

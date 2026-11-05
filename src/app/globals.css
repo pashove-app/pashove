@@ -613,3 +613,64 @@ body {
     transform: none !important;
   }
 }
+
+/* ------------------------------------------------------------------ *
+ *  Contenu Markdown des pages et articles de boutique
+ * ------------------------------------------------------------------ */
+
+.prose-storefront {
+  color: var(--color-muted);
+  font-size: 0.9375rem;
+  line-height: 1.8;
+}
+.prose-storefront > * + * {
+  margin-top: 1rem;
+}
+.prose-storefront h1,
+.prose-storefront h2,
+.prose-storefront h3 {
+  color: var(--color-fg);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+}
+.prose-storefront h1 {
+  font-size: 1.75rem;
+}
+.prose-storefront h2 {
+  font-size: 1.375rem;
+  margin-top: 2rem;
+}
+.prose-storefront h3 {
+  font-size: 1.125rem;
+  margin-top: 1.5rem;
+}
+.prose-storefront strong {
+  color: var(--color-fg);
+  font-weight: 600;
+}
+.prose-storefront a {
+  color: var(--color-brand-500);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.prose-storefront ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+.prose-storefront li + li {
+  margin-top: 0.35rem;
+}
+.prose-storefront blockquote {
+  border-left: 2px solid var(--color-brand-500);
+  padding-left: 1rem;
+  color: var(--color-subtle);
+  font-style: italic;
+}
+.prose-storefront code {
+  border-radius: 0.35rem;
+  background: var(--color-hairline);
+  padding: 0.1rem 0.3rem;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.85em;
+}

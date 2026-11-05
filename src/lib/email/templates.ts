@@ -231,6 +231,14 @@ function bodyFor(
   const copy = EMAIL_COPY[locale].common;
 
   switch (template) {
+    case "contact_message":
+      return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:22px 0;background:${BG};border-radius:14px;">
+        <tr><td style="padding:16px 18px;font:400 14px/1.7 ${FONT};color:${INK};white-space:pre-wrap;">${esc(data.contactBody)}</td></tr>
+      </table>
+      ${detailRows([
+        [copy.emailLabel, data.contactEmail ?? "—"],
+      ])}`;
+
     case "gift_received":
       return giftBlock(data, locale);
 
@@ -296,6 +304,8 @@ function ctaUrl(template: EmailTemplate, data: EmailData): string | null {
   switch (template) {
     case "welcome":
       return data.ctaUrl ?? null;
+    case "contact_message":
+      return data.contactEmail ? `mailto:${data.contactEmail}` : null;
     case "gift_received":
       return data.giftClaimUrl ?? null;
     case "digital_access":
@@ -367,6 +377,7 @@ export function renderEmail(
 
   const vars: Record<string, string> = {
     name: data.customerName?.trim() ?? "",
+    contact: data.contactName?.trim() ?? data.customerName?.trim() ?? "",
     buyer: data.giftBuyerName?.trim() ?? data.customerName?.trim() ?? "",
     recipient: data.giftRecipientName?.trim() ?? data.customerName?.trim() ?? "",
     number: data.order ? String(data.order.number) : "",
@@ -459,6 +470,11 @@ function plainBody(
 
   if (template === "kyc_rejected" && data.reason) {
     lines.push(`${copy.reasonLabel}: ${data.reason}`);
+  }
+
+  if (template === "contact_message") {
+    if (data.contactName) lines.push(`${copy.emailLabel}: ${data.contactEmail ?? ""}`);
+    if (data.contactBody) lines.push("", data.contactBody);
   }
 
   if (template === "payout_requested" || template === "payout_processed") {
