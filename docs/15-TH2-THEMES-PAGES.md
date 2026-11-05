@@ -2,6 +2,12 @@
 
 > 5 novembre 2026 — la vitrine devient éditoriale, sans code arbitraire.
 
+## Refonte visuelle (5/11/2026)
+
+L’éditeur a été reconstruit en trois zones professionnelles : barre supérieure,
+panneau de sections et aperçu desktop/mobile. Voir
+`docs/16-EDITEUR-V2-DESIGN.md`.
+
 ## Ce qui est livré
 
 ### Editeur de blocs
