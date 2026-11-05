@@ -3,7 +3,7 @@ import type { CartPayload, CartView } from "@/lib/storefront/cart-types";
 import { formatMoney } from "@/lib/money";
 import { createPublicClient } from "@/lib/supabase/public";
 
-const CART_COOKIE = "pashove_cart";
+export const CART_COOKIE = "pashove_cart";
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

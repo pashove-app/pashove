@@ -231,6 +231,12 @@ function bodyFor(
   const copy = EMAIL_COPY[locale].common;
 
   switch (template) {
+    case "campaign":
+      return `<div style="margin:22px 0;font:400 14px/1.7 ${FONT};color:${INK};white-space:pre-wrap;">${esc(data.campaignBody)}</div>`;
+
+    case "abandoned_cart":
+      return orderBlock(data, locale);
+
     case "contact_message":
       return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:22px 0;background:${BG};border-radius:14px;">
         <tr><td style="padding:16px 18px;font:400 14px/1.7 ${FONT};color:${INK};white-space:pre-wrap;">${esc(data.contactBody)}</td></tr>
@@ -306,6 +312,8 @@ function ctaUrl(template: EmailTemplate, data: EmailData): string | null {
       return data.ctaUrl ?? null;
     case "contact_message":
       return data.contactEmail ? `mailto:${data.contactEmail}` : null;
+    case "abandoned_cart":
+      return data.cartUrl ?? data.orderUrl ?? null;
     case "gift_received":
       return data.giftClaimUrl ?? null;
     case "digital_access":
@@ -378,6 +386,7 @@ export function renderEmail(
   const vars: Record<string, string> = {
     name: data.customerName?.trim() ?? "",
     contact: data.contactName?.trim() ?? data.customerName?.trim() ?? "",
+    campaignSubject: data.campaignSubject?.trim() ?? "",
     buyer: data.giftBuyerName?.trim() ?? data.customerName?.trim() ?? "",
     recipient: data.giftRecipientName?.trim() ?? data.customerName?.trim() ?? "",
     number: data.order ? String(data.order.number) : "",
@@ -448,7 +457,8 @@ function plainBody(
     template === "order_refunded" ||
     template === "digital_access" ||
     template === "gift_received" ||
-    template === "gift_claimed"
+    template === "gift_claimed" ||
+    template === "abandoned_cart"
   ) {
     const order = data.order;
     if (order) {
@@ -470,6 +480,10 @@ function plainBody(
 
   if (template === "kyc_rejected" && data.reason) {
     lines.push(`${copy.reasonLabel}: ${data.reason}`);
+  }
+
+  if (template === "campaign" && data.campaignBody) {
+    lines.push(data.campaignBody);
   }
 
   if (template === "contact_message") {

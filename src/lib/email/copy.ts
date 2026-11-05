@@ -163,6 +163,20 @@ const fr: EmailCopy = {
       lead: "Ta demande de retrait de {amount} est {status}. Consulte ta finance pour le détail.",
       cta: "Voir mes retraits",
     },
+    campaign: {
+      subject: "{campaignSubject}",
+      eyebrow: "Message de {store}",
+      title: "{campaignSubject}",
+      lead: "",
+      cta: "Voir la boutique",
+    },
+    abandoned_cart: {
+      subject: "Ton panier t’attend — {store}",
+      eyebrow: "Panier abandonné",
+      title: "Tu as oublié quelque chose ?",
+      lead: "Ton panier chez {store} est toujours là. Reprends-le quand tu veux.",
+      cta: "Reprendre mon panier",
+    },
     contact_message: {
       subject: "Nouveau message de {contact} — {store}",
       eyebrow: "Message client",
@@ -312,6 +326,20 @@ const en: EmailCopy = {
       title: "Payout {status}",
       lead: "Your payout request for {amount} is {status}. See your finance page for details.",
       cta: "View my payouts",
+    },
+    campaign: {
+      subject: "{campaignSubject}",
+      eyebrow: "Message from {store}",
+      title: "{campaignSubject}",
+      lead: "",
+      cta: "View the store",
+    },
+    abandoned_cart: {
+      subject: "Your cart is waiting — {store}",
+      eyebrow: "Abandoned cart",
+      title: "Did you forget something?",
+      lead: "Your cart at {store} is still saved. Pick it up whenever you like.",
+      cta: "Resume my cart",
     },
     contact_message: {
       subject: "New message from {contact} — {store}",

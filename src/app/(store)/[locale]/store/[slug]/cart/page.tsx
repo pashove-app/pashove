@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CartPage } from "@/components/storefront/cart-page";
 import { Container } from "@/components/storefront/container";
+import { CartReminderForm } from "@/components/storefront/cart-reminder-form";
 import { StorefrontClosed } from "@/components/storefront/storefront-closed";
 import { StorefrontHeader } from "@/components/storefront/storefront-header";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
-import { isLocale } from "@/i18n/config";
+import { LOCALE_META, isLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { loadStorefront } from "@/lib/storefront/queries";
+import { readCart } from "@/lib/storefront/cart";
 
 export async function generateMetadata({
   params,
@@ -41,12 +43,19 @@ export default async function CartRoute({
   if (status === "suspended") return <StorefrontClosed t={t} />;
   if (!store) notFound();
 
+  const cart = await readCart(LOCALE_META[locale].tag);
+
   return (
     <StorefrontShell store={store} locale={locale} t={t}>
       <StorefrontHeader store={store} locale={locale} t={t} />
       <main>
         <Container>
           <CartPage />
+          {cart ? (
+            <div className="pb-10">
+              <CartReminderForm />
+            </div>
+          ) : null}
         </Container>
       </main>
     </StorefrontShell>

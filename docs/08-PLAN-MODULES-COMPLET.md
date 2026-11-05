@@ -543,6 +543,11 @@ réconciliation théorique, audit.
 
 ## 15. Marketing et réductions avancées — 🟡
 
+### M1 livré le 5/11/2026
+
+Campagnes e-mail, segments clients, panier abandonné avec opt-in et lien de
+reprise, analytics 30 jours. Détail : `docs/18-M1-MARKETING.md`.
+
 ### Déjà livré
 
 Codes promo (pourcentage, montant fixe, minimum, quota, dates, actif).
@@ -559,10 +564,11 @@ Codes promo (pourcentage, montant fixe, minimum, quota, dates, actif).
 
 ---
 
-## 16. Analyses — 🔴
+## 16. Analyses — 🟡 (V1 livrée le 5/11/2026)
 
-`/app/analytics` : vue d'ensemble, ventes, commandes, clients, produits,
-inventaire, marketing, partenaires, numérique, services, finance.
+`/app/analytics` : CA 30 jours, commandes, panier moyen, conversion, nouveaux
+clients, graphique, top produits, top clients. Les analyses avancées
+(inventaire, marketing, partenaires, numérique, services) restent à faire.
 
 KPI : CA brut/net, commandes, panier moyen, conversion, remboursements,
 nouveaux/récurrents, top produits, top partenaires.

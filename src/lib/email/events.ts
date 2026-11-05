@@ -195,6 +195,75 @@ export async function emailOrderPlaced(
   }
 }
 
+export async function emailCampaign(input: {
+  to: string;
+  name?: string | null;
+  storeId: string;
+  storeName: string;
+  storeSlug: string;
+  subject: string;
+  body: string;
+  locale?: string | null;
+}): Promise<void> {
+  const tag = normalizedLocale(input.locale);
+
+  await sendEmail({
+    template: "campaign",
+    to: input.to,
+    toName: input.name ?? null,
+    locale: tag,
+    storeId: input.storeId,
+    data: {
+      storeName: input.storeName,
+      storeUrl: `${siteUrl()}/${tag}/store/${input.storeSlug}`,
+      customerName: input.name ?? null,
+      campaignSubject: input.subject,
+      campaignBody: input.body,
+      ctaUrl: `${siteUrl()}/${tag}/store/${input.storeSlug}`,
+    },
+  });
+}
+
+export async function emailAbandonedCart(input: {
+  to: string;
+  name: string;
+  storeId: string;
+  storeName: string;
+  storeSlug: string;
+  cartToken: string;
+  orderNumber?: number | null;
+  currency: string;
+  total: number;
+  items: EmailItem[];
+  locale?: string | null;
+}): Promise<void> {
+  const tag = normalizedLocale(input.locale);
+  const cartUrl = `${siteUrl()}/${tag}/store/${input.storeSlug}/cart/recover?token=${input.cartToken}`;
+
+  await sendEmail({
+    template: "abandoned_cart",
+    to: input.to,
+    toName: input.name,
+    locale: tag,
+    storeId: input.storeId,
+    data: {
+      storeName: input.storeName,
+      storeUrl: `${siteUrl()}/${tag}/store/${input.storeSlug}`,
+      customerName: input.name,
+      currency: input.currency,
+      amount: input.total,
+      order: {
+        number: 0,
+        currency: input.currency,
+        total: input.total,
+        items: input.items,
+      },
+      cartUrl,
+      ctaUrl: cartUrl,
+    },
+  });
+}
+
 export async function emailGiftReceived(input: {
   storeId: string;
   storeName: string;

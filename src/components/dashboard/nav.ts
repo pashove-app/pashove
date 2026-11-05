@@ -49,7 +49,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { key: "collections", href: "/app/collections", icon: "layers" },
       { key: "bundles", href: "/app/bundles", icon: "bundle" },
       { key: "customers", href: "/app/clients", icon: "users" },
-      { key: "marketing", href: "/app/marketing", icon: "bolt", soon: true },
+      { key: "marketing", href: "/app/marketing", icon: "bolt" },
       { key: "discounts", href: "/app/discounts", icon: "percent" },
     ],
   },
@@ -65,7 +65,7 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     labelKey: "insight",
     items: [
-      { key: "analytics", href: "/app/analytics", icon: "chart", soon: true },
+      { key: "analytics", href: "/app/analytics", icon: "chart" },
       { key: "finance", href: "/app/finance", icon: "wallet" },
     ],
   },
