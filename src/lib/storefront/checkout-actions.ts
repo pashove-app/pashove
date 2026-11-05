@@ -3,9 +3,9 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
-import { emailOrderPlaced, loadOrderEmailContext } from "@/lib/email/events";
+import { emailGiftReceived, emailOrderPlaced, loadOrderEmailContext } from "@/lib/email/events";
 import { LOCALE_META, resolveLocale } from "@/i18n/config";
-import { buildCheckoutSchema } from "@/lib/storefront/checkout-schema";
+import { buildCheckoutSchema, giftCheckoutSchema } from "@/lib/storefront/checkout-schema";
 import { readCart, readCartToken } from "@/lib/storefront/cart";
 import { loadStorefront } from "@/lib/storefront/queries";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
@@ -137,6 +137,47 @@ export async function placeOrderAction(
     return { status: "invalid", fieldErrors: toFieldErrors(parsed.error) };
   }
 
+  const giftSelected = field(formData, "isGift") === "on";
+  let giftInput: {
+    recipientName: string;
+    recipientEmail: string;
+    message: string | null;
+    scheduledAt: string | null;
+  } | null = null;
+
+  if (giftSelected) {
+    if (!storefront.store.gift_enabled) {
+      return { status: "error", messageKey: "giftDisabled" };
+    }
+
+    if (cart.items.filter((item) => item.productType === "service").length > 1) {
+      return { status: "error", messageKey: "giftMultipleServices" };
+    }
+
+    const giftParsed = giftCheckoutSchema.safeParse({
+      recipientName: field(formData, "giftRecipientName"),
+      recipientEmail: field(formData, "giftRecipientEmail"),
+      message: field(formData, "giftMessage"),
+      scheduledDate: field(formData, "giftScheduledDate"),
+    });
+
+    if (!giftParsed.success) {
+      return { status: "invalid", fieldErrors: toFieldErrors(giftParsed.error) };
+    }
+
+    const date = giftParsed.data.scheduledDate
+      ? new Date(`${giftParsed.data.scheduledDate}T00:00:00.000Z`)
+      : null;
+
+    giftInput = {
+      recipientName: giftParsed.data.recipientName,
+      recipientEmail: giftParsed.data.recipientEmail,
+      message: giftParsed.data.message || null,
+      scheduledAt:
+        date && !Number.isNaN(date.getTime()) ? date.toISOString() : null,
+    };
+  }
+
   const createAccount = field(formData, "createAccount") === "on";
   const password = field(formData, "password");
 
@@ -262,6 +303,32 @@ export async function placeOrderAction(
   const orderToken = result.token;
   await rememberOrderToken(orderToken);
 
+  type GiftClaimResult = {
+    token: string;
+    scheduledAt: string;
+    recipientEmail: string;
+  };
+  let giftResult: GiftClaimResult | null = null;
+
+  if (giftInput) {
+    const { data: giftData, error: giftError } = await supabase.rpc(
+      "create_gift_claim",
+      {
+        p_order_token: orderToken,
+        p_recipient_name: giftInput.recipientName,
+        p_recipient_email: giftInput.recipientEmail,
+        p_message: giftInput.message,
+        p_scheduled_at: giftInput.scheduledAt,
+      },
+    );
+
+    if (giftError) {
+      console.error("[gift] creation failed", giftError.message);
+    } else {
+      giftResult = giftData as GiftClaimResult;
+    }
+  }
+
   // Les e-mails partent après la réponse : le client voit sa page de succès
   // sans attendre l'API Brevo, et un échec d'envoi ne casse pas la commande.
   after(async () => {
@@ -287,7 +354,33 @@ export async function placeOrderAction(
               startsAt: serviceItem.serviceStartsAt,
             }
           : null,
+        giftResult && giftInput
+          ? {
+              recipientName: giftInput.recipientName,
+              message: giftInput.message,
+              scheduledAt: giftResult.scheduledAt,
+            }
+          : null,
       );
+
+      if (giftResult && giftInput) {
+        await emailGiftReceived({
+          storeId: context.storeId,
+          storeName: context.storeName,
+          storeSlug: context.storeSlug,
+          orderNumber: context.orderNumber,
+          currency: context.currency,
+          total: context.total,
+          buyerName: context.customerName,
+          recipientName: giftInput.recipientName,
+          recipientEmail: giftInput.recipientEmail,
+          message: giftInput.message,
+          scheduledAt: giftResult.scheduledAt,
+          token: giftResult.token,
+          items: context.items,
+          locale,
+        });
+      }
     } catch (error) {
       console.error("[email] checkout notification failed", error);
     }

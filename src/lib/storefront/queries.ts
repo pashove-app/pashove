@@ -18,6 +18,7 @@ export type PublicStore = {
   category: string | null;
   shipping_flat_amount: number;
   cod_enabled: boolean;
+  gift_enabled: boolean;
 };
 
 export type StorefrontStatus = "active" | "suspended" | "missing";
@@ -27,7 +28,7 @@ const COLUMNS = [
   "logo:media_assets!logo_media_id(object_key)",
   "banner:media_assets!banner_media_id(object_key)",
   "contact_email, contact_phone, country, currency, category",
-  "shipping_flat_amount, cod_enabled",
+  "shipping_flat_amount, cod_enabled, gift_enabled",
 ].join(", ");
 
 /** Normalise un segment d'URL avant de le comparer : les slugs sont minuscules. */

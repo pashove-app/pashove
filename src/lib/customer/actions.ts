@@ -12,6 +12,11 @@ function field(formData: FormData, key: string): string {
   return typeof value === "string" ? value : "";
 }
 
+function safeNext(value: string, fallback: string): string {
+  const next = value.trim();
+  return next.startsWith("/") && !next.startsWith("//") ? next : fallback;
+}
+
 function siteUrl(): string {
   return (
     process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? "http://localhost:3000"
@@ -72,9 +77,14 @@ export async function customerSignInAction(
 
   if (error) return { status: "error", messageKey: messageKeyFor(error) };
 
+  const next = safeNext(
+    field(formData, "next"),
+    `/${locale}/store/${slug}/account`,
+  );
+
   await claimOrders();
   revalidatePath("/", "layout");
-  redirect(`/${locale}/store/${slug}/account`);
+  redirect(next);
 }
 
 export async function customerSignUpAction(
@@ -100,7 +110,10 @@ export async function customerSignUpAction(
   }
 
   const supabase = await createClient();
-  const next = `/${locale}/store/${slug}/account`;
+  const next = safeNext(
+    field(formData, "next"),
+    `/${locale}/store/${slug}/account`,
+  );
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,

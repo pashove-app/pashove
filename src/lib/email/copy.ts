@@ -25,6 +25,10 @@ export type EmailCopy = {
     reasonLabel: string;
     roleLabel: string;
     serviceLabel: string;
+    giftFor: string;
+    giftMessage: string;
+    giftScheduled: string;
+    giftItems: string;
     footerNote: string;
     questions: string;
     plainIntro: string;
@@ -49,6 +53,10 @@ const fr: EmailCopy = {
     reasonLabel: "Motif",
     roleLabel: "Rôle",
     serviceLabel: "Prestation",
+    giftFor: "Cadeau pour",
+    giftMessage: "Message",
+    giftScheduled: "Envoi prévu",
+    giftItems: "Le cadeau",
     footerNote: "Cet e-mail t’a été envoyé par Pashove pour le compte de {store}.",
     questions: "Une question ? Réponds directement à cet e-mail.",
     plainIntro:
@@ -153,6 +161,20 @@ const fr: EmailCopy = {
       lead: "Ta demande de retrait de {amount} est {status}. Consulte ta finance pour le détail.",
       cta: "Voir mes retraits",
     },
+    gift_received: {
+      subject: "{buyer} t’a offert un cadeau — {store}",
+      eyebrow: "Un cadeau pour toi",
+      title: "Un cadeau t’attend",
+      lead: "{buyer} t’a offert un cadeau sur {store}. Ouvre-le quand tu veux.",
+      cta: "Découvrir mon cadeau",
+    },
+    gift_claimed: {
+      subject: "Ton cadeau a été réclamé — {store}",
+      eyebrow: "Cadeau réclamé",
+      title: "Ton cadeau est arrivé",
+      lead: "{recipient} a bien réclamé le cadeau. Aucun fichier n’est joint à cet e-mail.",
+      cta: "Voir ma commande",
+    },
   },
 };
 
@@ -173,6 +195,10 @@ const en: EmailCopy = {
     reasonLabel: "Reason",
     roleLabel: "Role",
     serviceLabel: "Service",
+    giftFor: "Gift for",
+    giftMessage: "Message",
+    giftScheduled: "Scheduled for",
+    giftItems: "The gift",
     footerNote: "This email was sent by Pashove on behalf of {store}.",
     questions: "Questions? Just reply to this email.",
     plainIntro:
@@ -276,6 +302,20 @@ const en: EmailCopy = {
       title: "Payout {status}",
       lead: "Your payout request for {amount} is {status}. See your finance page for details.",
       cta: "View my payouts",
+    },
+    gift_received: {
+      subject: "{buyer} sent you a gift — {store}",
+      eyebrow: "A gift for you",
+      title: "A gift is waiting for you",
+      lead: "{buyer} sent you a gift from {store}. Open it whenever you like.",
+      cta: "Discover my gift",
+    },
+    gift_claimed: {
+      subject: "Your gift was claimed — {store}",
+      eyebrow: "Gift claimed",
+      title: "Your gift has arrived",
+      lead: "{recipient} claimed the gift. No file is attached to this email.",
+      cta: "View my order",
     },
   },
 };

@@ -9,10 +9,13 @@ export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export default async function CustomerLoginPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; slug: string }>;
+  searchParams: Promise<{ next?: string }>;
 }) {
   const { locale: raw, slug } = await params;
+  const { next } = await searchParams;
   const locale = resolveLocale(raw);
 
   const user = await getCustomerUser();
@@ -20,5 +23,5 @@ export default async function CustomerLoginPage({
 
   const t = await getDictionary(locale);
 
-  return <CustomerLoginForm t={t} locale={locale} slug={slug} />;
+  return <CustomerLoginForm t={t} locale={locale} slug={slug} next={next ?? null} />;
 }

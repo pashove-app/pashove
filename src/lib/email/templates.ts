@@ -167,6 +167,50 @@ function orderBlock(data: EmailData, locale: EmailLocale): string {
   ${detailRows(details)}`;
 }
 
+function giftNotice(data: EmailData, locale: EmailLocale): string {
+  if (!data.giftRecipientName) return "";
+  const copy = EMAIL_COPY[locale].common;
+
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;background:#EEF2FF;border:1px solid #C7D2FE;border-radius:12px;">
+    <tr><td style="padding:14px 16px;font:400 13px/1.6 ${FONT};color:#3730A3;">
+      <strong style="display:block;margin-bottom:4px;">${esc(copy.giftFor)} ${esc(data.giftRecipientName)}</strong>
+      ${data.giftMessage ? esc(data.giftMessage) : ""}
+      ${data.giftScheduledAt ? `<span style="display:block;margin-top:4px;color:#4F46E5;">${esc(copy.giftScheduled)} ${esc(formatDate(data.giftScheduledAt, locale))}</span>` : ""}
+    </td></tr>
+  </table>`;
+}
+
+function giftBlock(data: EmailData, locale: EmailLocale): string {
+  const copy = EMAIL_COPY[locale].common;
+  const order = data.order;
+
+  const items = (order?.items ?? [])
+    .map(
+      (item) => `<tr>
+        <td style="padding:8px 0;font:400 13px/1.45 ${FONT};color:${INK};">
+          ${esc(item.name)}
+          ${item.variantLabel ? `<span style="color:${MUTED};"> · ${esc(item.variantLabel)}</span>` : ""}
+          <span style="color:${MUTED};"> × ${item.quantity}</span>
+        </td>
+      </tr>`,
+    )
+    .join("");
+
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:22px 0;background:${BG};border-radius:14px;">
+    <tr><td style="padding:14px 18px 2px;font:600 11px/1.4 ${FONT};letter-spacing:0.08em;text-transform:uppercase;color:${MUTED};">${esc(copy.giftItems)}</td></tr>
+    <tr><td style="padding:0 18px 12px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${items}</table>
+    </td></tr>
+  </table>
+  ${data.giftMessage ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:18px 0;border-left:3px solid ${BRAND};">
+    <tr><td style="padding:2px 0 2px 14px;font:400 14px/1.65 ${FONT};color:${INK};font-style:italic;">${esc(data.giftMessage)}</td></tr>
+  </table>` : ""}
+  ${detailRows([
+    ...(data.giftRecipientName ? ([[copy.giftFor, data.giftRecipientName]] as [string, string][]) : []),
+    ...(data.giftScheduledAt ? ([[copy.giftScheduled, formatDate(data.giftScheduledAt, locale)]] as [string, string][]) : []),
+  ])}`;
+}
+
 function reasonBlock(data: EmailData, locale: EmailLocale): string {
   if (!data.reason) return "";
   const label = EMAIL_COPY[locale].common.reasonLabel;
@@ -187,13 +231,19 @@ function bodyFor(
   const copy = EMAIL_COPY[locale].common;
 
   switch (template) {
+    case "gift_received":
+      return giftBlock(data, locale);
+
+    case "gift_claimed":
+      return giftBlock(data, locale);
+
     case "order_confirmation":
     case "new_order":
     case "order_shipped":
     case "order_delivered":
     case "order_cancelled":
     case "order_refunded":
-      return orderBlock(data, locale);
+      return orderBlock(data, locale) + (template === "new_order" ? giftNotice(data, locale) : "");
 
     case "digital_access":
       return orderBlock(data, locale);
@@ -246,6 +296,8 @@ function ctaUrl(template: EmailTemplate, data: EmailData): string | null {
   switch (template) {
     case "welcome":
       return data.ctaUrl ?? null;
+    case "gift_received":
+      return data.giftClaimUrl ?? null;
     case "digital_access":
       return data.downloadsUrl ?? data.orderUrl ?? data.ctaUrl ?? null;
     case "team_invitation":
@@ -315,6 +367,8 @@ export function renderEmail(
 
   const vars: Record<string, string> = {
     name: data.customerName?.trim() ?? "",
+    buyer: data.giftBuyerName?.trim() ?? data.customerName?.trim() ?? "",
+    recipient: data.giftRecipientName?.trim() ?? data.customerName?.trim() ?? "",
     number: data.order ? String(data.order.number) : "",
     store: data.storeName?.trim() ?? "Pashove",
     amount: money(data.amount ?? data.order?.total, data.currency ?? data.order?.currency, locale),
@@ -381,7 +435,9 @@ function plainBody(
     template === "order_delivered" ||
     template === "order_cancelled" ||
     template === "order_refunded" ||
-    template === "digital_access"
+    template === "digital_access" ||
+    template === "gift_received" ||
+    template === "gift_claimed"
   ) {
     const order = data.order;
     if (order) {

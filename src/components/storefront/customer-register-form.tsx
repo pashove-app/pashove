@@ -17,10 +17,12 @@ export function CustomerRegisterForm({
   t,
   locale,
   slug,
+  next,
 }: {
   t: Dictionary;
   locale: Locale;
   slug: string;
+  next?: string | null;
 }) {
   const labels = t.customer;
   const [state, formAction, pending] = useActionState<
@@ -78,6 +80,7 @@ export function CustomerRegisterForm({
         <form action={formAction} className="mt-6 space-y-4" noValidate>
           <input type="hidden" name="locale" value={locale} />
           <input type="hidden" name="slug" value={slug} />
+          {next ? <input type="hidden" name="next" value={next} /> : null}
 
           <TextField
             name="fullName"

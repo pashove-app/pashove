@@ -326,34 +326,24 @@ rattachée à sa boutique. Les boutiques ne voient que leurs propres clients.
 
 ---
 
-## 9. Cadeaux — 🔴
+## 9. Cadeaux — ✅ V1 livrée le 4/11/2026
 
-### Pages marchand
+### Livré
 
-`/app/gifts` : envoyés, reçus, configuration, modèles de message.
+Checkout cadeau, `gift_claims`, jeton 32 caractères, droits numériques
+verrouillés puis rendus au destinataire, réclamation atomique, expiration à
+90 jours, adresse physique et créneau de service, e-mails `gift_received` et
+`gift_claimed`, page publique `/gift/claim/[token]`, succès avec téléchargement
+invité, console `/app/gifts` (Envoyés / Reçus / Configuration).
 
-### Checkout
+Détail et tests : `docs/14-CADEAUX-G1.md`.
 
-Option « Acheter comme cadeau » : destinataire, e-mail/téléphone, message,
-date d'envoi.
+### Reste
 
-### Pages client
-
-`/account/gifts`, `/gifts/claim/[token]`.
-
-### Données
-
-- `gift_orders`, `gift_recipients`, `gift_claims`, `gift_messages`.
-- Statuts : créé, payé, programmé, envoyé, livré, réclamé, expiré, annulé.
-
-### Règles
-
-- Cadeau numérique : entitlement attribué au **destinataire**, pas à l'acheteur.
-- Réclamation atomique : un token = une seule réclamation.
-- Cadeau physique : adresse du destinataire, suivi visible par l'acheteur.
-- Cadeau service : bon/code de réservation.
-
-**Effort** : 2 semaines.
+- Textes BM/LN/AR et modèles de message.
+- Envoi à une heure précise et fuseaux.
+- Cadeau multi-services.
+- Suivi de livraison visible par l’acheteur sans exposer le fichier.
 
 ---
 

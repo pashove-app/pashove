@@ -1,5 +1,5 @@
 import { createPublicClient } from "@/lib/supabase/public";
-import { sendEmail, sendStoreEmail } from "./service";
+import { scheduleEmail, sendEmail, sendStoreEmail } from "./service";
 import type { EmailData, EmailItem, EmailOrder } from "./types";
 
 function siteUrl(): string {
@@ -127,6 +127,11 @@ export async function emailOrderPlaced(
   context: OrderEmailContext,
   locale?: string | null,
   booking?: { service: string; startsAt: string } | null,
+  gift?: {
+    recipientName: string;
+    message?: string | null;
+    scheduledAt: string;
+  } | null,
 ): Promise<void> {
   const tag = normalizedLocale(locale);
 
@@ -149,10 +154,17 @@ export async function emailOrderPlaced(
       ...baseData(context, tag),
       // Le marchand voit la commande depuis son espace, pas depuis la vitrine.
       orderUrl: `${siteUrl()}/${tag}/app/orders/${context.orderId}`,
+      ...(gift
+        ? {
+            giftRecipientName: gift.recipientName,
+            giftMessage: gift.message ?? null,
+            giftScheduledAt: gift.scheduledAt,
+          }
+        : {}),
     },
   });
 
-  if (context.hasDigital) {
+  if (context.hasDigital && !gift) {
     await sendEmail({
       template: "digital_access",
       to: context.customerEmail,
@@ -166,7 +178,7 @@ export async function emailOrderPlaced(
     });
   }
 
-  if (booking) {
+  if (booking && !gift) {
     await sendEmail({
       template: "booking_confirmation",
       to: context.customerEmail,
@@ -181,6 +193,92 @@ export async function emailOrderPlaced(
       },
     });
   }
+}
+
+export async function emailGiftReceived(input: {
+  storeId: string;
+  storeName: string;
+  storeSlug: string;
+  orderNumber: number;
+  currency: string;
+  total: number;
+  buyerName: string;
+  recipientName: string;
+  recipientEmail: string;
+  message?: string | null;
+  scheduledAt: string;
+  token: string;
+  items: EmailItem[];
+  locale?: string | null;
+}): Promise<void> {
+  const tag = normalizedLocale(input.locale);
+  const claimUrl = `${siteUrl()}/${tag}/gift/claim/${input.token}`;
+
+  const email = {
+    template: "gift_received" as const,
+    to: input.recipientEmail,
+    toName: input.recipientName,
+    locale: tag,
+    storeId: input.storeId,
+    data: {
+      storeName: input.storeName,
+      storeUrl: `${siteUrl()}/${tag}/store/${input.storeSlug}`,
+      customerName: input.recipientName,
+      order: {
+        number: input.orderNumber,
+        currency: input.currency,
+        total: input.total,
+        items: input.items,
+      },
+      currency: input.currency,
+      amount: input.total,
+      giftBuyerName: input.buyerName,
+      giftRecipientName: input.recipientName,
+      giftMessage: input.message ?? null,
+      giftScheduledAt: input.scheduledAt,
+      giftClaimUrl: claimUrl,
+    },
+  };
+
+  await scheduleEmail(email, input.scheduledAt);
+}
+
+export async function emailGiftClaimed(input: {
+  buyerEmail: string;
+  buyerName: string;
+  storeName: string;
+  storeSlug: string;
+  orderNumber: number;
+  recipientName: string;
+  itemNames: string[];
+  locale?: string | null;
+}): Promise<void> {
+  const tag = normalizedLocale(input.locale);
+
+  await sendEmail({
+    template: "gift_claimed",
+    to: input.buyerEmail,
+    toName: input.buyerName,
+    locale: tag,
+    data: {
+      storeName: input.storeName,
+      storeUrl: `${siteUrl()}/${tag}/store/${input.storeSlug}`,
+      customerName: input.buyerName,
+      order: {
+        number: input.orderNumber,
+        currency: "XOF",
+        total: 0,
+        items: input.itemNames.map((name) => ({
+          name,
+          quantity: 1,
+          lineTotal: 0,
+        })),
+      },
+      giftRecipientName: input.recipientName,
+      giftBuyerName: input.buyerName,
+      orderUrl: `${siteUrl()}/${tag}/store/${input.storeSlug}/account/orders`,
+    },
+  });
 }
 
 export async function emailOrderShipped(

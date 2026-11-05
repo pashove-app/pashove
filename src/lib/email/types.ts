@@ -15,7 +15,9 @@ export type EmailTemplate =
   | "kyc_approved"
   | "kyc_rejected"
   | "payout_requested"
-  | "payout_processed";
+  | "payout_processed"
+  | "gift_received"
+  | "gift_claimed";
 
 /** Catégories de notifications que le marchand peut couper. */
 export type EmailKind = "new_order" | "order_cancelled" | "kyc" | "payout";
@@ -67,6 +69,12 @@ export type EmailData = {
   downloadsUrl?: string | null;
   orderUrl?: string | null;
   ctaUrl?: string | null;
+  giftRecipientName?: string | null;
+  giftBuyerName?: string | null;
+  giftMessage?: string | null;
+  giftClaimUrl?: string | null;
+  giftScheduledAt?: string | null;
+  giftItemNames?: string[] | null;
 };
 
 export type RenderedEmail = {

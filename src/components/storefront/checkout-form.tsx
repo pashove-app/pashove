@@ -19,6 +19,7 @@ import {
 } from "@/lib/storefront/checkout-actions";
 import type { CheckoutPaymentOption, PaymentMethod } from "@/lib/payments/types";
 import type { CartView } from "@/lib/storefront/cart-types";
+import { getGiftCopy } from "@/lib/gifts/copy";
 
 const INITIAL: CheckoutFormState = { status: "idle" };
 
@@ -59,6 +60,7 @@ export function CheckoutForm({
   defaultCountry,
   requiresShipping,
   paymentMethods,
+  giftEnabled,
 }: {
   t: Dictionary;
   locale: Locale;
@@ -67,8 +69,10 @@ export function CheckoutForm({
   defaultCountry: string;
   requiresShipping: boolean;
   paymentMethods: CheckoutPaymentOption[];
+  giftEnabled: boolean;
 }) {
   const labels = t.storefront;
+  const giftCopy = getGiftCopy(locale);
   const [state, formAction, pending] = useActionState<
     CheckoutFormState,
     FormData
@@ -77,6 +81,7 @@ export function CheckoutForm({
   const [method, setMethod] = useState<PaymentMethod>(
     paymentMethods[0]?.code ?? "cod",
   );
+  const [gift, setGift] = useState(false);
 
   const methodCopy: Record<
     PaymentMethod,
@@ -118,12 +123,33 @@ export function CheckoutForm({
     );
   };
 
+  const giftFieldError = (key: string) => {
+    const messageKey = state.fieldErrors?.[key];
+    if (!messageKey) return undefined;
+
+    if (messageKey === "giftNameInvalid" || messageKey === "giftEmailInvalid") {
+      return giftCopy.checkout.required;
+    }
+    if (messageKey === "giftDateInvalid") {
+      return giftCopy.checkout.required;
+    }
+
+    return giftCopy.checkout.required;
+  };
+
+  const giftServerMessage =
+    state.messageKey === "giftDisabled"
+      ? giftCopy.checkout.disabled
+      : state.messageKey === "giftMultipleServices"
+        ? giftCopy.checkout.multipleServices
+        : null;
+
   const serverMessage = state.messageKey
     ? interpolate(
         (labels[state.messageKey as keyof typeof labels] as string | undefined) ??
           "",
         state.messageVars ?? {},
-      ) || null
+      ) || giftServerMessage
     : null;
 
   return (
@@ -331,6 +357,79 @@ export function CheckoutForm({
           </div>
         </dl>
       </Step>
+
+      {giftEnabled ? (
+        <section className="rounded-3xl border border-border bg-surface p-5 sm:p-6">
+          <div className="flex items-start gap-3">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white">
+              <Icon path={icons.gift} className="h-4 w-4" strokeWidth={1.8} />
+            </span>
+            <div>
+              <h2 className="text-[0.9375rem] font-medium text-fg">
+                {giftCopy.checkout.title}
+              </h2>
+              <p className="mt-0.5 text-[0.75rem] leading-relaxed text-subtle">
+                {giftCopy.checkout.text}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <Checkbox
+              name="isGift"
+              checked={gift}
+              onChange={(event) => setGift(event.target.checked)}
+              label={
+                <span className="font-medium text-body">
+                  {giftCopy.checkout.toggle}
+                </span>
+              }
+            />
+          </div>
+
+          {gift ? (
+            <div className="mt-4 space-y-4 border-t border-hairline pt-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <TextField
+                  name="giftRecipientName"
+                  label={giftCopy.checkout.recipientName}
+                  maxLength={120}
+                  error={giftFieldError("giftRecipientName")}
+                />
+                <TextField
+                  name="giftRecipientEmail"
+                  label={giftCopy.checkout.recipientEmail}
+                  type="email"
+                  dir="ltr"
+                  maxLength={254}
+                  error={giftFieldError("giftRecipientEmail")}
+                />
+              </div>
+
+              <TextAreaField
+                name="giftMessage"
+                label={giftCopy.checkout.message}
+                hint={giftCopy.checkout.messageHint}
+                maxLength={500}
+                rows={3}
+                error={giftFieldError("giftMessage")}
+              />
+
+              <TextField
+                name="giftScheduledDate"
+                label={giftCopy.checkout.date}
+                type="date"
+                help={giftCopy.checkout.dateHint}
+                error={giftFieldError("giftScheduledDate")}
+              />
+
+              <p className="rounded-xl border border-brand-500/20 bg-brand-500/[0.05] px-3 py-2.5 text-[0.75rem] leading-relaxed text-subtle">
+                {giftCopy.checkout.info}
+              </p>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
 
       <Step
         number={requiresShipping ? 4 : 3}

@@ -72,6 +72,35 @@ function sample(template: EmailTemplate): EmailData {
         ...base,
         downloadsUrl: "https://pashove.com/fr/store/maboutie/account/downloads",
       };
+    case "gift_received":
+      return {
+        ...base,
+        customerName: "Awa Destinataire",
+        giftBuyerName: "Ibrahim Cadeau",
+        giftRecipientName: "Awa Destinataire",
+        giftMessage: "Joyeux anniversaire, ce guide est pour toi !",
+        giftScheduledAt: "2026-11-06T10:00:00.000Z",
+        giftClaimUrl:
+          "https://pashove.com/fr/gift/claim/783a2c496296411fa565b680aae708b3",
+        order: {
+          ...base.order!,
+          number: 1027,
+          total: 10000,
+          subtotal: 10000,
+          discount: 0,
+          shipping: 0,
+        },
+      };
+    case "gift_claimed":
+      return {
+        ...base,
+        customerName: "Ibrahim Cadeau",
+        giftRecipientName: "Awa Destinataire",
+        giftBuyerName: "Ibrahim Cadeau",
+        giftMessage: "Joyeux anniversaire, ce guide est pour toi !",
+        orderUrl:
+          "https://pashove.com/fr/store/maboutie/account/orders",
+      };
     default:
       return base;
   }

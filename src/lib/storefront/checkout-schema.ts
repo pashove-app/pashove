@@ -56,3 +56,33 @@ export function buildCheckoutSchema(requiresShipping: boolean) {
 export type CheckoutInput = z.infer<
   ReturnType<typeof buildCheckoutSchema>
 >;
+
+
+/**
+ * Champs du cadeau, validés seulement lorsque la case est cochée.
+ * La date est une date civile (`AAAA-MM-JJ`) sans heure : le serveur la place
+ * au début de la journée et `create_gift_claim` la ramène à maintenant si elle
+ * est déjà passée.
+ */
+export const giftCheckoutSchema = z.object({
+  recipientName: z
+    .string()
+    .trim()
+    .min(2, "giftNameInvalid")
+    .max(120, "giftNameInvalid"),
+  recipientEmail: z
+    .string()
+    .trim()
+    .email("giftEmailInvalid")
+    .max(254, "giftEmailInvalid"),
+  message: z.string().trim().max(500, "giftMessageTooLong"),
+  scheduledDate: z
+    .string()
+    .trim()
+    .refine(
+      (value) => value === "" || /^\d{4}-\d{2}-\d{2}$/.test(value),
+      "giftDateInvalid",
+    ),
+});
+
+export type GiftCheckoutInput = z.infer<typeof giftCheckoutSchema>;

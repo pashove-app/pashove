@@ -83,6 +83,52 @@ export async function sendEmail(input: SendEmailInput): Promise<void> {
   }
 }
 
+/**
+ * Programme un e-mail à une date future.
+ *
+ * Sans service role, on ne peut pas persister la file : l'e-mail part
+ * immédiatement plutôt que de disparaître.
+ */
+export async function scheduleEmail(
+  input: SendEmailInput,
+  scheduledAt: string,
+): Promise<void> {
+  const when = new Date(scheduledAt);
+
+  if (Number.isNaN(when.getTime()) || when.getTime() <= Date.now()) {
+    await sendEmail(input);
+    return;
+  }
+
+  const service = createServiceClient();
+  if (!service) {
+    await sendEmail(input);
+    return;
+  }
+
+  try {
+    const locale = toEmailLocale(input.locale);
+    const rendered = renderEmail(input.template, input.data, locale);
+
+    await service.from("email_messages").insert({
+      store_id: input.storeId ?? null,
+      template: input.template,
+      recipient: input.to.trim(),
+      subject: rendered.subject,
+      html: rendered.html,
+      text_body: rendered.text,
+      status: "queued",
+      attempts: 0,
+      provider: null,
+      provider_id: null,
+      scheduled_at: when.toISOString(),
+    });
+  } catch (error) {
+    console.error("[email] schedule failed", error);
+    await sendEmail(input);
+  }
+}
+
 /** Le marchand a-t-il laissé cette catégorie active ? Absence de ligne = oui. */
 export async function storeNotificationEnabled(
   storeId: string,
