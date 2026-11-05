@@ -31,6 +31,7 @@ export type EmailCopy = {
     giftScheduled: string;
     giftItems: string;
     footerNote: string;
+    footerOwn: string;
     questions: string;
     plainIntro: string;
   };
@@ -60,6 +61,7 @@ const fr: EmailCopy = {
     giftScheduled: "Envoi prévu",
     giftItems: "Le cadeau",
     footerNote: "Cet e-mail t’a été envoyé par Pashove pour le compte de {store}.",
+    footerOwn: "Cet e-mail t’a été envoyé par Pashove.",
     questions: "Une question ? Réponds directement à cet e-mail.",
     plainIntro:
       "Si tu ne peux pas cliquer sur le bouton, copie ce lien dans ton navigateur :",
@@ -224,6 +226,7 @@ const en: EmailCopy = {
     giftScheduled: "Scheduled for",
     giftItems: "The gift",
     footerNote: "This email was sent by Pashove on behalf of {store}.",
+    footerOwn: "This email was sent by Pashove.",
     questions: "Questions? Just reply to this email.",
     plainIntro:
       "If you cannot click the button, copy this link into your browser:",

@@ -3,11 +3,21 @@ import type { EmailData, EmailLocale, EmailTemplate, RenderedEmail } from "./typ
 
 const BRAND = "#2F5CFF";
 const INK = "#0A0E1A";
-const MUTED = "#6B7280";
-const LINE = "#E6E8EF";
-const BG = "#F4F5F8";
+const MUTED = "#667085";
+const LINE = "#E4E8F2";
+const BG = "#F4F6FB";
+const SOFT = "#F7F9FE";
+const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? "https://pashove.com").replace(
+  /\/$/,
+  "",
+);
+const LOGO_URL = process.env.R2_PUBLIC_URL
+  ? `${process.env.R2_PUBLIC_URL.replace(/\/$/, "")}/brand/pashove-logo.png`
+  : `${APP_URL}/brand/pashove-logo.png`;
 const FONT =
-  "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+  "'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+const HEADING_FONT =
+  "'Playfair Display',Georgia,'Times New Roman',serif";
 
 const LOCALE_TAG: Record<EmailLocale, string> = {
   fr: "fr-FR",
@@ -76,15 +86,14 @@ function formatDate(value: string | null | undefined, locale: EmailLocale): stri
 
 /** Bouton principal. Table plutôt qu'un `<a>` stylé : Outlook ignore le padding. */
 function button(url: string, label: string): string {
-  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:26px 0 6px;">
+  return `<table role="presentation" cellpadding="0" cellspacing="0" align="center" class="email-cta" style="margin:30px auto 8px;">
   <tr>
-    <td style="background:${BRAND};border-radius:999px;">
-      <a href="${esc(url)}" style="display:inline-block;padding:14px 28px;font:600 14px/1 ${FONT};color:#ffffff;text-decoration:none;">${esc(label)}</a>
+    <td style="background:${BRAND};border:1px solid ${BRAND};border-radius:999px;box-shadow:0 12px 28px -12px rgba(47,92,255,0.7);">
+      <a href="${esc(url)}" style="display:inline-block;padding:15px 32px;font:600 14px/1 ${FONT};color:#ffffff;text-decoration:none;letter-spacing:0.01em;">${esc(label)}</a>
     </td>
   </tr>
 </table>`;
 }
-
 function detailRows(rows: [string, string][]): string {
   if (rows.length === 0) return "";
 
@@ -338,43 +347,74 @@ function layout(input: {
   questions: string;
 }): string {
   const store = input.storeName?.trim();
-  const brandLine =
+  const storeLine =
     store && store.toLowerCase() !== "pashove"
-      ? `<span style="font:600 15px/1.2 ${FONT};color:${INK};">Pashove</span><span style="font:400 15px/1.2 ${FONT};color:${MUTED};"> · ${esc(store)}</span>`
-      : `<span style="font:600 15px/1.2 ${FONT};color:${INK};">Pashove</span>`;
+      ? `<p style="margin:8px 0 0;font:500 11px/1.4 ${FONT};letter-spacing:0.02em;color:${MUTED};">${esc(store)}</p>`
+      : "";
 
-  return `<div style="margin:0;padding:0;background:${BG};">
+  return `<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="x-apple-disable-message-reformatting" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500&display=swap" rel="stylesheet" />
+<title>${esc(input.title)}</title>
+<style>
+  @media only screen and (max-width: 600px) {
+    .email-shell { padding: 16px 8px !important; }
+    .email-card { width: 100% !important; }
+    .email-header { padding: 22px 18px 18px !important; }
+    .email-content { padding: 30px 22px 24px !important; }
+    .email-title { font-size: 27px !important; line-height: 1.18 !important; }
+    .email-lead { font-size: 14px !important; }
+    .email-footer { padding: 20px 14px !important; }
+    .email-cta a { display: block !important; padding: 16px 18px !important; }
+  }
+</style>
+</head>
+<body style="margin:0;padding:0;background:${BG};-webkit-text-size-adjust:100%;text-size-adjust:100%;">
   <div style="display:none;font-size:1px;color:${BG};line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${esc(input.preheader)}</div>
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${BG};padding:28px 12px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="email-shell" style="background:${BG};padding:36px 14px;">
     <tr><td align="center">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
-        <tr><td style="padding:0 6px 16px;">
-          <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-            <td style="padding-right:10px;">
-              <span style="display:inline-block;width:30px;height:30px;border-radius:9px;background:${BRAND};color:#ffffff;font:700 15px/30px ${FONT};text-align:center;">P</span>
-            </td>
-            <td>${brandLine}</td>
-          </tr></table>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="email-card" style="max-width:600px;">
+        <tr><td style="height:5px;background:${BRAND};border-radius:18px 18px 0 0;"></td></tr>
+
+        <tr><td class="email-header" style="background:#ffffff;padding:30px 28px 22px;text-align:center;border-left:1px solid ${LINE};border-right:1px solid ${LINE};">
+          <a href="${APP_URL}" style="display:inline-block;text-decoration:none;">
+            <img src="${LOGO_URL}" width="156" height="36" alt="Pashove" style="display:block;margin:0 auto;border:0;outline:none;width:156px;max-width:70%;height:auto;" />
+          </a>
+          ${storeLine}
         </td></tr>
 
-        <tr><td style="background:#ffffff;border:1px solid ${LINE};border-radius:20px;padding:32px 28px;">
-          <p style="margin:0 0 10px;font:600 11px/1.4 ${FONT};letter-spacing:0.1em;text-transform:uppercase;color:${BRAND};">${esc(input.eyebrow)}</p>
-          <h1 style="margin:0;font:600 24px/1.25 ${FONT};letter-spacing:-0.02em;color:${INK};">${esc(input.title)}</h1>
-          <p style="margin:12px 0 0;font:400 14px/1.65 ${FONT};color:#4B5563;">${esc(input.lead)}</p>
+        <tr><td class="email-content" style="background:#ffffff;padding:38px 40px 32px;border-left:1px solid ${LINE};border-right:1px solid ${LINE};">
+          <p style="margin:0 0 12px;font:700 10px/1.4 ${FONT};letter-spacing:0.16em;text-transform:uppercase;color:${BRAND};">${esc(input.eyebrow)}</p>
+          <h1 class="email-title" style="margin:0;font:500 31px/1.2 ${HEADING_FONT};letter-spacing:-0.02em;color:${INK};">${esc(input.title)}</h1>
+          ${input.lead ? `<p class="email-lead" style="margin:14px 0 0;font:400 15px/1.7 ${FONT};color:#475467;">${esc(input.lead)}</p>` : ""}
           ${input.body}
           ${input.ctaHtml}
         </td></tr>
 
-        <tr><td style="padding:18px 8px 4px;font:400 11.5px/1.6 ${FONT};color:#8A90A2;">
-          ${esc(input.footerNote)}
-          <br />${esc(input.questions)}
+        <tr><td class="email-footer" style="background:${SOFT};padding:24px 32px 26px;border:1px solid ${LINE};border-top:0;border-radius:0 0 18px 18px;text-align:center;">
+          <p style="margin:0;font:400 11px/1.7 ${FONT};color:${MUTED};">${esc(input.footerNote)}</p>
+          <p style="margin:6px 0 0;font:400 11px/1.7 ${FONT};color:${MUTED};">${esc(input.questions)}</p>
+          <p style="margin:14px 0 0;font:400 10px/1.6 ${FONT};color:#98A2B3;">
+            <a href="https://pashove.com/legal/cgu" style="color:#98A2B3;text-decoration:underline;">CGU</a>
+            &nbsp;·&nbsp;
+            <a href="https://pashove.com/legal/confidentialite" style="color:#98A2B3;text-decoration:underline;">Confidentialité</a>
+            &nbsp;·&nbsp;
+            <a href="https://pashove.com/legal/mentions" style="color:#98A2B3;text-decoration:underline;">Mentions légales</a>
+          </p>
+          <p style="margin:10px 0 0;font:400 10px/1.6 ${FONT};color:#98A2B3;">© 2026 Pashove. Tous droits réservés.</p>
         </td></tr>
       </table>
     </td></tr>
   </table>
-</div>`;
+</body>
+</html>`;
 }
-
 export function renderEmail(
   template: EmailTemplate,
   data: EmailData,
@@ -407,9 +447,11 @@ export function renderEmail(
   const body = bodyFor(template, data, locale);
   const ctaHtml = ctaLabel && url ? button(url, ctaLabel) : "";
 
-  const footerNote = fill(copy.common.footerNote, {
-    store: data.storeName?.trim() ?? "Pashove",
-  });
+  const storeName = data.storeName?.trim();
+  const footerNote =
+    storeName && storeName.toLowerCase() !== "pashove"
+      ? fill(copy.common.footerNote, { store: storeName })
+      : copy.common.footerOwn;
 
   const html = layout({
     locale,

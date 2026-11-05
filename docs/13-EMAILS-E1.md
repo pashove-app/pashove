@@ -111,3 +111,9 @@ compteurs, détail avec aperçu HTML dans une iframe isolée et version texte.
   volontairement tabulaire et sans ressource externe.
 - Le remboursement déclenché depuis l’administration exige le service role
   pour retrouver le contexte de commande.
+
+
+## Refonte design du 5/11/2026
+
+Le layout a été refait : logo réel, fond premium, Playfair/Inter, footer légal,
+bouton ombré et responsive. Voir `docs/19-EMAILS-DESIGN.md`.
