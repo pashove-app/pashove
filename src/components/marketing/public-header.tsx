@@ -34,6 +34,7 @@ export function PublicHeader({
 
   const links = [
     { label: content.nav.features, href: publicHref(locale, "/features") },
+    { label: content.nav.about, href: publicHref(locale, "/about") },
     { label: content.nav.pricing, href: publicHref(locale, "/pricing") },
   ];
 

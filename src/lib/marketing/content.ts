@@ -37,6 +37,7 @@ const fr = {
   nav: {
     home: "Accueil",
     features: "Fonctionnalités",
+    about: "À propos",
     pricing: "Tarifs",
     login: "Connexion",
     cta: "Créer ma boutique",
@@ -429,7 +430,7 @@ const fr = {
       { label: "Thèmes", href: "/features#boutique" },
     ],
     company: [
-      { label: "À propos", href: "/#why" },
+      { label: "À propos", href: "/about" },
       { label: "Blog", href: "/features", soon: true },
       { label: "Contact", href: "mailto:hello@pashove.com" },
     ],
@@ -470,7 +471,7 @@ const en: SiteContent = {
     featuresDescription:
       "Catalog, orders, finance, themes, messaging, partners: everything Pashove already does for your store.",
   },
-  nav: { home: "Home", features: "Features", pricing: "Pricing", login: "Sign in", cta: "Create my store", menu: "Open menu", close: "Close menu" },
+  nav: { home: "Home", features: "Features", about: "About", pricing: "Pricing", login: "Sign in", cta: "Create my store", menu: "Open menu", close: "Close menu" },
   hero: {
     eyebrow: "Discover the Pashove platform",
     titleBefore: "Grow your",
@@ -700,7 +701,7 @@ const en: SiteContent = {
       { label: "Themes", href: "/features#boutique" },
     ],
     company: [
-      { label: "About", href: "/#why" },
+      { label: "About", href: "/about" },
       { label: "Blog", href: "/features", soon: true },
       { label: "Contact", href: "mailto:hello@pashove.com" },
     ],

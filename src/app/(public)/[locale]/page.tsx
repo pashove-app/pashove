@@ -20,6 +20,7 @@ import { PublicMediaShowcase } from "@/components/marketing/media-showcase";
 import { cn } from "@/lib/cn";
 import { resolveLocale } from "@/i18n/config";
 import { getSiteContent } from "@/lib/marketing/content";
+import { getAboutContent } from "@/lib/marketing/about";
 
 export async function generateMetadata({
   params,
@@ -51,6 +52,7 @@ export default async function PublicHomePage({
   const { locale: raw } = await params;
   const locale = resolveLocale(raw);
   const c = getSiteContent(locale);
+  const about = getAboutContent(locale);
   const miniIcons = [icons.globe, icons.wallet, icons.box, icons.store];
 
   return (
@@ -365,6 +367,45 @@ export default async function PublicHomePage({
               </MarketingReveal>
             ))}
           </div>
+        </MarketingContainer>
+      </section>
+
+      {/* Founder conviction */}
+      <section className="bg-[#FAFAFA] pb-20 pt-4 sm:pb-24 sm:pt-5">
+        <MarketingContainer>
+          <MarketingReveal>
+            <div className="relative overflow-hidden rounded-[2rem] bg-[#0A0E1A] px-5 py-14 text-center sm:px-10 sm:py-18">
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    "radial-gradient(45% 70% at 50% 100%, rgba(47,92,255,0.3) 0%, transparent 72%)",
+                }}
+              />
+              <div className="relative mx-auto max-w-3xl">
+                <Image
+                  src="/about/ibrahim-suit.jpg"
+                  alt="Ibrahim Sidibé, initiateur de Pashove"
+                  width={100}
+                  height={100}
+                  className="mx-auto h-[100px] w-[100px] rounded-full border-2 border-white/15 object-cover shadow-[0_18px_40px_-20px_rgba(0,0,0,0.9)]"
+                />
+                <p className="mt-6 text-[0.625rem] font-semibold uppercase tracking-[0.18em] text-brand-300">
+                  {about.home.title}
+                </p>
+                <blockquote className="font-display mx-auto mt-4 max-w-2xl text-[clamp(1.7rem,3.4vw,2.8rem)] leading-[1.15] tracking-[-0.03em] text-white">
+                  “{about.home.quote}”
+                </blockquote>
+                <Link
+                  href={publicHref(locale, "/about")}
+                  className="mt-6 inline-flex items-center gap-2 text-[0.8125rem] font-semibold text-brand-200 transition-colors hover:text-white"
+                >
+                  {about.home.link}
+                  <Icon path={icons.arrowRight} className="h-4 w-4" strokeWidth={2.2} />
+                </Link>
+              </div>
+            </div>
+          </MarketingReveal>
         </MarketingContainer>
       </section>
 
