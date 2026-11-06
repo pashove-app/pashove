@@ -42,3 +42,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# fichier de collage Vercel (contient de vrais secrets)
+.env.vercel

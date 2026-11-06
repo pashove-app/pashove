@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { MockProvider } from "@/lib/payments/mock";
-import { createPublicClient } from "@/lib/supabase/public";
+import { createServiceClient } from "@/lib/supabase/service";
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -27,7 +27,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ received: true, ignored: true });
   }
 
-  const supabase = createPublicClient();
+  // La confirmation touche le ledger : elle exige la clé de service.
+  const supabase = createServiceClient();
+
+  if (!supabase) {
+    return NextResponse.json(
+      { error: "service_role_missing" },
+      { status: 503 },
+    );
+  }
+
   const { error } = await supabase.rpc("confirm_mock_payment", {
     p_order_token: event.orderToken,
     p_reference: event.reference,

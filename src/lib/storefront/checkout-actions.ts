@@ -10,6 +10,7 @@ import { readCart, readCartToken } from "@/lib/storefront/cart";
 import { loadStorefront } from "@/lib/storefront/queries";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
+import { createServiceClient } from "@/lib/supabase/service";
 import { toFieldErrors } from "@/lib/validation";
 import { rememberOrderToken } from "@/lib/customer/order-cookie";
 import { paymentSchema } from "@/lib/payments/schema";
@@ -252,6 +253,14 @@ export async function placeOrderAction(
       return { status: "error", messageKey: "checkoutGeneric" };
     }
 
+    // Les RPC de paiement sont réservées à la clé de service : la clé anonyme
+    // est publique et permettrait sinon de confirmer une commande sans argent.
+    const payments = createServiceClient();
+
+    if (!payments) {
+      return { status: "error", messageKey: "checkoutPaymentFailed" };
+    }
+
     try {
       const provider = getPaymentProvider("mock");
       const intent = await provider.createIntent({
@@ -266,7 +275,7 @@ export async function placeOrderAction(
         },
       });
 
-      await supabase.rpc("record_payment_intent", {
+      await payments.rpc("record_payment_intent", {
         p_order_token: online.token,
         p_reference: intent.reference,
         p_provider: "mock",
@@ -279,7 +288,7 @@ export async function placeOrderAction(
         return { status: "error", messageKey: "checkoutPaymentFailed" };
       }
 
-      const { error: confirmError } = await supabase.rpc("confirm_mock_payment", {
+      const { error: confirmError } = await payments.rpc("confirm_mock_payment", {
         p_order_token: online.token,
         p_reference: confirmation.reference,
       });
