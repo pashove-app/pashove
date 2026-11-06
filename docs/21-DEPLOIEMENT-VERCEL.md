@@ -205,14 +205,22 @@ commerciale.**
 
 ### 4.2 Plan — point important
 
+`vercel.json` ne déclare **plus aucun cron** (`{}`) : les deux tâches sont
+confiées à **cron-job.org** (gratuit), qui appelle les routes avec le
+`CRON_SECRET`. Sur Hobby, Vercel n'accepte qu'une exécution par jour et par
+tâche, donc cette externalisation est nécessaire.
+
 | Besoin | Hobby | Pro (20 $/mois) |
 |---|---|---|
-| Cron `*/15 * * * *` | ❌ refusé (1 exécution/jour max, 2 crons) | ✅ |
+| Crons infra-horaires | ✅ via cron-job.org | ✅ natif |
 | Usage commercial | ❌ interdit par les CGU | ✅ |
-| Sauvegardes / logs | limités | ✅ |
 
-`vercel.json` déclare deux crons, dont un toutes les 15 minutes. **Prendre
-Pro**, sinon le déploiement échoue ou les e-mails restent bloqués en file.
+**Reste un point à trancher** : les CGU Vercel interdisent l'usage commercial
+sur Hobby. Pashove est une activité commerciale ; le risque est une coupure
+du projet, pas un échec technique. À arbitrer en connaissance de cause.
+
+Si vous passez sur Pro, vous pouvez remettre les crons dans `vercel.json` et
+supprimer cron-job.org, ou garder cron-job.org : les deux fonctionnent.
 
 ### 4.3 Création
 
@@ -336,11 +344,18 @@ une boutique, donc tous les sous-domaines afficheraient la même chose.
 - [ ] `email_messages` se remplit et le cron la vide
 - [ ] Vérifier les en-têtes : SPF `pass`, DKIM `pass`
 
-### 7.3 Crons
+### 7.3 Crons (cron-job.org)
+
+| Tâche | URL | Fréquence | En-tête |
+|---|---|---|---|
+| E-mails en échec | `https://pashove.com/api/cron/emails` | toutes les 15 min | `Authorization: Bearer <CRON_SECRET>` |
+| Paniers abandonnés | `https://pashove.com/api/cron/abandoned-carts` | toutes les heures (minute 17) | `Authorization: Bearer <CRON_SECRET>` |
+
+À vérifier :
 
 - [ ] `GET https://pashove.com/api/cron/emails` sans en-tête → `401`
 - [ ] Avec `Authorization: Bearer <CRON_SECRET>` → `200`
-- [ ] **Vercel → Logs → Cron Jobs** : les deux tâches s'exécutent
+- [ ] cron-job.org : les deux tâches sont en succès, notification d'échec activée
 
 ### 7.4 R2
 
