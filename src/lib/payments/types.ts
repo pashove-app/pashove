@@ -1,6 +1,13 @@
-export type PaymentMethod = "cod" | "orange_money" | "wave" | "card";
+export type PaymentMethod =
+  | "cod"
+  | "orange_money"
+  | "wave"
+  | "mtn_money"
+  | "moov_money"
+  | "card";
 
 export type PaymentProviderCode =
+  | "saspay"
   | "mock"
   | "flutterwave"
   | "cinetpay"
@@ -8,7 +15,7 @@ export type PaymentProviderCode =
 
 export type CheckoutPaymentOption = {
   code: PaymentMethod;
-  provider: "cod" | "mock";
+  provider: "cod" | "mock" | "saspay";
   kind: "cod" | "mobile_money" | "card";
   requiresPhone: boolean;
   requiresCard: boolean;
@@ -21,7 +28,10 @@ export type PaymentIntent = {
   amount: number;
   currency: string;
   orderId: string;
-  status: "requires_action";
+  status: "requires_action" | "pending";
+  /** URL hébergée SasPay quand le réseau ne pousse pas sur le téléphone. */
+  redirectUrl?: string | null;
+  networkCode?: string | null;
 };
 
 export type PaymentConfirmation = {
@@ -61,6 +71,8 @@ export const PAYMENT_METHODS: PaymentMethod[] = [
   "cod",
   "orange_money",
   "wave",
+  "mtn_money",
+  "moov_money",
   "card",
 ];
 
@@ -71,6 +83,8 @@ export function isPaymentMethod(value: unknown): value is PaymentMethod {
 export const ONLINE_METHODS: PaymentMethod[] = [
   "orange_money",
   "wave",
+  "mtn_money",
+  "moov_money",
   "card",
 ];
 
@@ -78,12 +92,15 @@ export function isOnlineMethod(value: PaymentMethod): boolean {
   return ONLINE_METHODS.includes(value);
 }
 
-export function methodMeta(method: PaymentMethod): CheckoutPaymentOption {
+export function methodMeta(
+  method: PaymentMethod,
+  provider: "mock" | "saspay" = "mock",
+): CheckoutPaymentOption {
   if (method === "cod") {
     return { code: method, provider: "cod", kind: "cod", requiresPhone: false, requiresCard: false };
   }
   if (method === "card") {
-    return { code: method, provider: "mock", kind: "card", requiresPhone: false, requiresCard: true };
+    return { code: method, provider, kind: "card", requiresPhone: false, requiresCard: true };
   }
-  return { code: method, provider: "mock", kind: "mobile_money", requiresPhone: true, requiresCard: false };
+  return { code: method, provider, kind: "mobile_money", requiresPhone: true, requiresCard: false };
 }

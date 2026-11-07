@@ -83,7 +83,10 @@ export default async function CheckoutPage({
                     item.productType === "physical" ||
                     item.productType === "bundle",
                 )}
-                paymentMethods={paymentOptions(paymentMethods.methods)}
+                paymentMethods={paymentOptions(
+                  paymentMethods.methods,
+                  paymentMethods.provider,
+                )}
                 giftEnabled={store.gift_enabled}
               />
             </div>

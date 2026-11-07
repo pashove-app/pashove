@@ -14,7 +14,8 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { toFieldErrors } from "@/lib/validation";
 import { rememberOrderToken } from "@/lib/customer/order-cookie";
 import { paymentSchema } from "@/lib/payments/schema";
-import { getPaymentProvider } from "@/lib/payments/registry";
+import { activeOnlineProvider, getPaymentProvider } from "@/lib/payments/registry";
+import { SasPayError } from "@/lib/payments/saspay/client";
 import { isPaymentMethod, type PaymentMethod } from "@/lib/payments/types";
 
 export type CheckoutFormState = {
@@ -206,6 +207,7 @@ export async function placeOrderAction(
       };
 
   let orderData: unknown = null;
+  let paymentRedirect: string | null = null;
 
   if (method === "cod") {
     const { data, error } = await supabase.rpc("place_cod_order", {
@@ -231,11 +233,14 @@ export async function placeOrderAction(
 
     orderData = data;
   } else {
+    const providerCode = activeOnlineProvider();
+
     const { data, error } = await supabase.rpc("place_online_order", {
       p_token: cartToken,
       p_customer: customer,
       p_idempotency_key: cart.checkoutKey,
       p_method: method,
+      p_provider: providerCode,
     });
 
     if (error) {
@@ -262,12 +267,16 @@ export async function placeOrderAction(
     }
 
     try {
-      const provider = getPaymentProvider("mock");
+      const provider = getPaymentProvider(providerCode);
       const intent = await provider.createIntent({
         orderId: online.orderId,
         amount: online.total,
         currency: online.currency ?? cart.currency,
+        country: storefront.store.country,
         method,
+        idempotencyKey: cart.checkoutKey,
+        description: `Commande ${online.orderId.slice(0, 8)} · ${storefront.store.name}`,
+        returnUrl: `${siteUrl()}/${locale}/store/${storefront.store.slug}/checkout/success/${online.token}`,
         customer: {
           name: parsed.data.name,
           email: parsed.data.email,
@@ -275,30 +284,51 @@ export async function placeOrderAction(
         },
       });
 
-      await payments.rpc("record_payment_intent", {
-        p_order_token: online.token,
-        p_reference: intent.reference,
-        p_provider: "mock",
-        p_method: method,
-      });
+      if (providerCode === "saspay") {
+        // SasPay confirme par webhook : on enregistre l'intention et on laisse
+        // la commande en attente. Une URL hébergée redirige le client.
+        await payments.rpc("record_saspay_intent", {
+          p_order_token: online.token,
+          p_reference: intent.reference,
+          p_method: method,
+          p_network: intent.networkCode ?? null,
+          p_redirect_url: intent.redirectUrl ?? null,
+        });
 
-      const confirmation = await provider.confirm(intent);
+        paymentRedirect = intent.redirectUrl ?? null;
+      } else {
+        await payments.rpc("record_payment_intent", {
+          p_order_token: online.token,
+          p_reference: intent.reference,
+          p_provider: "mock",
+          p_method: method,
+        });
 
-      if (confirmation.status !== "succeeded") {
-        return { status: "error", messageKey: "checkoutPaymentFailed" };
-      }
+        const confirmation = await provider.confirm(intent);
 
-      const { error: confirmError } = await payments.rpc("confirm_mock_payment", {
-        p_order_token: online.token,
-        p_reference: confirmation.reference,
-      });
+        if (confirmation.status !== "succeeded") {
+          return { status: "error", messageKey: "checkoutPaymentFailed" };
+        }
 
-      if (confirmError) {
-        return { status: "error", messageKey: errorKey(confirmError) };
+        const { error: confirmError } = await payments.rpc("confirm_mock_payment", {
+          p_order_token: online.token,
+          p_reference: confirmation.reference,
+        });
+
+        if (confirmError) {
+          return { status: "error", messageKey: errorKey(confirmError) };
+        }
       }
 
       orderData = data;
-    } catch {
+    } catch (paymentError) {
+      if (paymentError instanceof SasPayError) {
+        console.error("[saspay] create payment failed", {
+          code: paymentError.code,
+          status: paymentError.status,
+          message: paymentError.message,
+        });
+      }
       return { status: "error", messageKey: "checkoutPaymentFailed" };
     }
   }
@@ -435,5 +465,12 @@ export async function placeOrderAction(
   }
 
   (await cookies()).delete("pashove_cart");
+
+  // Réseaux hébergés (Wave, Orange, Djamo, cartes) : le client termine sur la
+  // page SasPay, la commande reste en attente jusqu'au webhook.
+  if (paymentRedirect) {
+    redirect(paymentRedirect);
+  }
+
   redirect(`/${locale}/store/${storefront.store.slug}/checkout/success/${result.token}`);
 }

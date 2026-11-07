@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CartReset } from "@/components/storefront/cart-reset";
+import { OrderStatusRefresh } from "@/components/storefront/order-status-refresh";
 import { Container } from "@/components/storefront/container";
 import { StorefrontHeader } from "@/components/storefront/storefront-header";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
@@ -69,7 +70,44 @@ export default async function CheckoutSuccessPage({
   });
 
   const order = data as PublicOrder | null;
-  if (!order || order.paymentStatus !== "paid") notFound();
+  if (!order || order.paymentStatus === "failed") notFound();
+
+  // Paiement Mobile Money en attente : la page se rafraîchit jusqu'à ce que le
+  // webhook SasPay confirme la capture.
+  if (order.paymentStatus !== "paid") {
+    return (
+      <StorefrontShell store={store} locale={locale} t={t}>
+        <OrderStatusRefresh />
+        <StorefrontHeader store={store} locale={locale} t={t} />
+        <main>
+          <Container className="py-12 sm:py-16">
+            <div className="mx-auto w-full max-w-2xl">
+              <div className="rounded-3xl border border-border bg-surface p-6 text-center sm:p-9">
+                <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-400/12 text-amber-600 dark:text-amber-400">
+                  <Icon path={icons.clock} className="h-8 w-8" strokeWidth={1.9} />
+                </span>
+                <h1 className="mt-5 text-[1.75rem] font-medium tracking-[-0.03em] text-fg sm:text-[2rem]">
+                  {t.storefront.checkoutPaymentPendingTitle}
+                </h1>
+                <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
+                  {t.storefront.checkoutPaymentPendingText}
+                </p>
+                <p className="mt-4 inline-flex rounded-full bg-hairline px-4 py-1.5 text-[0.8125rem] font-medium text-body">
+                  {t.storefront.checkoutOrderNumber.replace(
+                    "{number}",
+                    String(order.number),
+                  )}
+                </p>
+                <p className="mt-4 text-[1rem] font-medium tabular-nums text-fg">
+                  {formatMoney(order.total, order.currency, LOCALE_META[locale].tag)}
+                </p>
+              </div>
+            </div>
+          </Container>
+        </main>
+      </StorefrontShell>
+    );
+  }
 
   const tag = LOCALE_META[locale].tag;
   const money = (amount: number) => formatMoney(amount, order.currency, tag);

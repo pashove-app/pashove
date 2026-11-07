@@ -102,6 +102,16 @@ export function CheckoutForm({
       hint: labels.paymentWaveHint,
       icon: "wallet",
     },
+    mtn_money: {
+      label: labels.paymentMtnMoney,
+      hint: labels.paymentMtnHint,
+      icon: "phone",
+    },
+    moov_money: {
+      label: labels.paymentMoovMoney,
+      hint: labels.paymentMoovHint,
+      icon: "phone",
+    },
     card: {
       label: labels.paymentCard,
       hint: labels.paymentCardHint,
@@ -475,6 +485,10 @@ export function CheckoutForm({
                           <span className="rounded-full border border-brand-500/25 bg-brand-500/10 px-1.5 py-0.5 text-[0.5rem] font-semibold uppercase tracking-wide text-accent">
                             {labels.paymentMockBadge}
                           </span>
+                        ) : option.provider === "saspay" ? (
+                          <span className="rounded-full border border-emerald-500/25 bg-emerald-500/10 px-1.5 py-0.5 text-[0.5rem] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
+                            {labels.paymentLiveBadge}
+                          </span>
                         ) : null}
                       </span>
                       <span className="mt-0.5 block text-[0.6875rem] leading-relaxed text-subtle">
@@ -488,11 +502,16 @@ export function CheckoutForm({
 
             {selectedMethod && method !== "cod" ? (
               <p className="mt-3 rounded-xl border border-brand-500/20 bg-brand-500/[0.05] px-3 py-2.5 text-[0.75rem] leading-relaxed text-subtle">
-                {labels.paymentMockNote}
+                {selectedOption?.provider === "saspay"
+                  ? labels.paymentLiveNote
+                  : labels.paymentMockNote}
               </p>
             ) : null}
 
-            {method === "orange_money" || method === "wave" ? (
+            {method === "orange_money" ||
+            method === "wave" ||
+            method === "mtn_money" ||
+            method === "moov_money" ? (
               <div className="mt-4">
                 <TextField
                   name="paymentPhone"

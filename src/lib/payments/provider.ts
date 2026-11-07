@@ -9,7 +9,14 @@ export type CreateIntentInput = {
   orderId: string;
   amount: number;
   currency: string;
+  /** ISO 3166-1 alpha-2 du pays de la boutique. */
+  country: string;
   method: PaymentMethod;
+  /** Clé stable par tentative de paiement (en-tête Idempotency-Key). */
+  idempotencyKey: string;
+  description?: string;
+  /** Retour du client après une page de paiement hébergée. */
+  returnUrl?: string;
   customer: {
     name: string;
     email: string;

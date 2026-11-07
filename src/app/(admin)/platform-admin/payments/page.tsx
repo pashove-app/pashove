@@ -9,6 +9,8 @@ const METHOD_LABEL: Record<PaymentMethod, string> = {
   cod: "Paiement à la livraison",
   orange_money: "Orange Money",
   wave: "Wave",
+  mtn_money: "MTN MoMo",
+  moov_money: "Moov Money",
   card: "Carte bancaire",
 };
 

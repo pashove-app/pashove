@@ -5,6 +5,7 @@ import { after } from "next/server";
 import { emailOrderRefunded } from "@/lib/email/events";
 import { loadOrderContextWithService } from "@/lib/email/order-context";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { encryptSensitive } from "@/lib/finance/crypto";
 
 const UUID_PATTERN =
@@ -25,6 +26,22 @@ export async function refundAdminPaymentAction(
   orderId: string,
 ): Promise<PaymentActionResult> {
   if (!UUID_PATTERN.test(orderId) || !isSupabaseConfigured()) {
+    return { ok: false, messageKey: "paymentRefundFailed" };
+  }
+
+  // SasPay n'expose aucun endpoint de remboursement : tant que PAY2 ne le
+  // branche pas, un remboursement marquerait la commande sans rendre l'argent.
+  const service = createServiceClient();
+  const { data: payment } = service
+    ? await service
+        .from("payments")
+        .select("provider")
+        .eq("order_id", orderId)
+        .maybeSingle()
+    : { data: null };
+
+  if (payment?.provider === "saspay") {
+    console.warn("[saspay] refund requested for a SasPay payment", orderId);
     return { ok: false, messageKey: "paymentRefundFailed" };
   }
 
@@ -68,7 +85,7 @@ export async function savePaymentProviderAction(
   const secretKey = field(formData, "secretKey");
   const webhookSecret = field(formData, "webhookSecret");
 
-  if (!["mock", "flutterwave", "cinetpay", "paydunya"].includes(code)) {
+  if (!["mock", "saspay", "flutterwave", "cinetpay", "paydunya"].includes(code)) {
     return { ok: false, messageKey: "paymentProviderInvalid" };
   }
 
