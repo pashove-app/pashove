@@ -38,7 +38,8 @@ export class SasPayProvider implements PaymentProvider {
   readonly code = "saspay" as const;
 
   async createIntent(input: CreateIntentInput): Promise<PaymentIntent> {
-    const network = await resolveNetwork(input.method, input.country);
+    const network =
+      input.network?.trim() || (await resolveNetwork(input.method, input.country));
 
     const payment = await createSoftpay({
       amount: input.amount,
@@ -53,6 +54,7 @@ export class SasPayProvider implements PaymentProvider {
       },
       metadata: { order_id: input.orderId },
       returnUrl: input.returnUrl,
+      otp: input.otp,
       idempotencyKey: input.idempotencyKey,
     });
 

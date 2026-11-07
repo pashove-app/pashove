@@ -4,6 +4,7 @@ export type PaymentMethod =
   | "wave"
   | "mtn_money"
   | "moov_money"
+  | "mobile_money"
   | "card";
 
 export type PaymentProviderCode =
@@ -13,12 +14,26 @@ export type PaymentProviderCode =
   | "cinetpay"
   | "paydunya";
 
+export type CheckoutBrand = {
+  /** Couleur de la pastille, fournie par la plateforme. */
+  color: string;
+  /** Sigle court affiché dans la pastille. */
+  short: string;
+};
+
 export type CheckoutPaymentOption = {
-  code: PaymentMethod;
+  /** Code réseau SasPay (`orange_ml`), ou `cod`. */
+  code: string;
+  /** Famille comptable appliquée au ledger. */
+  method: PaymentMethod;
   provider: "cod" | "mock" | "saspay";
   kind: "cod" | "mobile_money" | "card";
+  label: string;
+  brand: CheckoutBrand;
   requiresPhone: boolean;
   requiresCard: boolean;
+  requiresOtp: boolean;
+  otpInstructions?: string;
 };
 
 export type PaymentIntent = {
@@ -73,6 +88,7 @@ export const PAYMENT_METHODS: PaymentMethod[] = [
   "wave",
   "mtn_money",
   "moov_money",
+  "mobile_money",
   "card",
 ];
 
@@ -85,6 +101,7 @@ export const ONLINE_METHODS: PaymentMethod[] = [
   "wave",
   "mtn_money",
   "moov_money",
+  "mobile_money",
   "card",
 ];
 
@@ -92,15 +109,29 @@ export function isOnlineMethod(value: PaymentMethod): boolean {
   return ONLINE_METHODS.includes(value);
 }
 
+/** Option minimale, utilisée seulement pour valider un code connu. */
 export function methodMeta(
   method: PaymentMethod,
   provider: "mock" | "saspay" = "mock",
 ): CheckoutPaymentOption {
+  const brand = { color: "#334155", short: method.slice(0, 2).toUpperCase() };
+
   if (method === "cod") {
-    return { code: method, provider: "cod", kind: "cod", requiresPhone: false, requiresCard: false };
+    return {
+      code: method, method, provider: "cod", kind: "cod", label: "",
+      brand, requiresPhone: false, requiresCard: false, requiresOtp: false,
+    };
   }
+
   if (method === "card") {
-    return { code: method, provider, kind: "card", requiresPhone: false, requiresCard: true };
+    return {
+      code: method, method, provider, kind: "card", label: "",
+      brand, requiresPhone: false, requiresCard: true, requiresOtp: false,
+    };
   }
-  return { code: method, provider, kind: "mobile_money", requiresPhone: true, requiresCard: false };
+
+  return {
+    code: method, method, provider, kind: "mobile_money", label: "",
+    brand, requiresPhone: true, requiresCard: false, requiresOtp: false,
+  };
 }

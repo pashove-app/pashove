@@ -11,6 +11,7 @@ const METHOD_LABEL: Record<PaymentMethod, string> = {
   wave: "Wave",
   mtn_money: "MTN MoMo",
   moov_money: "Moov Money",
+  mobile_money: "Mobile Money",
   card: "Carte bancaire",
 };
 

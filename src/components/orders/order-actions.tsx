@@ -91,7 +91,7 @@ export function OrderActions({
   const canRefund =
     paymentStatus === "paid" &&
     status !== "cancelled" &&
-    ["cod", "orange_money", "wave", "mtn_money", "moov_money", "card"].includes(paymentMethod);
+    ["cod", "orange_money", "wave", "mtn_money", "moov_money", "mobile_money", "card"].includes(paymentMethod);
 
   const active =
     advanceState.status !== "idle"

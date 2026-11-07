@@ -11,7 +11,9 @@ import { path } from "@/components/ui/types";
 import { LOCALE_META, isLocale, resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { readCart } from "@/lib/storefront/cart";
-import { getCheckoutPaymentMethods, paymentOptions } from "@/lib/payments/queries";
+import { getCheckoutOptions } from "@/lib/payments/queries";
+import { getPublicCheckoutSettings } from "@/lib/checkout/queries";
+import { checkoutTexts } from "@/lib/checkout/settings";
 import { loadStorefront } from "@/lib/storefront/queries";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -40,12 +42,16 @@ export default async function CheckoutPage({
   const hasNonPhysical = cart.items.some(
     (item) => item.productType === "digital" || item.productType === "service",
   );
-  const paymentMethods = await getCheckoutPaymentMethods(
-    slug,
-    hasNonPhysical,
-    store.country,
-    cart.currency,
-  );
+  const [checkout, settings] = await Promise.all([
+    getCheckoutOptions(slug, hasNonPhysical, store.country, cart.currency, cart.total),
+    getPublicCheckoutSettings(slug),
+  ]);
+
+  const copy = checkoutTexts(settings, locale, {
+    title: t.storefront.checkoutPageTitle,
+    subtitle: t.storefront.checkoutPageSubtitle,
+    payLabel: t.storefront.checkoutConfirm,
+  });
 
   return (
     <StorefrontShell store={store} locale={locale} t={t}>
@@ -60,17 +66,19 @@ export default async function CheckoutPage({
 
             <div className="mt-5">
               <h1 className="text-[1.875rem] font-medium tracking-[-0.035em] text-fg sm:text-[2.25rem]">
-                {t.storefront.checkoutPageTitle}
+                {copy.title}
               </h1>
               <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-subtle">
-                {t.storefront.checkoutPageSubtitle}
+                {copy.subtitle}
               </p>
             </div>
 
             <div className="mt-7">
-              <section className="rounded-3xl border border-border bg-surface p-5 sm:p-6">
-                <DiscountField />
-              </section>
+              {settings.showDiscount ? (
+                <section className="rounded-3xl border border-border bg-surface p-5 sm:p-6">
+                  <DiscountField />
+                </section>
+              ) : null}
 
               <CheckoutForm
                 t={t}
@@ -83,10 +91,9 @@ export default async function CheckoutPage({
                     item.productType === "physical" ||
                     item.productType === "bundle",
                 )}
-                paymentMethods={paymentOptions(
-                  paymentMethods.methods,
-                  paymentMethods.provider,
-                )}
+                options={checkout.options}
+                settings={settings}
+                payLabel={copy.payLabel}
                 giftEnabled={store.gift_enabled}
               />
             </div>

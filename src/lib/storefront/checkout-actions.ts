@@ -15,8 +15,9 @@ import { toFieldErrors } from "@/lib/validation";
 import { rememberOrderToken } from "@/lib/customer/order-cookie";
 import { paymentSchema } from "@/lib/payments/schema";
 import { activeOnlineProvider, getPaymentProvider } from "@/lib/payments/registry";
+import { getCheckoutOptions } from "@/lib/payments/queries";
 import { SasPayError } from "@/lib/payments/saspay/client";
-import { isPaymentMethod, type PaymentMethod } from "@/lib/payments/types";
+import type { PaymentMethod } from "@/lib/payments/types";
 
 export type CheckoutFormState = {
   status: "idle" | "invalid" | "error";
@@ -93,8 +94,9 @@ export async function placeOrderAction(
   const supabase = createPublicClient();
 
   const payment = paymentSchema.safeParse({
-    paymentMethod: field(formData, "paymentMethod"),
+    paymentNetwork: field(formData, "paymentNetwork"),
     paymentPhone: field(formData, "paymentPhone"),
+    paymentOtp: field(formData, "paymentOtp"),
     cardNumber: field(formData, "cardNumber"),
     cardExpiry: field(formData, "cardExpiry"),
     cardCvv: field(formData, "cardCvv"),
@@ -104,24 +106,58 @@ export async function placeOrderAction(
     return { status: "invalid", fieldErrors: toFieldErrors(payment.error) };
   }
 
-  const method = payment.data.paymentMethod as PaymentMethod;
-  if (!isPaymentMethod(method)) {
-    return { status: "error", messageKey: "checkoutPaymentInvalid" };
+  // Le catalogue est reconstruit côté serveur : un code réseau envoyé par le
+  // navigateur n'est accepté que s'il est réellement proposé par la plateforme
+  // pour le pays de la boutique.
+  const checkout = await getCheckoutOptions(
+    slug,
+    !requiresShipping,
+    storefront.store.country,
+    cart.currency,
+    cart.total,
+  );
+
+  const option = checkout.options.find(
+    (entry) => entry.code === payment.data.paymentNetwork,
+  );
+
+  if (!option) {
+    return { status: "error", messageKey: "checkoutPaymentUnavailable" };
   }
 
-  const { data: methodsData } = await supabase.rpc("checkout_payment_methods", {
-    p_slug: slug,
-    p_has_non_physical: !requiresShipping,
-    p_country: storefront.store.country,
-    p_currency: cart.currency,
-  });
+  const method: PaymentMethod = option.method;
 
-  const allowedMethods = Array.isArray((methodsData as { methods?: unknown })?.methods)
-    ? ((methodsData as { methods: PaymentMethod[] }).methods)
-    : [];
+  if (option.requiresPhone) {
+    if (payment.data.paymentPhone.replace(/\D/g, "").length < 8) {
+      return {
+        status: "invalid",
+        fieldErrors: { paymentPhone: "checkoutPhoneInvalid" },
+      };
+    }
+  }
 
-  if (!allowedMethods.includes(method)) {
-    return { status: "error", messageKey: "checkoutPaymentUnavailable" };
+  if (option.requiresOtp) {
+    if (payment.data.paymentOtp.replace(/\D/g, "").length < 4) {
+      return {
+        status: "invalid",
+        fieldErrors: { paymentOtp: "checkoutPaymentInvalid" },
+      };
+    }
+  }
+
+  if (option.requiresCard) {
+    const digits = payment.data.cardNumber.replace(/\D/g, "");
+    if (
+      digits.length < 13 ||
+      digits.length > 19 ||
+      !/^\d{2}\s*\/\s*\d{2}$/.test(payment.data.cardExpiry) ||
+      !/^\d{3,4}$/.test(payment.data.cardCvv)
+    ) {
+      return {
+        status: "invalid",
+        fieldErrors: { cardNumber: "checkoutCardInvalid" },
+      };
+    }
   }
 
   const parsed = buildCheckoutSchema(requiresShipping).safeParse({
@@ -274,6 +310,8 @@ export async function placeOrderAction(
         currency: online.currency ?? cart.currency,
         country: storefront.store.country,
         method,
+        network: option.code,
+        otp: payment.data.paymentOtp || undefined,
         idempotencyKey: cart.checkoutKey,
         description: `Commande ${online.orderId.slice(0, 8)} · ${storefront.store.name}`,
         returnUrl: `${siteUrl()}/${locale}/store/${storefront.store.slug}/checkout/success/${online.token}`,

@@ -30,6 +30,19 @@ export type SasPayPayment = {
   [key: string]: unknown;
 };
 
+export type SasPayPayinRate = {
+  country_code: string;
+  country_name?: string;
+  currency: string;
+  network_code: string;
+  network_name: string;
+  payin: {
+    available: boolean;
+    otp_required: boolean;
+    otp_instructions?: string;
+  };
+};
+
 export type SasPayBalance = {
   id: string;
   merchant: string;
@@ -245,6 +258,7 @@ export type CreateSoftpayInput = {
   };
   metadata?: Record<string, unknown>;
   returnUrl?: string;
+  otp?: string;
   idempotencyKey: string;
 };
 
@@ -261,6 +275,7 @@ export async function createSoftpay(input: CreateSoftpayInput): Promise<SasPayPa
       customer: input.customer,
       metadata: input.metadata,
       ...(input.returnUrl ? { return_url: input.returnUrl } : {}),
+      ...(input.otp ? { otp: input.otp } : {}),
     }),
   });
 
@@ -280,6 +295,12 @@ export async function confirmOtp(paymentId: string, otp: string): Promise<SasPay
     method: "POST",
     body: JSON.stringify({ otp }),
   });
+}
+
+/** Tarifs et disponibilité réels, par pays et par réseau (inclut l'OTP). */
+export async function listPayinRates(): Promise<SasPayPayinRate[]> {
+  const value = await request<SasPayPayinRate[]>("/pricing/my-rates/");
+  return Array.isArray(value) ? value : [];
 }
 
 export async function listBalances(): Promise<SasPayBalance[]> {

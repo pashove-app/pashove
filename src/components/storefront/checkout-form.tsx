@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { Fragment, useActionState, useState } from "react";
 import {
   Checkbox,
   PasswordField,
@@ -17,9 +17,13 @@ import {
   placeOrderAction,
   type CheckoutFormState,
 } from "@/lib/storefront/checkout-actions";
-import type { CheckoutPaymentOption, PaymentMethod } from "@/lib/payments/types";
+import type { CheckoutPaymentOption } from "@/lib/payments/types";
 import type { CartView } from "@/lib/storefront/cart-types";
 import { getGiftCopy } from "@/lib/gifts/copy";
+import type {
+  CheckoutBlockKey,
+  CheckoutSettings,
+} from "@/lib/checkout/settings";
 
 const INITIAL: CheckoutFormState = { status: "idle" };
 
@@ -42,13 +46,49 @@ function Step({
         </span>
         <div>
           <h2 className="text-[0.9375rem] font-medium text-fg">{title}</h2>
-          <p className="mt-0.5 text-[0.75rem] leading-relaxed text-subtle">
-            {text}
-          </p>
+          {text ? (
+            <p className="mt-0.5 text-[0.75rem] leading-relaxed text-subtle">
+              {text}
+            </p>
+          ) : null}
         </div>
       </div>
       <div className="mt-4">{children}</div>
     </section>
+  );
+}
+
+function inkFor(hex: string): string {
+  const match = /^#([0-9a-f]{6})$/i.exec(hex);
+  if (!match) return "#ffffff";
+  const value = parseInt(match[1], 16);
+  const r = (value >> 16) & 255;
+  const g = (value >> 8) & 255;
+  const b = value & 255;
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.62 ? "#111827" : "#ffffff";
+}
+
+function BrandMark({ option }: { option: CheckoutPaymentOption }) {
+  if (option.kind === "cod") {
+    return (
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-hairline text-subtle">
+        <Icon path={icons.bag} className="h-4 w-4" strokeWidth={1.8} />
+      </span>
+    );
+  }
+
+  return (
+    <span
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[0.625rem] font-bold tracking-tight"
+      style={{
+        backgroundColor: option.brand.color,
+        color: inkFor(option.brand.color),
+      }}
+      aria-hidden
+    >
+      {option.brand.short}
+    </span>
   );
 }
 
@@ -59,7 +99,9 @@ export function CheckoutForm({
   cart,
   defaultCountry,
   requiresShipping,
-  paymentMethods,
+  options,
+  settings,
+  payLabel,
   giftEnabled,
 }: {
   t: Dictionary;
@@ -68,7 +110,9 @@ export function CheckoutForm({
   cart: CartView;
   defaultCountry: string;
   requiresShipping: boolean;
-  paymentMethods: CheckoutPaymentOption[];
+  options: CheckoutPaymentOption[];
+  settings: CheckoutSettings;
+  payLabel: string;
   giftEnabled: boolean;
 }) {
   const labels = t.storefront;
@@ -78,49 +122,18 @@ export function CheckoutForm({
     FormData
   >(placeOrderAction, INITIAL);
   const [createAccount, setCreateAccount] = useState(false);
-  const [method, setMethod] = useState<PaymentMethod>(
-    paymentMethods[0]?.code ?? "cod",
-  );
+  const [network, setNetwork] = useState(options[0]?.code ?? "cod");
   const [gift, setGift] = useState(false);
 
-  const methodCopy: Record<
-    PaymentMethod,
-    { label: string; hint: string; icon: keyof typeof icons }
-  > = {
-    cod: {
-      label: labels.checkoutCodLabel,
-      hint: labels.paymentCodHint,
-      icon: "bag",
-    },
-    orange_money: {
-      label: labels.paymentOrangeMoney,
-      hint: labels.paymentOrangeHint,
-      icon: "phone",
-    },
-    wave: {
-      label: labels.paymentWave,
-      hint: labels.paymentWaveHint,
-      icon: "wallet",
-    },
-    mtn_money: {
-      label: labels.paymentMtnMoney,
-      hint: labels.paymentMtnHint,
-      icon: "phone",
-    },
-    moov_money: {
-      label: labels.paymentMoovMoney,
-      hint: labels.paymentMoovHint,
-      icon: "phone",
-    },
-    card: {
-      label: labels.paymentCard,
-      hint: labels.paymentCardHint,
-      icon: "card",
-    },
-  };
+  const selectedOption = options.find((entry) => entry.code === network);
+  const giftVisible = giftEnabled && settings.showGift;
 
-  const selectedMethod = methodCopy[method];
-  const selectedOption = paymentMethods.find((entry) => entry.code === method);
+  const visibleBlocks = settings.blocks.filter(
+    (key) => key !== "gift" || giftVisible,
+  );
+
+  const numberFor = (key: CheckoutBlockKey) =>
+    Math.max(1, visibleBlocks.indexOf(key) + 1);
 
   const fieldError = (key: string) => {
     const messageKey = state.fieldErrors?.[key];
@@ -136,13 +149,6 @@ export function CheckoutForm({
   const giftFieldError = (key: string) => {
     const messageKey = state.fieldErrors?.[key];
     if (!messageKey) return undefined;
-
-    if (messageKey === "giftNameInvalid" || messageKey === "giftEmailInvalid") {
-      return giftCopy.checkout.required;
-    }
-    if (messageKey === "giftDateInvalid") {
-      return giftCopy.checkout.required;
-    }
 
     return giftCopy.checkout.required;
   };
@@ -162,78 +168,83 @@ export function CheckoutForm({
       ) || giftServerMessage
     : null;
 
-  return (
-    <form action={formAction} noValidate className="space-y-4">
-      <input type="hidden" name="locale" value={locale} />
-      <input type="hidden" name="slug" value={slug} />
-      <input type="hidden" name="paymentMethod" value={method} />
-
-      <Step number={1} title={labels.checkoutContactTitle} text={labels.checkoutContactText}>
-        <div className="grid gap-4 sm:grid-cols-2">
+  const renderContact = () => (
+    <Step
+      number={numberFor("contact")}
+      title={labels.checkoutContactTitle}
+      text={labels.checkoutContactText}
+    >
+      <div className="grid gap-4 sm:grid-cols-2">
+        <TextField
+          name="name"
+          label={labels.checkoutNameLabel}
+          autoComplete="name"
+          maxLength={120}
+          error={fieldError("name")}
+        />
+        <TextField
+          name="phone"
+          label={labels.checkoutPhoneLabel}
+          type="tel"
+          dir="ltr"
+          autoComplete="tel"
+          maxLength={40}
+          error={fieldError("phone")}
+        />
+        <div className="sm:col-span-2">
           <TextField
-            name="name"
-            label={labels.checkoutNameLabel}
-            autoComplete="name"
-            maxLength={120}
-            error={fieldError("name")}
-          />
-          <TextField
-            name="phone"
-            label={labels.checkoutPhoneLabel}
-            type="tel"
+            name="email"
+            label={labels.checkoutEmailLabel}
+            type="email"
             dir="ltr"
-            autoComplete="tel"
-            maxLength={40}
-            error={fieldError("phone")}
+            autoComplete="email"
+            maxLength={254}
+            error={fieldError("email")}
           />
-          <div className="sm:col-span-2">
-            <TextField
-              name="email"
-              label={labels.checkoutEmailLabel}
-              type="email"
-              dir="ltr"
-              autoComplete="email"
-              maxLength={254}
-              error={fieldError("email")}
-            />
-          </div>
-
-          <div className="sm:col-span-2 border-t border-hairline pt-4">
-            <Checkbox
-              name="createAccount"
-              checked={createAccount}
-              onChange={(event) => setCreateAccount(event.target.checked)}
-              label={
-                <span>
-                  <span className="block font-medium text-body">
-                    {t.customer.createAccount}
-                  </span>
-                  <span className="mt-0.5 block text-[0.75rem] text-subtle">
-                    {t.customer.createAccountHint}
-                  </span>
-                </span>
-              }
-            />
-
-            {createAccount ? (
-              <div className="mt-4">
-                <PasswordField
-                  name="password"
-                  label={t.customer.passwordLabel}
-                  autoComplete="new-password"
-                  help={t.customer.passwordShort}
-                  revealLabel={t.auth.showPassword}
-                  concealLabel={t.auth.hidePassword}
-                  error={fieldError("password")}
-                />
-              </div>
-            ) : null}
-          </div>
         </div>
-      </Step>
 
-      {requiresShipping ? (
-      <Step number={2} title={labels.checkoutShippingTitle} text={labels.checkoutShippingText}>
+        <div className="sm:col-span-2 border-t border-hairline pt-4">
+          <Checkbox
+            name="createAccount"
+            checked={createAccount}
+            onChange={(event) => setCreateAccount(event.target.checked)}
+            label={
+              <span>
+                <span className="block font-medium text-body">
+                  {t.customer.createAccount}
+                </span>
+                <span className="mt-0.5 block text-[0.75rem] text-subtle">
+                  {t.customer.createAccountHint}
+                </span>
+              </span>
+            }
+          />
+
+          {createAccount ? (
+            <div className="mt-4">
+              <PasswordField
+                name="password"
+                label={t.customer.passwordLabel}
+                autoComplete="new-password"
+                help={t.customer.passwordShort}
+                revealLabel={t.auth.showPassword}
+                concealLabel={t.auth.hidePassword}
+                error={fieldError("password")}
+              />
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </Step>
+  );
+
+  const renderDelivery = () =>
+    requiresShipping ? (
+      <Step
+        number={numberFor("delivery")}
+        title={labels.checkoutShippingTitle}
+        text={labels.checkoutShippingText}
+      >
         <div className="grid gap-4 sm:grid-cols-2">
           <SelectField
             name="country"
@@ -287,287 +298,324 @@ export function CheckoutForm({
           </div>
         </div>
       </Step>
-      ) : (
-        <div className="flex items-start gap-3 rounded-3xl border border-emerald-400/25 bg-emerald-400/[0.06] p-5 sm:p-6">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
-            <Icon path={icons.check} className="h-4 w-4" strokeWidth={2.2} />
-          </span>
-          <div>
-            <p className="text-[0.9375rem] font-medium text-fg">
-              {labels.checkoutNoShippingTitle}
-            </p>
-            <p className="mt-1 text-[0.8125rem] leading-relaxed text-subtle">
-              {labels.checkoutNoShippingText}
-            </p>
-          </div>
+    ) : (
+      <div className="flex items-start gap-3 rounded-3xl border border-emerald-400/25 bg-emerald-400/[0.06] p-5 sm:p-6">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+          <Icon path={icons.check} className="h-4 w-4" strokeWidth={2.2} />
+        </span>
+        <div>
+          <p className="text-[0.9375rem] font-medium text-fg">
+            {labels.checkoutNoShippingTitle}
+          </p>
+          <p className="mt-1 text-[0.8125rem] leading-relaxed text-subtle">
+            {labels.checkoutNoShippingText}
+          </p>
         </div>
-      )}
+      </div>
+    );
 
-      <Step
-        number={requiresShipping ? 3 : 2}
-        title={labels.checkoutSummaryTitle}
-        text=""
-      >
-        <div className="divide-y divide-hairline">
-          {cart.items.map((item) => (
-            <div key={item.id} className="flex items-start justify-between gap-3 py-3 first:pt-0">
-              <div className="min-w-0">
-                <p className="flex items-center gap-2 text-[0.875rem] font-medium text-fg">
-                  <span className="truncate">{item.name}</span>
-                  {item.kind === "bundle" ? (
-                    <span className="shrink-0 rounded-full bg-brand-500/10 px-1.5 py-0.5 text-[0.5625rem] font-semibold uppercase tracking-wide text-accent">
-                      {labels.bundleCartBadge}
-                    </span>
-                  ) : null}
-                </p>
-                {item.variantLabel ? (
-                  <p className="mt-0.5 text-[0.75rem] text-subtle">{item.variantLabel}</p>
+  const renderSummary = () => (
+    <Step number={numberFor("summary")} title={labels.checkoutSummaryTitle} text="">
+      <div className="divide-y divide-hairline">
+        {cart.items.map((item) => (
+          <div key={item.id} className="flex items-start justify-between gap-3 py-3 first:pt-0">
+            <div className="min-w-0">
+              <p className="flex items-center gap-2 text-[0.875rem] font-medium text-fg">
+                <span className="truncate">{item.name}</span>
+                {item.kind === "bundle" ? (
+                  <span className="shrink-0 rounded-full bg-brand-500/10 px-1.5 py-0.5 text-[0.5625rem] font-semibold uppercase tracking-wide text-accent">
+                    {labels.bundleCartBadge}
+                  </span>
                 ) : null}
-                {item.serviceStartsAtLabel ? (
-                  <p className="mt-0.5 text-[0.75rem] text-subtle">
-                    {item.serviceStartsAtLabel}
-                  </p>
-                ) : null}
-                <p className="mt-0.5 text-[0.75rem] text-faint">
-                  {labels.quantity} : {item.quantity}
+              </p>
+              {item.variantLabel ? (
+                <p className="mt-0.5 text-[0.75rem] text-subtle">{item.variantLabel}</p>
+              ) : null}
+              {item.serviceStartsAtLabel ? (
+                <p className="mt-0.5 text-[0.75rem] text-subtle">
+                  {item.serviceStartsAtLabel}
                 </p>
-              </div>
-              <p className="shrink-0 text-[0.875rem] font-medium tabular-nums text-fg">
-                {item.lineTotalLabel}
+              ) : null}
+              <p className="mt-0.5 text-[0.75rem] text-faint">
+                {labels.quantity} : {item.quantity}
               </p>
             </div>
-          ))}
-        </div>
-
-        <dl className="mt-2 space-y-2 border-t border-hairline pt-3 text-[0.875rem]">
-          <div className="flex justify-between gap-3">
-            <dt className="text-subtle">{labels.subtotal}</dt>
-            <dd className="tabular-nums text-body">{cart.subtotalLabel}</dd>
+            <p className="shrink-0 text-[0.875rem] font-medium tabular-nums text-fg">
+              {item.lineTotalLabel}
+            </p>
           </div>
-          {cart.discountAmountLabel ? (
-            <div className="flex justify-between gap-3">
-              <dt className="text-subtle">
-                {labels.discountLabel}
-                {cart.discount ? ` (${cart.discount.code})` : ""}
-              </dt>
-              <dd className="tabular-nums text-emerald-600 dark:text-emerald-400">
-                −{cart.discountAmountLabel}
-              </dd>
-            </div>
-          ) : null}
+        ))}
+      </div>
+
+      <dl className="mt-2 space-y-2 border-t border-hairline pt-3 text-[0.875rem]">
+        <div className="flex justify-between gap-3">
+          <dt className="text-subtle">{labels.subtotal}</dt>
+          <dd className="tabular-nums text-body">{cart.subtotalLabel}</dd>
+        </div>
+        {cart.discountAmountLabel ? (
           <div className="flex justify-between gap-3">
-            <dt className="text-subtle">{labels.shipping}</dt>
-            <dd className="tabular-nums text-body">
-              {cart.shipping === 0 ? labels.freeShipping : cart.shippingLabel}
+            <dt className="text-subtle">
+              {labels.discountLabel}
+              {cart.discount ? ` (${cart.discount.code})` : ""}
+            </dt>
+            <dd className="tabular-nums text-emerald-600 dark:text-emerald-400">
+              −{cart.discountAmountLabel}
             </dd>
           </div>
-          <div className="flex justify-between gap-3 border-t border-hairline pt-2 text-[1rem] font-medium">
-            <dt className="text-fg">{labels.total}</dt>
-            <dd className="tabular-nums text-fg">{cart.totalLabel}</dd>
+        ) : null}
+        <div className="flex justify-between gap-3">
+          <dt className="text-subtle">{labels.shipping}</dt>
+          <dd className="tabular-nums text-body">
+            {cart.shipping === 0 ? labels.freeShipping : cart.shippingLabel}
+          </dd>
+        </div>
+        <div className="flex justify-between gap-3 border-t border-hairline pt-2 text-[1rem] font-medium">
+          <dt className="text-fg">{labels.total}</dt>
+          <dd className="tabular-nums text-fg">{cart.totalLabel}</dd>
+        </div>
+      </dl>
+    </Step>
+  );
+
+  const renderGift = () =>
+    giftVisible ? (
+      <section className="rounded-3xl border border-border bg-surface p-5 sm:p-6">
+        <div className="flex items-start gap-3">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white">
+            <Icon path={icons.gift} className="h-4 w-4" strokeWidth={1.8} />
+          </span>
+          <div>
+            <h2 className="text-[0.9375rem] font-medium text-fg">
+              {giftCopy.checkout.title}
+            </h2>
+            <p className="mt-0.5 text-[0.75rem] leading-relaxed text-subtle">
+              {giftCopy.checkout.text}
+            </p>
           </div>
-        </dl>
-      </Step>
+        </div>
 
-      {giftEnabled ? (
-        <section className="rounded-3xl border border-border bg-surface p-5 sm:p-6">
-          <div className="flex items-start gap-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white">
-              <Icon path={icons.gift} className="h-4 w-4" strokeWidth={1.8} />
-            </span>
-            <div>
-              <h2 className="text-[0.9375rem] font-medium text-fg">
-                {giftCopy.checkout.title}
-              </h2>
-              <p className="mt-0.5 text-[0.75rem] leading-relaxed text-subtle">
-                {giftCopy.checkout.text}
-              </p>
-            </div>
-          </div>
+        <div className="mt-4">
+          <Checkbox
+            name="isGift"
+            checked={gift}
+            onChange={(event) => setGift(event.target.checked)}
+            label={
+              <span className="font-medium text-body">
+                {giftCopy.checkout.toggle}
+              </span>
+            }
+          />
+        </div>
 
-          <div className="mt-4">
-            <Checkbox
-              name="isGift"
-              checked={gift}
-              onChange={(event) => setGift(event.target.checked)}
-              label={
-                <span className="font-medium text-body">
-                  {giftCopy.checkout.toggle}
-                </span>
-              }
-            />
-          </div>
-
-          {gift ? (
-            <div className="mt-4 space-y-4 border-t border-hairline pt-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <TextField
-                  name="giftRecipientName"
-                  label={giftCopy.checkout.recipientName}
-                  maxLength={120}
-                  error={giftFieldError("giftRecipientName")}
-                />
-                <TextField
-                  name="giftRecipientEmail"
-                  label={giftCopy.checkout.recipientEmail}
-                  type="email"
-                  dir="ltr"
-                  maxLength={254}
-                  error={giftFieldError("giftRecipientEmail")}
-                />
-              </div>
-
-              <TextAreaField
-                name="giftMessage"
-                label={giftCopy.checkout.message}
-                hint={giftCopy.checkout.messageHint}
-                maxLength={500}
-                rows={3}
-                error={giftFieldError("giftMessage")}
-              />
-
+        {gift ? (
+          <div className="mt-4 space-y-4 border-t border-hairline pt-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <TextField
-                name="giftScheduledDate"
-                label={giftCopy.checkout.date}
-                type="date"
-                help={giftCopy.checkout.dateHint}
-                error={giftFieldError("giftScheduledDate")}
+                name="giftRecipientName"
+                label={giftCopy.checkout.recipientName}
+                maxLength={120}
+                error={giftFieldError("giftRecipientName")}
               />
-
-              <p className="rounded-xl border border-brand-500/20 bg-brand-500/[0.05] px-3 py-2.5 text-[0.75rem] leading-relaxed text-subtle">
-                {giftCopy.checkout.info}
-              </p>
+              <TextField
+                name="giftRecipientEmail"
+                label={giftCopy.checkout.recipientEmail}
+                type="email"
+                dir="ltr"
+                maxLength={254}
+                error={giftFieldError("giftRecipientEmail")}
+              />
             </div>
-          ) : null}
-        </section>
-      ) : null}
 
-      <Step
-        number={requiresShipping ? 4 : 3}
-        title={labels.checkoutPaymentTitle}
-        text={labels.checkoutPaymentText}
-      >
-        {paymentMethods.length === 0 ? (
-          <p className="rounded-xl border border-amber-400/25 bg-amber-400/[0.06] px-3 py-2.5 text-[0.75rem] leading-relaxed text-amber-700 dark:text-amber-300">
-            {labels.checkoutPaymentUnavailable}
-          </p>
-        ) : (
-          <>
-            <div className="grid gap-2 sm:grid-cols-2">
-              {paymentMethods.map((option) => {
-                const copy = methodCopy[option.code];
-                const active = method === option.code;
+            <TextAreaField
+              name="giftMessage"
+              label={giftCopy.checkout.message}
+              hint={giftCopy.checkout.messageHint}
+              maxLength={500}
+              rows={3}
+              error={giftFieldError("giftMessage")}
+            />
 
-                return (
-                  <button
-                    key={option.code}
-                    type="button"
-                    onClick={() => setMethod(option.code)}
-                    aria-pressed={active}
-                    className={`flex items-start gap-3 rounded-2xl border p-3.5 text-start transition-colors ${
+            <TextField
+              name="giftScheduledDate"
+              label={giftCopy.checkout.date}
+              type="date"
+              help={giftCopy.checkout.dateHint}
+              error={giftFieldError("giftScheduledDate")}
+            />
+
+            <p className="rounded-xl border border-brand-500/20 bg-brand-500/[0.05] px-3 py-2.5 text-[0.75rem] leading-relaxed text-subtle">
+              {giftCopy.checkout.info}
+            </p>
+          </div>
+        ) : null}
+      </section>
+    ) : null;
+
+  const renderPayment = () => (
+    <Step
+      number={numberFor("payment")}
+      title={labels.checkoutPaymentTitle}
+      text={labels.checkoutPaymentText}
+    >
+      {options.length === 0 ? (
+        <p className="rounded-xl border border-amber-400/25 bg-amber-400/[0.06] px-3 py-2.5 text-[0.75rem] leading-relaxed text-amber-700 dark:text-amber-300">
+          {labels.checkoutPaymentUnavailable}
+        </p>
+      ) : (
+        <>
+          <div className="overflow-hidden rounded-2xl border border-border">
+            {options.map((option, index) => {
+              const active = network === option.code;
+              const label =
+                option.code === "cod" ? labels.checkoutCodLabel : option.label;
+              const hint =
+                option.code === "cod"
+                  ? labels.paymentCodHint
+                  : option.requiresCard
+                    ? labels.paymentCardHint
+                    : option.provider === "saspay"
+                      ? labels.paymentLiveNote
+                      : labels.paymentMockNote;
+
+              return (
+                <button
+                  key={option.code}
+                  type="button"
+                  onClick={() => setNetwork(option.code)}
+                  aria-pressed={active}
+                  className={`flex w-full items-center gap-3 px-3 py-3.5 text-start transition-colors ${
+                    index > 0 ? "border-t border-hairline" : ""
+                  } ${active ? "bg-brand-500/[0.08]" : "bg-surface hover:bg-hairline/40"}`}
+                >
+                  <BrandMark option={option} />
+                  <span className="min-w-0 flex-1">
+                    <span className="flex flex-wrap items-center gap-1.5 text-[0.875rem] font-medium text-fg">
+                      {label}
+                      {option.provider === "mock" ? (
+                        <span className="rounded-full border border-brand-500/25 bg-brand-500/10 px-1.5 py-0.5 text-[0.5rem] font-semibold uppercase tracking-wide text-accent">
+                          {labels.paymentMockBadge}
+                        </span>
+                      ) : option.provider === "saspay" ? (
+                        <span className="rounded-full border border-emerald-500/25 bg-emerald-500/10 px-1.5 py-0.5 text-[0.5rem] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
+                          {labels.paymentLiveBadge}
+                        </span>
+                      ) : null}
+                    </span>
+                    <span className="mt-0.5 block truncate text-[0.6875rem] leading-relaxed text-subtle">
+                      {hint}
+                    </span>
+                  </span>
+                  <span
+                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
                       active
-                        ? "border-brand-500 bg-brand-500/[0.07]"
-                        : "border-border bg-surface hover:border-border-strong"
+                        ? "border-brand-500 bg-brand-500 text-white"
+                        : "border-border text-transparent"
                     }`}
                   >
-                    <span
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
-                        active
-                          ? "bg-brand-500 text-white"
-                          : "bg-hairline text-subtle"
-                      }`}
-                    >
-                      <Icon path={icons[copy.icon]} className="h-4 w-4" strokeWidth={1.8} />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="flex flex-wrap items-center gap-1.5 text-[0.8125rem] font-medium text-fg">
-                        {copy.label}
-                        {option.provider === "mock" ? (
-                          <span className="rounded-full border border-brand-500/25 bg-brand-500/10 px-1.5 py-0.5 text-[0.5rem] font-semibold uppercase tracking-wide text-accent">
-                            {labels.paymentMockBadge}
-                          </span>
-                        ) : option.provider === "saspay" ? (
-                          <span className="rounded-full border border-emerald-500/25 bg-emerald-500/10 px-1.5 py-0.5 text-[0.5rem] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
-                            {labels.paymentLiveBadge}
-                          </span>
-                        ) : null}
-                      </span>
-                      <span className="mt-0.5 block text-[0.6875rem] leading-relaxed text-subtle">
-                        {copy.hint}
-                      </span>
-                    </span>
-                  </button>
-                );
-              })}
+                    <Icon path={icons.check} className="h-3 w-3" strokeWidth={3} />
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {selectedOption && selectedOption.requiresPhone ? (
+            <div className="mt-4">
+              <TextField
+                name="paymentPhone"
+                label={labels.paymentPhoneLabel}
+                type="tel"
+                dir="ltr"
+                autoComplete="tel"
+                placeholder={labels.paymentPhoneHint}
+                maxLength={40}
+                error={fieldError("paymentPhone")}
+              />
             </div>
+          ) : null}
 
-            {selectedMethod && method !== "cod" ? (
-              <p className="mt-3 rounded-xl border border-brand-500/20 bg-brand-500/[0.05] px-3 py-2.5 text-[0.75rem] leading-relaxed text-subtle">
-                {selectedOption?.provider === "saspay"
-                  ? labels.paymentLiveNote
-                  : labels.paymentMockNote}
-              </p>
-            ) : null}
+          {selectedOption?.requiresOtp ? (
+            <div className="mt-4">
+              <TextField
+                name="paymentOtp"
+                label="Code de confirmation"
+                dir="ltr"
+                inputMode="numeric"
+                maxLength={10}
+                help={
+                  selectedOption.otpInstructions ??
+                  "Compose le code demandé par ton opérateur, puis saisis-le ici."
+                }
+                error={fieldError("paymentOtp")}
+              />
+            </div>
+          ) : null}
 
-            {method === "orange_money" ||
-            method === "wave" ||
-            method === "mtn_money" ||
-            method === "moov_money" ? (
-              <div className="mt-4">
+          {selectedOption?.requiresCard ? (
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <div className="sm:col-span-2">
                 <TextField
-                  name="paymentPhone"
-                  label={labels.paymentPhoneLabel}
-                  type="tel"
+                  name="cardNumber"
+                  label={labels.cardNumberLabel}
                   dir="ltr"
-                  autoComplete="tel"
-                  placeholder={labels.paymentPhoneHint}
-                  maxLength={40}
-                  error={fieldError("paymentPhone")}
+                  autoComplete="cc-number"
+                  placeholder="4242 4242 4242 4242"
+                  maxLength={30}
+                  error={fieldError("cardNumber")}
                 />
               </div>
-            ) : null}
+              <TextField
+                name="cardExpiry"
+                label={labels.cardExpiryLabel}
+                dir="ltr"
+                autoComplete="cc-exp"
+                placeholder="MM/AA"
+                maxLength={7}
+                error={fieldError("cardExpiry")}
+              />
+              <TextField
+                name="cardCvv"
+                label={labels.cardCvvLabel}
+                dir="ltr"
+                autoComplete="cc-csc"
+                placeholder="123"
+                maxLength={4}
+                error={fieldError("cardCvv")}
+              />
+            </div>
+          ) : null}
 
-            {method === "card" ? (
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <div className="sm:col-span-2">
-                  <TextField
-                    name="cardNumber"
-                    label={labels.cardNumberLabel}
-                    dir="ltr"
-                    autoComplete="cc-number"
-                    placeholder="4242 4242 4242 4242"
-                    maxLength={30}
-                    error={fieldError("cardNumber")}
-                  />
-                </div>
-                <TextField
-                  name="cardExpiry"
-                  label={labels.cardExpiryLabel}
-                  dir="ltr"
-                  autoComplete="cc-exp"
-                  placeholder="MM/AA"
-                  maxLength={7}
-                  error={fieldError("cardExpiry")}
-                />
-                <TextField
-                  name="cardCvv"
-                  label={labels.cardCvvLabel}
-                  dir="ltr"
-                  autoComplete="cc-csc"
-                  placeholder="123"
-                  maxLength={4}
-                  error={fieldError("cardCvv")}
-                />
-              </div>
-            ) : null}
+          {selectedOption ? null : (
+            <p className="mt-3 text-[0.75rem] font-medium text-red-500">
+              {labels.checkoutPaymentInvalid}
+            </p>
+          )}
+        </>
+      )}
+    </Step>
+  );
 
-            {selectedOption ? null : (
-              <p className="mt-3 text-[0.75rem] font-medium text-red-500">
-                {labels.checkoutPaymentInvalid}
-              </p>
-            )}
-          </>
-        )}
-      </Step>
+  const renderers: Record<CheckoutBlockKey, () => React.ReactNode> = {
+    contact: renderContact,
+    delivery: renderDelivery,
+    gift: renderGift,
+    summary: renderSummary,
+    payment: renderPayment,
+  };
+
+  return (
+    <form
+      action={formAction}
+      noValidate
+      className={settings.preset === "detailed" ? "space-y-4" : "space-y-3"}
+    >
+      <input type="hidden" name="locale" value={locale} />
+      <input type="hidden" name="slug" value={slug} />
+      <input type="hidden" name="paymentNetwork" value={network} />
+
+      {visibleBlocks.map((key) => (
+        <Fragment key={key}>{renderers[key]()}</Fragment>
+      ))}
 
       {serverMessage ? (
         <p
@@ -584,7 +632,7 @@ export function CheckoutForm({
         className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-6 text-[0.875rem] font-medium text-white transition-colors hover:bg-brand-600 disabled:pointer-events-none disabled:opacity-50"
       >
         {pending ? <Spinner /> : <Icon path={icons.lock} className="h-4 w-4" strokeWidth={2} />}
-        {pending ? labels.checkoutConfirming : labels.checkoutConfirm}
+        {pending ? labels.checkoutConfirming : payLabel}
       </button>
     </form>
   );

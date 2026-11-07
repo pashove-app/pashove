@@ -54,6 +54,14 @@ export default async function SettingsHubPage({
         />
 
         <SettingsLink
+          href={path(locale, "/app/settings/checkout")}
+          icon="card"
+          title="Page de paiement"
+          text="Logo, couleurs, textes et ordre des blocs du checkout."
+          cta="Personnaliser"
+        />
+
+        <SettingsLink
           href={path(locale, "/app/settings/policies")}
           icon="file"
           title={t.dashboard.settings.policiesTitle}

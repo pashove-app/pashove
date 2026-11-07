@@ -12,6 +12,10 @@ export type CreateIntentInput = {
   /** ISO 3166-1 alpha-2 du pays de la boutique. */
   country: string;
   method: PaymentMethod;
+  /** Code réseau SasPay déjà résolu côté serveur (`orange_ml`). */
+  network?: string;
+  /** OTP pré-paiement exigé par certains réseaux (Orange CI/BF). */
+  otp?: string;
   /** Clé stable par tentative de paiement (en-tête Idempotency-Key). */
   idempotencyKey: string;
   description?: string;
