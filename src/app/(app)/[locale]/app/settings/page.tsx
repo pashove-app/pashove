@@ -54,6 +54,14 @@ export default async function SettingsHubPage({
         />
 
         <SettingsLink
+          href={path(locale, "/app/settings/markets")}
+          icon="globe"
+          title="Pays de vente"
+          text="Active les pays où tu acceptes des commandes."
+          cta="Gérer les pays"
+        />
+
+        <SettingsLink
           href={path(locale, "/app/settings/checkout")}
           icon="card"
           title="Page de paiement"

@@ -115,9 +115,18 @@ export async function placeOrderAction(
     storefront.store.country,
     cart.currency,
     cart.total,
+    requiresShipping,
   );
 
-  const option = checkout.options.find(
+  const market = checkout.markets.find(
+    (entry) => entry.code === field(formData, "paymentMarket"),
+  );
+
+  if (!market || !market.available) {
+    return { status: "error", messageKey: "checkoutPaymentUnavailable" };
+  }
+
+  const option = market.options.find(
     (entry) => entry.code === payment.data.paymentNetwork,
   );
 
@@ -307,8 +316,8 @@ export async function placeOrderAction(
       const intent = await provider.createIntent({
         orderId: online.orderId,
         amount: online.total,
-        currency: online.currency ?? cart.currency,
-        country: storefront.store.country,
+        currency: market.currency,
+        country: market.countryCode,
         method,
         network: option.code,
         otp: payment.data.paymentOtp || undefined,
@@ -331,6 +340,7 @@ export async function placeOrderAction(
           p_method: method,
           p_network: intent.networkCode ?? null,
           p_redirect_url: intent.redirectUrl ?? null,
+          p_country: market.countryCode,
         });
 
         paymentRedirect = intent.redirectUrl ?? null;

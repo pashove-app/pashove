@@ -12,12 +12,14 @@ import { Icon, icons, Spinner } from "@/components/ui/primitives";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import { interpolate } from "@/i18n/get-dictionary";
 import type { Locale } from "@/i18n/config";
-import { PAYOUT_COUNTRIES } from "@/lib/finance/providers";
 import {
   placeOrderAction,
   type CheckoutFormState,
 } from "@/lib/storefront/checkout-actions";
-import type { CheckoutPaymentOption } from "@/lib/payments/types";
+import type {
+  CheckoutMarket,
+  CheckoutPaymentOption,
+} from "@/lib/payments/types";
 import type { CartView } from "@/lib/storefront/cart-types";
 import { getGiftCopy } from "@/lib/gifts/copy";
 import type {
@@ -99,7 +101,8 @@ export function CheckoutForm({
   cart,
   defaultCountry,
   requiresShipping,
-  options,
+  markets,
+  defaultMarket,
   settings,
   payLabel,
   giftEnabled,
@@ -110,7 +113,8 @@ export function CheckoutForm({
   cart: CartView;
   defaultCountry: string;
   requiresShipping: boolean;
-  options: CheckoutPaymentOption[];
+  markets: CheckoutMarket[];
+  defaultMarket: string;
   settings: CheckoutSettings;
   payLabel: string;
   giftEnabled: boolean;
@@ -122,11 +126,23 @@ export function CheckoutForm({
     FormData
   >(placeOrderAction, INITIAL);
   const [createAccount, setCreateAccount] = useState(false);
-  const [network, setNetwork] = useState(options[0]?.code ?? "cod");
+  const [marketCode, setMarketCode] = useState(defaultMarket);
+  const initialMarket = markets.find((entry) => entry.code === defaultMarket);
+  const [network, setNetwork] = useState(
+    initialMarket?.options[0]?.code ?? "cod",
+  );
   const [gift, setGift] = useState(false);
 
+  const selectedMarket = markets.find((entry) => entry.code === marketCode);
+  const options = selectedMarket?.options ?? [];
   const selectedOption = options.find((entry) => entry.code === network);
   const giftVisible = giftEnabled && settings.showGift;
+
+  function chooseMarket(code: string) {
+    setMarketCode(code);
+    const next = markets.find((entry) => entry.code === code);
+    setNetwork(next?.options[0]?.code ?? "cod");
+  }
 
   const visibleBlocks = settings.blocks.filter(
     (key) => key !== "gift" || giftVisible,
@@ -250,17 +266,18 @@ export function CheckoutForm({
             name="country"
             label={labels.checkoutCountryLabel}
             defaultValue={
-              PAYOUT_COUNTRIES.includes(defaultCountry as never)
-                ? defaultCountry
-                : "SN"
+              markets.find((market) => market.code === defaultMarket)?.countryCode ??
+              defaultCountry
             }
             error={fieldError("country")}
           >
-            {PAYOUT_COUNTRIES.map((code) => (
-              <option key={code} value={code}>
-                {t.countries_names[code as keyof Dictionary["countries_names"]] ?? code}
-              </option>
-            ))}
+            {markets
+              .filter((market) => market.available)
+              .map((market) => (
+                <option key={market.code} value={market.countryCode}>
+                  {market.countryName}
+                </option>
+              ))}
           </SelectField>
           <TextField
             name="city"
@@ -457,7 +474,30 @@ export function CheckoutForm({
       title={labels.checkoutPaymentTitle}
       text={labels.checkoutPaymentText}
     >
-      {options.length === 0 ? (
+      {markets.length > 1 ? (
+        <div className="mb-3">
+          <SelectField
+            name="paymentMarketUi"
+            label="Pays de paiement"
+            value={marketCode}
+            onChange={(event) => chooseMarket(event.target.value)}
+          >
+            {markets.map((market) => (
+              <option key={market.code} value={market.code} disabled={!market.available}>
+                {market.countryName}
+                {market.available ? "" : " — bientôt"}
+              </option>
+            ))}
+          </SelectField>
+        </div>
+      ) : null}
+
+      {selectedMarket && !selectedMarket.available ? (
+        <p className="rounded-xl border border-amber-400/25 bg-amber-400/[0.06] px-3 py-2.5 text-[0.75rem] leading-relaxed text-amber-700 dark:text-amber-300">
+          Ce pays n’est pas encore disponible au paiement (conversion de devise
+          à venir).
+        </p>
+      ) : options.length === 0 ? (
         <p className="rounded-xl border border-amber-400/25 bg-amber-400/[0.06] px-3 py-2.5 text-[0.75rem] leading-relaxed text-amber-700 dark:text-amber-300">
           {labels.checkoutPaymentUnavailable}
         </p>
@@ -611,6 +651,7 @@ export function CheckoutForm({
     >
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="slug" value={slug} />
+      <input type="hidden" name="paymentMarket" value={marketCode} />
       <input type="hidden" name="paymentNetwork" value={network} />
 
       {visibleBlocks.map((key) => (

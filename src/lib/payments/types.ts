@@ -36,6 +36,16 @@ export type CheckoutPaymentOption = {
   otpInstructions?: string;
 };
 
+export type CheckoutMarket = {
+  code: string;
+  countryCode: string;
+  countryName: string;
+  currency: string;
+  available: boolean;
+  reason?: "fx_pending" | "no_methods";
+  options: CheckoutPaymentOption[];
+};
+
 export type PaymentIntent = {
   reference: string;
   provider: PaymentProviderCode;

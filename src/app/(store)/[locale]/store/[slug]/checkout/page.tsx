@@ -42,8 +42,18 @@ export default async function CheckoutPage({
   const hasNonPhysical = cart.items.some(
     (item) => item.productType === "digital" || item.productType === "service",
   );
+  const hasPhysical = cart.items.some(
+    (item) => item.productType === "physical" || item.productType === "bundle",
+  );
   const [checkout, settings] = await Promise.all([
-    getCheckoutOptions(slug, hasNonPhysical, store.country, cart.currency, cart.total),
+    getCheckoutOptions(
+      slug,
+      hasNonPhysical,
+      store.country,
+      cart.currency,
+      cart.total,
+      hasPhysical,
+    ),
     getPublicCheckoutSettings(slug),
   ]);
 
@@ -91,7 +101,8 @@ export default async function CheckoutPage({
                     item.productType === "physical" ||
                     item.productType === "bundle",
                 )}
-                options={checkout.options}
+                markets={checkout.markets}
+                defaultMarket={checkout.defaultMarket}
                 settings={settings}
                 payLabel={copy.payLabel}
                 giftEnabled={store.gift_enabled}

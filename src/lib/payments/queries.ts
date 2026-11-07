@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import { activeOnlineProvider } from "@/lib/payments/registry";
+import { getPublicStoreMarkets } from "@/lib/markets/queries";
 import { codOption, fallbackOption, optionFromRate } from "@/lib/payments/catalog";
 import { listPayinRates } from "@/lib/payments/saspay/client";
 import {
@@ -12,6 +13,7 @@ import {
 import type {
   AdminPaymentProvider,
   AdminPaymentTransaction,
+  CheckoutMarket,
   CheckoutPaymentOption,
   PaymentMethod,
 } from "@/lib/payments/types";
@@ -29,7 +31,10 @@ export type CheckoutOptions = {
   currency: string;
   country: string;
   provider: "mock" | "saspay";
-  options: CheckoutPaymentOption[];
+  markets: CheckoutMarket[];
+  defaultMarket: string;
+  minimumOnline: number;
+  minimumCard: number;
 };
 
 const KNOWN_METHODS: PaymentMethod[] = [
@@ -49,6 +54,7 @@ export async function getCheckoutPaymentMethods(
   country?: string | null,
   currency?: string | null,
   total = 0,
+  hasPhysical = true,
 ): Promise<CheckoutPaymentMethods> {
   const supabase = createPublicClient();
   let { data } = await supabase.rpc("checkout_payment_methods", {
@@ -57,18 +63,30 @@ export async function getCheckoutPaymentMethods(
     p_country: country ?? null,
     p_currency: currency ?? null,
     p_total: Math.max(0, Math.round(total)),
+    p_has_physical: hasPhysical,
   });
 
-  // Déploiement du code avant la migration : on retombe sur l'ancienne
-  // signature à quatre arguments au lieu de vider le checkout.
+  // Déploiement du code avant la migration : on retombe sur les signatures
+  // précédentes au lieu de vider le checkout.
   if (data === null) {
-    const legacy = await supabase.rpc("checkout_payment_methods", {
+    const v5 = await supabase.rpc("checkout_payment_methods", {
+      p_slug: slug,
+      p_has_non_physical: hasNonPhysical,
+      p_country: country ?? null,
+      p_currency: currency ?? null,
+      p_total: Math.max(0, Math.round(total)),
+    });
+    data = v5.data;
+  }
+
+  if (data === null) {
+    const v4 = await supabase.rpc("checkout_payment_methods", {
       p_slug: slug,
       p_has_non_physical: hasNonPhysical,
       p_country: country ?? null,
       p_currency: currency ?? null,
     });
-    data = legacy.data;
+    data = v4.data;
   }
 
   const raw = (data ?? {}) as Partial<CheckoutPaymentMethods>;
@@ -113,11 +131,14 @@ function fallbackForCountry(methods: PaymentMethod[], country: string): PaymentM
 }
 
 /**
- * Liste finale affichée au client.
+ * Liste finale affichée au client, par marché activé.
  *
  * Les pays et les moyens sont **verrouillés** : la liste vient de SasPay
- * (`/pricing/my-rates/`, filtrée sur le pays de la boutique) ou, en repli, du
+ * (`/pricing/my-rates/`, filtrée sur le pays du marché) ou, en repli, du
  * référentiel plateforme. Le marchand ne peut que personnaliser l'habillage.
+ *
+ * Tant que la conversion FX n'existe pas, un marché d'une autre devise que
+ * celle de la boutique est renvoyé `available: false` (raison `fx_pending`).
  */
 export async function getCheckoutOptions(
   slug: string,
@@ -125,6 +146,7 @@ export async function getCheckoutOptions(
   country?: string | null,
   currency?: string | null,
   total = 0,
+  hasPhysical = true,
 ): Promise<CheckoutOptions> {
   const base = await getCheckoutPaymentMethods(
     slug,
@@ -132,54 +154,115 @@ export async function getCheckoutOptions(
     country,
     currency,
     total,
+    hasPhysical,
   );
 
   const provider = base.provider;
+  const storeCurrency = (base.currency || currency || "XOF").toUpperCase();
+  const storeCountry = (base.country || country || "").toUpperCase();
   const onlineMethods = base.methods.filter((method) => method !== "cod");
-  const options: CheckoutPaymentOption[] = [];
+  const codAllowed = base.methods.includes("cod");
 
-  if (onlineMethods.length > 0) {
-    let rates = [] as Awaited<ReturnType<typeof listPayinRates>>;
-
-    if (provider === "saspay") {
-      try {
-        rates = await listPayinRates();
-      } catch (error) {
-        console.error("[saspay] rates unavailable, fallback catalogue", error);
-      }
-    }
-
-    const iso = (base.country || country || "").trim().toUpperCase();
-    const countryRates = rates.filter(
-      (rate) =>
-        rate.country_code?.trim().toUpperCase() === iso &&
-        rate.payin?.available !== false,
-    );
-
-    if (countryRates.length > 0) {
-      const seen = new Set<string>();
-      for (const rate of countryRates) {
-        if (!rate.network_code || seen.has(rate.network_code)) continue;
-        seen.add(rate.network_code);
-        options.push(optionFromRate(rate, provider));
-      }
-    } else {
-      for (const method of fallbackForCountry(onlineMethods, iso)) {
-        options.push(fallbackOption(method, provider));
-      }
+  let rates = [] as Awaited<ReturnType<typeof listPayinRates>>;
+  if (provider === "saspay" && onlineMethods.length > 0) {
+    try {
+      rates = await listPayinRates();
+    } catch (error) {
+      console.error("[saspay] rates unavailable, fallback catalogue", error);
     }
   }
 
-  if (base.methods.includes("cod")) {
-    options.push(codOption());
-  }
+  const activated = await getPublicStoreMarkets(slug);
+  const markets =
+    activated.length > 0
+      ? activated
+      : [
+          {
+            code: `${storeCountry}-${storeCurrency}`,
+            countryCode: storeCountry,
+            countryName: storeCountry,
+            currency: storeCurrency,
+          },
+        ];
+
+  const result: CheckoutMarket[] = markets.map((market) => {
+    const marketCurrency = market.currency.toUpperCase();
+    const sameCurrency = marketCurrency === storeCurrency;
+
+    if (!sameCurrency) {
+      return {
+        code: market.code,
+        countryCode: market.countryCode,
+        countryName: market.countryName,
+        currency: market.currency,
+        available: false,
+        reason: "fx_pending" as const,
+        options: [],
+      };
+    }
+
+    const options: CheckoutPaymentOption[] = [];
+
+    if (onlineMethods.length > 0) {
+      const countryRates = rates.filter(
+        (rate) =>
+          rate.country_code?.trim().toUpperCase() === market.countryCode.toUpperCase() &&
+          rate.payin?.available !== false,
+      );
+
+      if (countryRates.length > 0) {
+        const seen = new Set<string>();
+        for (const rate of countryRates) {
+          if (!rate.network_code || seen.has(rate.network_code)) continue;
+          seen.add(rate.network_code);
+          options.push(optionFromRate(rate, provider));
+        }
+      } else {
+        for (const method of fallbackForCountry(onlineMethods, market.countryCode)) {
+          options.push(fallbackOption(method, provider));
+        }
+      }
+
+      // La carte n'est pas toujours listée par pays (SasPay la range en
+      // « International USD ») : on l'ajoute dès que la règle l'autorise.
+      if (onlineMethods.includes("card") && !options.some((option) => option.kind === "card")) {
+        options.push(fallbackOption("card", provider));
+      }
+    }
+
+    if (codAllowed) {
+      options.push(codOption());
+    }
+
+    return {
+      code: market.code,
+      countryCode: market.countryCode,
+      countryName: market.countryName,
+      currency: market.currency,
+      available: options.length > 0,
+      reason: options.length > 0 ? undefined : ("no_methods" as const),
+      options,
+    };
+  });
+
+  const defaultMarket =
+    result.find(
+      (market) =>
+        market.available && market.countryCode.toUpperCase() === storeCountry,
+    )?.code ??
+    result.find((market) => market.available)?.code ??
+    result[0]?.code ??
+    "";
 
   return {
     planCode: base.planCode,
     currency: base.currency,
     country: base.country,
     provider,
-    options,
+    markets: result,
+    defaultMarket,
+    minimumOnline: 200,
+    minimumCard: 25000,
   };
 }
 
