@@ -4,6 +4,8 @@ import { activeOnlineProvider } from "@/lib/payments/registry";
 import { getPublicStoreMarkets } from "@/lib/markets/queries";
 import { codOption, fallbackOption, optionFromRate } from "@/lib/payments/catalog";
 import { listPayinRates } from "@/lib/payments/saspay/client";
+import { convertMinor } from "@/lib/fx/rates";
+import { formatMinor } from "@/lib/fx/currency";
 import {
   PAYOUT_COUNTRIES,
   providersForCountry,
@@ -185,20 +187,37 @@ export async function getCheckoutOptions(
           },
         ];
 
-  const result: CheckoutMarket[] = markets.map((market) => {
+  const result: CheckoutMarket[] = [];
+
+  for (const market of markets) {
     const marketCurrency = market.currency.toUpperCase();
     const sameCurrency = marketCurrency === storeCurrency;
 
-    if (!sameCurrency) {
-      return {
+    const quote = sameCurrency
+      ? {
+          rate: 1,
+          source: "identity" as const,
+          amountMinor: Math.round(total),
+          amountDecimal: formatMinor(Math.round(total), storeCurrency),
+        }
+      : await convertMinor(total, storeCurrency, marketCurrency);
+
+    if (!quote) {
+      result.push({
         code: market.code,
         countryCode: market.countryCode,
         countryName: market.countryName,
         currency: market.currency,
         available: false,
-        reason: "fx_pending" as const,
+        reason: "fx_pending",
         options: [],
-      };
+        paymentCurrency: marketCurrency,
+        paymentAmountMinor: 0,
+        paymentAmountDecimal: "",
+        fxRate: 0,
+        fxSource: "identity",
+      });
+      continue;
     }
 
     const options: CheckoutPaymentOption[] = [];
@@ -206,8 +225,8 @@ export async function getCheckoutOptions(
     if (onlineMethods.length > 0) {
       const countryRates = rates.filter(
         (rate) =>
-          rate.country_code?.trim().toUpperCase() === market.countryCode.toUpperCase() &&
-          rate.payin?.available !== false,
+          rate.country_code?.trim().toUpperCase() ===
+            market.countryCode.toUpperCase() && rate.payin?.available !== false,
       );
 
       if (countryRates.length > 0) {
@@ -223,27 +242,37 @@ export async function getCheckoutOptions(
         }
       }
 
-      // La carte n'est pas toujours listée par pays (SasPay la range en
-      // « International USD ») : on l'ajoute dès que la règle l'autorise.
-      if (onlineMethods.includes("card") && !options.some((option) => option.kind === "card")) {
+      // La carte SasPay est facturée en USD : on ne l'expose que dans la
+      // devise de la boutique tant que la conversion carte n'est pas traitée.
+      if (
+        sameCurrency &&
+        onlineMethods.includes("card") &&
+        !options.some((option) => option.kind === "card")
+      ) {
         options.push(fallbackOption("card", provider));
       }
     }
 
-    if (codAllowed) {
+    // Le paiement à la livraison suppose une devise locale identique.
+    if (codAllowed && sameCurrency) {
       options.push(codOption());
     }
 
-    return {
+    result.push({
       code: market.code,
       countryCode: market.countryCode,
       countryName: market.countryName,
       currency: market.currency,
       available: options.length > 0,
-      reason: options.length > 0 ? undefined : ("no_methods" as const),
+      reason: options.length > 0 ? undefined : "no_methods",
       options,
-    };
-  });
+      paymentCurrency: marketCurrency,
+      paymentAmountMinor: quote.amountMinor,
+      paymentAmountDecimal: quote.amountDecimal,
+      fxRate: quote.rate,
+      fxSource: quote.source,
+    });
+  }
 
   const defaultMarket =
     result.find(

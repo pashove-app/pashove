@@ -313,10 +313,21 @@ export async function placeOrderAction(
 
     try {
       const provider = getPaymentProvider(providerCode);
+      // Taux et montant figés pour ce marché avant toute intention.
+      if (providerCode === "saspay" && market.paymentCurrency) {
+        await payments.rpc("set_order_fx", {
+          p_order_token: online.token,
+          p_payment_currency: market.paymentCurrency,
+          p_payment_amount: Number(market.paymentAmountDecimal),
+          p_fx_rate: market.fxRate,
+          p_fx_source: market.fxSource,
+        });
+      }
+
       const intent = await provider.createIntent({
         orderId: online.orderId,
-        amount: online.total,
-        currency: market.currency,
+        amount: market.paymentAmountMinor,
+        currency: market.paymentCurrency,
         country: market.countryCode,
         method,
         network: option.code,

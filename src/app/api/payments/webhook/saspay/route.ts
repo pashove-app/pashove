@@ -22,12 +22,15 @@ type SasPayEvent = {
 };
 
 function parseAmount(value: unknown): number | null {
-  if (typeof value === "number" && Number.isFinite(value)) return Math.round(value);
-  if (typeof value === "string" && value.trim() !== "") {
-    const parsed = Number(value);
-    if (Number.isFinite(parsed)) return Math.round(parsed);
-  }
-  return null;
+  const raw =
+    typeof value === "number"
+      ? value
+      : typeof value === "string" && value.trim() !== ""
+        ? Number(value)
+        : Number.NaN;
+
+  if (!Number.isFinite(raw)) return null;
+  return Math.round(raw * 100) / 100;
 }
 
 /**

@@ -44,6 +44,12 @@ export type CheckoutMarket = {
   available: boolean;
   reason?: "fx_pending" | "no_methods";
   options: CheckoutPaymentOption[];
+  /** Devise réellement débitée (celle de la boutique si identique). */
+  paymentCurrency: string;
+  paymentAmountMinor: number;
+  paymentAmountDecimal: string;
+  fxRate: number;
+  fxSource: "identity" | "saspay" | "manual";
 };
 
 export type PaymentIntent = {

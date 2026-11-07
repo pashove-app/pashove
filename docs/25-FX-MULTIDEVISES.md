@@ -50,14 +50,40 @@ on conflict (from_currency, to_currency)
 do update set rate = excluded.rate, source = 'manual', updated_at = now();
 ```
 
-## Ce qui reste (FX3/FX4)
+## Synchronisation des taux (FX1 corrigé)
 
-1. **FX3 — checkout** : marquer un marché d’une autre devise disponible,
-   afficher « 1 XOF ≈ X GHS » et le total converti, calculé côté serveur.
-2. **FX4 — confirmation** : `confirm_saspay_payment` doit comparer le montant
-   du webhook à `orders.payment_amount` (devise du marché) et non au total en
-   devise de boutique. Sans cela, tout paiement étranger finit en
-   `amount_mismatch`.
+L’API renvoie **9 045 paires sur 91 pages**. Le checkout ne les parcourt
+jamais : le cron `/api/cron/fx-rates` (protégé par `CRON_SECRET`, toutes les
+6 h) les copie dans `fx_rates` avec `source = 'saspay'`. Les taux `manual`
+ne sont pas touchés ; les paires disparues sont supprimées.
 
-Tant que FX4 n’est pas fait, les marchés d’une autre devise restent
-volontairement indisponibles au checkout.
+À ajouter sur cron-job.org :
+
+| URL | Fréquence |
+|---|---|
+| `https://pashove.com/api/cron/fx-rates` | toutes les 6 h (`13 */6 * * *`) |
+
+## FX3 — checkout
+
+- Chaque marché expose `paymentCurrency`, `paymentAmountMinor`,
+  `paymentAmountDecimal`, `fxRate`, `fxSource`.
+- Le taux est lu dans `fx_rates` (`public_fx_quote`), jamais l’API.
+- Le client voit « Total à payer : X GHS · 1 XOF ≈ Y GHS ».
+- `set_order_fx` fige le taux sur la commande avant l’intention SasPay.
+- Le paiement à la livraison est limité aux marchés de la devise de la
+  boutique ; la carte aussi (SasPay la facture en USD).
+
+## FX4 — confirmation
+
+`confirm_saspay_payment(text, numeric, text)` compare le montant du webhook
+à `orders.payment_amount` quand il existe, sinon au total converti dans la
+devise de paiement. Le ledger reste en devise de boutique ; Pashove absorbe
+l’écart d’arrondi. `payments.amount_charged` garde le montant réellement
+débité.
+
+## Limites restantes
+
+- Pas de taux pour `XOF → KES/NGN/GNF/XAF` dans l’API : ces marchés exigent
+  un taux manuel dans `fx_rates`.
+- La carte SasPay est en USD : masquée hors devise de boutique.
+- Les retraits restent par wallet pays (PAY2b).

@@ -247,8 +247,15 @@ export async function resolveNetwork(
  * Les montants Pashove sont des entiers dans l'unité de la devise (XOF sans
  * décimale) ; SasPay attend une chaîne décimale à deux décimales.
  */
-export function formatAmount(amount: number): string {
-  return `${Math.round(amount)}.00`;
+export function formatAmount(amountMinor: number, currency: string): string {
+  const decimals = currency.trim().toUpperCase() === "XOF" ||
+    currency.trim().toUpperCase() === "XAF" ||
+    currency.trim().toUpperCase() === "GNF" ||
+    currency.trim().toUpperCase() === "UGX" ||
+    currency.trim().toUpperCase() === "RWF"
+    ? 0
+    : 2;
+  return (amountMinor / 10 ** decimals).toFixed(2);
 }
 
 export type CreateSoftpayInput = {
@@ -274,7 +281,7 @@ export async function createSoftpay(input: CreateSoftpayInput): Promise<SasPayPa
     method: "POST",
     headers: { "Idempotency-Key": input.idempotencyKey },
     body: JSON.stringify({
-      amount: formatAmount(input.amount),
+      amount: formatAmount(input.amount, input.currency),
       currency: input.currency,
       country: input.country,
       network: input.network,
@@ -334,6 +341,43 @@ export async function listExchangeRates(): Promise<SasPayExchangeRate[]> {
   }
 
   exchangeCache = { at: now, value: all };
+  return all;
+}
+
+/**
+ * Parcourt toutes les pages de `/exchange-rates/` (≈ 9 000 paires, 91 pages).
+ * Réservé au cron de synchronisation : jamais appelé au checkout.
+ */
+export async function listAllExchangeRates(): Promise<SasPayExchangeRate[]> {
+  const collect = async (page: number): Promise<SasPayExchangeRate[]> => {
+    const payload = await request<
+      { results?: SasPayExchangeRate[]; next?: string | null } | SasPayExchangeRate[]
+    >(`/exchange-rates/?page=${page}&page_size=100`);
+    return Array.isArray(payload) ? payload : (payload.results ?? []);
+  };
+
+  const all: SasPayExchangeRate[] = [...(await collect(1))];
+  let page = 2;
+
+  while (page <= 150) {
+    const pages = Array.from({ length: 8 }, (_, index) => page + index);
+    const batch = await Promise.all(
+      pages.map((value) => collect(value).catch(() => [] as SasPayExchangeRate[])),
+    );
+
+    let reachedEnd = false;
+    for (const rows of batch) {
+      if (rows.length === 0) {
+        reachedEnd = true;
+        break;
+      }
+      all.push(...rows);
+    }
+
+    if (reachedEnd) break;
+    page += 8;
+  }
+
   return all;
 }
 

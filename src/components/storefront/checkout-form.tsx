@@ -11,7 +11,7 @@ import {
 import { Icon, icons, Spinner } from "@/components/ui/primitives";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import { interpolate } from "@/i18n/get-dictionary";
-import type { Locale } from "@/i18n/config";
+import { LOCALE_META, type Locale } from "@/i18n/config";
 import {
   placeOrderAction,
   type CheckoutFormState,
@@ -490,6 +490,22 @@ export function CheckoutForm({
             ))}
           </SelectField>
         </div>
+      ) : null}
+
+      {selectedMarket &&
+      selectedMarket.available &&
+      selectedMarket.paymentCurrency !== cart.currency ? (
+        <p className="mb-3 rounded-xl border border-brand-500/20 bg-brand-500/[0.05] px-3 py-2.5 text-[0.75rem] leading-relaxed text-subtle">
+          Total à payer :{" "}
+          <span className="font-medium text-fg">
+            {selectedMarket.paymentAmountDecimal} {selectedMarket.paymentCurrency}
+          </span>
+          {" · "}1 {cart.currency} ≈{" "}
+          {new Intl.NumberFormat(LOCALE_META[locale].tag, {
+            maximumSignificantDigits: 5,
+          }).format(selectedMarket.fxRate)}{" "}
+          {selectedMarket.paymentCurrency}
+        </p>
       ) : null}
 
       {selectedMarket && !selectedMarket.available ? (

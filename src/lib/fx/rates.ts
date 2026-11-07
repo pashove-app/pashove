@@ -1,8 +1,4 @@
 import { createPublicClient } from "@/lib/supabase/public";
-import {
-  listExchangeRates,
-  type SasPayExchangeRate,
-} from "@/lib/payments/saspay/client";
 import { currencyDecimals } from "@/lib/fx/currency";
 
 export type FxQuote = {
@@ -13,58 +9,15 @@ export type FxQuote = {
   source: "saspay" | "manual" | "identity";
 };
 
-let sasPayCache: { at: number; value: SasPayExchangeRate[] } | null = null;
-const TTL_MS = 10 * 60 * 1000;
-
-async function sasPayRates(): Promise<SasPayExchangeRate[]> {
-  const now = Date.now();
-  if (sasPayCache && now - sasPayCache.at < TTL_MS) return sasPayCache.value;
-  const value = await listExchangeRates();
-  sasPayCache = { at: now, value };
-  return value;
-}
-
-function findPair(
-  rates: SasPayExchangeRate[],
-  from: string,
-  to: string,
-): number | null {
-  const direct = rates.find(
-    (entry) =>
-      entry.from_currency?.toUpperCase() === from &&
-      entry.to_currency?.toUpperCase() === to,
-  );
-  if (direct) {
-    const value = Number(direct.rate);
-    if (Number.isFinite(value) && value > 0) return value;
-  }
-
-  const inverse = rates.find(
-    (entry) =>
-      entry.from_currency?.toUpperCase() === to &&
-      entry.to_currency?.toUpperCase() === from,
-  );
-  if (inverse) {
-    const value = Number(inverse.rate);
-    if (Number.isFinite(value) && value > 0) return 1 / value;
-  }
-
-  return null;
-}
-
-async function manualRate(from: string, to: string): Promise<number | null> {
-  const supabase = createPublicClient();
-  const { data } = await supabase.rpc("public_fx_rate", {
-    p_from: from,
-    p_to: to,
-  });
-  const value = Number(data);
-  return Number.isFinite(value) && value > 0 ? value : null;
-}
-
 /**
- * Taux retenu pour une paire. Ordre : SasPay, puis taux manuel de la
- * plateforme. Aucun taux inventé : sans source, la paire est indisponible.
+ * Taux retenu pour une paire.
+ *
+ * Lecture unique dans `fx_rates`, alimentée par :
+ * - le cron `fx-rates` (source `saspay`, toutes les 6 h) ;
+ * - un taux manuel posé par un admin (source `manual`).
+ *
+ * Aucun appel à l'API SasPay au checkout : les 9 000 paires ne sont jamais
+ * parcourues pendant une commande.
  */
 export async function getExchangeRate(
   fromCurrency: string,
@@ -76,21 +29,23 @@ export async function getExchangeRate(
   if (!from || !to) return null;
   if (from === to) return { from, to, rate: 1, source: "identity" };
 
-  try {
-    const rate = findPair(await sasPayRates(), from, to);
-    if (rate !== null) return { from, to, rate, source: "saspay" };
-  } catch (error) {
-    console.error("[fx] SasPay rates unavailable", error);
-  }
+  const supabase = createPublicClient();
+  const { data } = await supabase.rpc("public_fx_quote", {
+    p_from: from,
+    p_to: to,
+  });
 
-  try {
-    const rate = await manualRate(from, to);
-    if (rate !== null) return { from, to, rate, source: "manual" };
-  } catch (error) {
-    console.error("[fx] manual rate unavailable", error);
-  }
+  const row = (data ?? null) as { rate?: unknown; source?: unknown } | null;
+  const rate = Number(row?.rate);
 
-  return null;
+  if (!Number.isFinite(rate) || rate <= 0) return null;
+
+  return {
+    from,
+    to,
+    rate,
+    source: row?.source === "saspay" ? "saspay" : "manual",
+  };
 }
 
 export type FxConversion = FxQuote & {
@@ -112,7 +67,9 @@ export async function convertMinor(
   if (!quote) return null;
 
   const fromMajor = amountMinor / 10 ** currencyDecimals(quote.from);
-  const toMinor = Math.round(fromMajor * quote.rate * 10 ** currencyDecimals(quote.to));
+  const toMinor = Math.round(
+    fromMajor * quote.rate * 10 ** currencyDecimals(quote.to),
+  );
 
   return {
     ...quote,
