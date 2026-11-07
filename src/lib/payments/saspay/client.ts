@@ -43,6 +43,13 @@ export type SasPayPayinRate = {
   };
 };
 
+export type SasPayExchangeRate = {
+  from_currency: string;
+  to_currency: string;
+  rate: string;
+  auto_update?: boolean;
+};
+
 export type SasPayBalance = {
   id: string;
   merchant: string;
@@ -301,6 +308,33 @@ export async function confirmOtp(paymentId: string, otp: string): Promise<SasPay
 export async function listPayinRates(): Promise<SasPayPayinRate[]> {
   const value = await request<SasPayPayinRate[]>("/pricing/my-rates/");
   return Array.isArray(value) ? value : [];
+}
+
+let exchangeCache: { at: number; value: SasPayExchangeRate[] } | null = null;
+
+/** Taux de conversion entre devises (paires fournies par SasPay). */
+export async function listExchangeRates(): Promise<SasPayExchangeRate[]> {
+  const now = Date.now();
+  if (exchangeCache && now - exchangeCache.at < NETWORK_TTL_MS) {
+    return exchangeCache.value;
+  }
+
+  const all: SasPayExchangeRate[] = [];
+
+  for (let page = 1; page <= 5; page += 1) {
+    const payload = await request<
+      { results?: SasPayExchangeRate[]; next?: string | null } | SasPayExchangeRate[]
+    >(`/exchange-rates/?page=${page}&page_size=100`);
+
+    const rows = Array.isArray(payload) ? payload : (payload.results ?? []);
+    all.push(...rows);
+
+    const next = Array.isArray(payload) ? null : payload.next;
+    if (!next || rows.length === 0) break;
+  }
+
+  exchangeCache = { at: now, value: all };
+  return all;
 }
 
 export async function listBalances(): Promise<SasPayBalance[]> {
