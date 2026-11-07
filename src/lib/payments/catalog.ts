@@ -29,6 +29,8 @@ const BRANDS: BrandRule[] = [
   { match: "free", method: "mobile_money", color: "#00A0E3", short: "F" },
   { match: "wizall", method: "mobile_money", color: "#00A651", short: "WZ" },
   { match: "expresso", method: "mobile_money", color: "#00AEEF", short: "E" },
+  { match: "tigo", method: "mobile_money", color: "#0033A0", short: "AT" },
+  { match: "vodafone", method: "mobile_money", color: "#E60000", short: "VF" },
   { match: "togo", method: "mobile_money", color: "#FFCC00", short: "TM" },
   { match: "mobi", method: "mobile_money", color: "#0055A4", short: "MC" },
   { match: "m_pesa", method: "mobile_money", color: "#43B02A", short: "MP" },
