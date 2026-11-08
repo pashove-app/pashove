@@ -165,17 +165,19 @@ export default async function AboutPage({
           />
           <MarketingContainer className="relative">
             <MarketingReveal>
-              <div className="grid overflow-hidden rounded-[1.75rem] bg-white shadow-[0_40px_100px_-50px_rgba(0,0,0,0.8)] lg:grid-cols-[0.92fr_1.08fr]">
-                <div className="relative min-h-[26rem] lg:min-h-[34rem]">
-                  <Image
-                    src="/about/ibrahim-portrait.jpg"
-                    alt={c.founder.imageAlt}
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 45vw"
-                    className="object-cover object-top"
-                  />
+              <div className="grid overflow-hidden rounded-[1.75rem] bg-white shadow-[0_40px_100px_-50px_rgba(0,0,0,0.8)] lg:grid-cols-[0.85fr_1.15fr]">
+                <div className="flex items-center justify-center bg-[#F4F6FB] p-6 sm:p-8">
+                  <div className="relative aspect-[4/5] w-full max-w-[20rem] overflow-hidden rounded-[1.5rem] border border-slate-200/70 shadow-[0_24px_60px_-40px_rgba(10,14,26,0.55)]">
+                    <Image
+                      src="/about/ibrahim-portrait.jpg"
+                      alt={c.founder.imageAlt}
+                      fill
+                      sizes="(max-width: 1024px) 80vw, 20rem"
+                      className="object-cover object-top"
+                    />
+                  </div>
                 </div>
-                <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-14">
+                <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-12">
                   <Eyebrow tone="light">{c.founder.eyebrow}</Eyebrow>
                   <h2 className="font-display mt-5 text-[2.4rem] leading-none tracking-[-0.04em] text-[#0A0E1A] sm:text-[3rem]">
                     {c.founder.name}
