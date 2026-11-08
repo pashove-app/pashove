@@ -9,9 +9,26 @@ import { requireSecondFactor } from "@/lib/auth/mfa";
 import { readProfile } from "@/lib/profile/queries";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 
-export const metadata: Metadata = {
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale: raw } = await params;
+  const locale = isLocale(raw) ? raw : "fr";
+
+  return {
+    title: "Pashove Delivery",
+    robots: { index: false, follow: false },
+    manifest: `/${locale}/app/courier/manifest.webmanifest`,
+    icons: { apple: "/pwa/apple-touch-icon.png" },
+    appleWebApp: {
+      capable: true,
+      title: "Pashove Delivery",
+      statusBarStyle: "black-translucent",
+    },
+  };
+}
 
 /**
  * Coquille de l'espace livreur.

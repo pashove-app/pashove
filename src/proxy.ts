@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "@/i18n/config";
+import { courierIntent } from "@/lib/auth/redirects";
 import { refreshSession } from "@/lib/supabase/session";
 
 /** Fichiers servis tels quels (images, polices, robots.txt…). */
@@ -67,6 +68,24 @@ export async function proxy(request: NextRequest) {
   if (isLocale(first)) {
     const headers = new Headers(request.headers);
     headers.set("x-pashove-locale", first);
+
+    // L'inscription et la connexion livreur masquent le volet marchand. Le
+    // layout d'authentification lit cet en-tête ; sans lui, il faudrait
+    // convertir tout le volet en composant client.
+    const isAuthScreen =
+      pathname === `/${first}/auth/register` ||
+      pathname === `/${first}/auth/login` ||
+      pathname === `/${first}/auth/verify-email`;
+
+    if (
+      isAuthScreen &&
+      courierIntent({
+        redirect: request.nextUrl.searchParams.get("redirect") ?? undefined,
+        role: request.nextUrl.searchParams.get("role") ?? undefined,
+      })
+    ) {
+      headers.set("x-pashove-courier", "1");
+    }
 
     const response = NextResponse.next({ request: { headers } });
     response.cookies.set(LOCALE_COOKIE, first, {

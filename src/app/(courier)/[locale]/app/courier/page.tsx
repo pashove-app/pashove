@@ -3,6 +3,7 @@ import { Icon, icons } from "@/components/ui/primitives";
 import { resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { CourierApplicationForm } from "@/components/couriers/courier-application-form";
+import { CourierPwa } from "@/components/couriers/courier-pwa";
 import { getMyCourierProfile } from "@/lib/couriers/queries";
 import { myCourierDeliveries } from "@/lib/delivery/courier-queries";
 import {
@@ -269,6 +270,11 @@ export default async function CourierDashboardPage({
           </>
         )}
       </section>
+
+      <CourierPwa
+        locale={locale === "en" ? "en" : "fr"}
+        pushEnabled={courier?.status === "approved"}
+      />
 
       {delivered ? (
         <p className="mt-4 flex items-start gap-2 rounded-xl border border-emerald-400/25 bg-emerald-400/[0.07] px-3.5 py-3 text-[0.8125rem] text-emerald-700 dark:text-emerald-300">

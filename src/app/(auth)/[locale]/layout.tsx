@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { AuthShell } from "@/components/auth/auth-shell";
@@ -44,11 +45,12 @@ export default async function AuthLayout({
   if (!isLocale(locale)) notFound();
 
   const t = await getDictionary(locale);
+  const courier = (await headers()).get("x-pashove-courier") === "1";
 
   return (
     <>
       <DocumentLocale locale={locale} dir={directionOf(locale)} />
-      <AuthShell t={t} locale={locale}>
+      <AuthShell t={t} locale={locale} courier={courier}>
         {children}
       </AuthShell>
     </>

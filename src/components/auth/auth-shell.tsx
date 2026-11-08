@@ -15,15 +15,21 @@ import type { Dictionary } from "@/i18n/get-dictionary";
 export function AuthShell({
   t,
   locale,
+  courier = false,
   children,
 }: {
   t: Dictionary;
   locale: Locale;
+  courier?: boolean;
   children: ReactNode;
 }) {
   return (
-    <div className="min-h-dvh bg-bg lg:grid lg:grid-cols-[1.05fr_1fr]">
-      <AuthBrandPanel t={t} />
+    <div
+      className={`min-h-dvh bg-bg lg:grid ${
+        courier ? "lg:grid-cols-1" : "lg:grid-cols-[1.05fr_1fr]"
+      }`}
+    >
+      {courier ? null : <AuthBrandPanel t={t} />}
 
       <div className="flex min-h-dvh flex-col">
         <header className="flex items-center justify-between gap-3 px-5 py-4 sm:px-8">
