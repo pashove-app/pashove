@@ -33,15 +33,33 @@ export async function proxy(request: NextRequest) {
 
   const first = pathname.split("/")[1] ?? "";
 
+  // Attribution d'affiliation : cookie de 30 jours, validé au checkout.
+  const rawRef = request.nextUrl.searchParams.get("ref");
+  const affiliateRef =
+    rawRef && /^[A-Za-z0-9]{6,16}$/.test(rawRef) ? rawRef.toUpperCase() : null;
+
+  const withRef = (response: NextResponse) => {
+    if (affiliateRef) {
+      response.cookies.set("pashove_ref", affiliateRef, {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 30,
+        sameSite: "lax",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+      });
+    }
+    return response;
+  };
+
   // L'administration plateforme vit hors du préfixe de langue : elle est
   // interne, en français, et doit rester accessible à /platform-admin.
   if (pathname === "/platform-admin" || pathname.startsWith("/platform-admin/")) {
-    return refreshSession(request, NextResponse.next());
+    return withRef(await refreshSession(request, NextResponse.next()));
   }
 
   // Pages légales publiques de la plateforme, hors préfixe de langue.
   if (pathname === "/legal" || pathname.startsWith("/legal/")) {
-    return NextResponse.next();
+    return withRef(NextResponse.next());
   }
 
   // Route déjà préfixée par une langue : on l'annonce au layout racine, et on
@@ -60,14 +78,14 @@ export async function proxy(request: NextRequest) {
     // Seul endroit d'où l'on peut réécrire les cookies de session : un Server
     // Component en est incapable. Sans ce passage, la session expire sans se
     // renouveler.
-    return refreshSession(request, response);
+    return withRef(await refreshSession(request, response));
   }
 
   // Sinon on redirige vers la langue négociée.
   const locale = negotiate(request);
   const url = request.nextUrl.clone();
   url.pathname = `/${locale}${pathname === "/" ? "" : pathname}`;
-  return NextResponse.redirect(url);
+  return withRef(NextResponse.redirect(url));
 }
 
 export const config = {

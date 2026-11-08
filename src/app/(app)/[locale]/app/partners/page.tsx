@@ -6,8 +6,13 @@ import { Icon, icons } from "@/components/ui/primitives";
 import { path } from "@/components/ui/types";
 import { LOCALE_META, resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
-import { addPartnerListingAction } from "@/lib/partners/actions";
 import {
+  addPartnerListingAction,
+  createAffiliateLinkAction,
+} from "@/lib/partners/actions";
+import { CopyLink } from "@/components/partners/copy-link";
+import {
+  listAffiliateLinks,
   listDiscoverOffers,
   listPartnerListings,
   listPartnerSales,
@@ -36,11 +41,11 @@ export default async function PartnersPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ added?: string; error?: string }>;
+  searchParams: Promise<{ added?: string; error?: string; affiliate?: string }>;
 }) {
   const { locale: raw } = await params;
   const locale = resolveLocale(raw);
-  const { added, error } = await searchParams;
+  const { added, error, affiliate } = await searchParams;
 
   const membership = await currentMembership();
   if (!membership) redirect(`/${locale}/onboarding/store`);
@@ -51,11 +56,20 @@ export default async function PartnersPage({
   const store = membership.store;
   const canAdd = canManageCatalog(membership.role);
 
-  const [offers, listings, sales] = await Promise.all([
+  const [offers, listings, sales, affiliateLinks] = await Promise.all([
     listDiscoverOffers(store.id, store.currency, tag),
     listPartnerListings(store.id, store.currency, tag),
     listPartnerSales(store.id, store.currency, tag),
+    listAffiliateLinks(store.id, store.currency, tag),
   ]);
+
+  const activeAffiliate = affiliate
+    ? affiliateLinks.find((link) => link.code === affiliate)
+    : null;
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
+  const affiliateUrl = activeAffiliate
+    ? `${appUrl}/${locale}/store/${activeAffiliate.ownerStoreSlug}?ref=${activeAffiliate.code}`
+    : null;
 
   const errorMessage = error
     ? labels.errors[error as keyof typeof labels.errors] ?? labels.errors.serverError
@@ -98,6 +112,21 @@ export default async function PartnersPage({
         >
           {errorMessage}
         </p>
+      ) : null}
+
+      {affiliateUrl ? (
+        <div className="mt-5 rounded-2xl border border-emerald-400/25 bg-emerald-400/[0.06] p-4">
+          <p className="text-[0.8125rem] font-medium text-emerald-700 dark:text-emerald-300">
+            {labels.affiliateReady}
+          </p>
+          <div className="mt-2">
+            <CopyLink
+              url={affiliateUrl}
+              copyLabel={labels.affiliateCopy}
+              copiedLabel={labels.affiliateCopied}
+            />
+          </div>
+        </div>
       ) : null}
 
       <section className="mt-8">
@@ -203,17 +232,31 @@ export default async function PartnersPage({
                   </details>
 
                   {canAdd ? (
-                    <form action={addPartnerListingAction} className="mt-4">
-                      <input type="hidden" name="locale" value={locale} />
-                      <input type="hidden" name="offerId" value={offer.offerId} />
-                      <button
-                        type="submit"
-                        className="flex h-10 w-full items-center justify-center gap-2 rounded-full bg-brand-500 text-[0.8125rem] font-medium text-white transition-colors hover:bg-brand-600"
-                      >
-                        <Icon path={icons.plus} className="h-4 w-4" strokeWidth={2.4} />
-                        {labels.add}
-                      </button>
-                    </form>
+                    <>
+                      <form action={addPartnerListingAction} className="mt-4">
+                        <input type="hidden" name="locale" value={locale} />
+                        <input type="hidden" name="offerId" value={offer.offerId} />
+                        <button
+                          type="submit"
+                          className="flex h-10 w-full items-center justify-center gap-2 rounded-full bg-brand-500 text-[0.8125rem] font-medium text-white transition-colors hover:bg-brand-600"
+                        >
+                          <Icon path={icons.plus} className="h-4 w-4" strokeWidth={2.4} />
+                          {labels.add}
+                        </button>
+                      </form>
+
+                      <form action={createAffiliateLinkAction} className="mt-2">
+                        <input type="hidden" name="locale" value={locale} />
+                        <input type="hidden" name="offerId" value={offer.offerId} />
+                        <button
+                          type="submit"
+                          className="flex h-9 w-full items-center justify-center gap-2 rounded-full border border-border text-[0.75rem] font-medium text-body transition-colors hover:border-border-strong hover:text-fg"
+                        >
+                          <Icon path={icons.route} className="h-3.5 w-3.5" strokeWidth={2} />
+                          {labels.affiliateGenerate}
+                        </button>
+                      </form>
+                    </>
                   ) : null}
                 </div>
               </article>
@@ -255,6 +298,52 @@ export default async function PartnersPage({
                 >
                   {labels.open}
                 </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-[1.0625rem] font-medium text-fg">
+          {labels.affiliateTitle}
+        </h2>
+        <p className="mt-0.5 text-[0.8125rem] text-subtle">
+          {labels.affiliateSubtitle}
+        </p>
+
+        {affiliateLinks.length === 0 ? (
+          <p className="mt-3 rounded-2xl border border-border bg-surface px-5 py-6 text-[0.8125rem] text-subtle">
+            {labels.affiliateEmpty}
+          </p>
+        ) : (
+          <ul className="mt-3 divide-y divide-hairline overflow-hidden rounded-3xl border border-border bg-surface">
+            {affiliateLinks.map((link) => (
+              <li key={link.id} className="px-5 py-3.5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-[0.875rem] font-medium text-fg">
+                      {link.productName}
+                    </p>
+                    <p className="mt-0.5 font-mono text-[0.75rem] text-subtle">
+                      ?ref={link.code}
+                    </p>
+                  </div>
+                  <div className="flex gap-4 text-end text-[0.75rem]">
+                    <div>
+                      <p className="text-faint">{labels.affiliateSales}</p>
+                      <p className="font-medium tabular-nums text-fg">
+                        {link.salesCount}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-faint">{labels.affiliateEarned}</p>
+                      <p className="font-medium tabular-nums text-emerald-600 dark:text-emerald-400">
+                        {link.earnedLabel}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </li>
             ))}
           </ul>

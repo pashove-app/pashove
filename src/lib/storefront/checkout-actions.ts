@@ -405,6 +405,18 @@ export async function placeOrderAction(
 
   const storeSlug = storefront.store.slug;
   const orderToken = result.token;
+
+  // Attribution d'affiliation lue dans le cookie de 30 jours. Le code est
+  // revérifié en base ; un code inconnu est simplement ignoré.
+  const affiliateCode = (await cookies()).get("pashove_ref")?.value ?? "";
+
+  if (affiliateCode && UUID_PATTERN.test(orderToken)) {
+    await supabase.rpc("attach_affiliate", {
+      p_order_token: orderToken,
+      p_code: affiliateCode,
+    });
+  }
+
   await rememberOrderToken(orderToken);
 
   type GiftClaimResult = {

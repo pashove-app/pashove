@@ -34,6 +34,19 @@ export type PartnerListing = {
   sourceStoreName: string;
 };
 
+export type AffiliateLink = {
+  id: string;
+  code: string;
+  active: boolean;
+  commissionBps: number;
+  productName: string;
+  ownerStoreName: string;
+  ownerStoreSlug: string;
+  salesCount: number;
+  earned: number;
+  earnedLabel: string;
+};
+
 export type PartnerSale = {
   id: string;
   orderNumber: number;
@@ -190,6 +203,36 @@ export async function listPartnerListings(
     priceLabel: formatMoney(row.price_amount, currency, tag),
     sourceStoreName: row.source?.name ?? "",
   }));
+}
+
+/** Les liens d'affiliation générés par la boutique active. */
+export async function listAffiliateLinks(
+  storeId: string,
+  currency: string,
+  tag: string,
+): Promise<AffiliateLink[]> {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("list_affiliate_links", {
+    p_store_id: storeId,
+  });
+
+  if (!Array.isArray(data)) return [];
+
+  return (data as Record<string, unknown>[]).map((row) => {
+    const earned = Number(row.earned ?? 0);
+    return {
+      id: String(row.id ?? ""),
+      code: String(row.code ?? ""),
+      active: row.active !== false,
+      commissionBps: Number(row.commissionBps ?? 0),
+      productName: String(row.productName ?? ""),
+      ownerStoreName: String(row.ownerStoreName ?? ""),
+      ownerStoreSlug: String(row.ownerStoreSlug ?? ""),
+      salesCount: Number(row.salesCount ?? 0),
+      earned,
+      earnedLabel: formatMoney(earned, currency, tag),
+    };
+  });
 }
 
 /** Les ventes partenaires des deux côtés (source et partenaire). */

@@ -65,6 +65,34 @@ export async function savePartnerOfferAction(
   return { status: "saved" };
 }
 
+/** Génère (ou réactive) le lien d'affiliation d'une offre. */
+export async function createAffiliateLinkAction(formData: FormData): Promise<void> {
+  const locale = field(formData, "locale") || "fr";
+  const offerId = field(formData, "offerId");
+
+  const membership = await currentMembership();
+  if (!membership) redirect(`/${locale}/onboarding/store`);
+  if (!canManageCatalog(membership.role)) {
+    redirect(`/${locale}/app/partners?error=notOwner`);
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("create_affiliate_link", {
+    p_offer_id: offerId,
+    p_store_id: membership.store.id,
+  });
+
+  if (error) {
+    redirect(`/${locale}/app/partners?error=serverError`);
+  }
+
+  const code = (data as { code?: string } | null)?.code;
+  if (!code) redirect(`/${locale}/app/partners?error=serverError`);
+
+  revalidatePath(`/${locale}/app/partners`);
+  redirect(`/${locale}/app/partners?affiliate=${code}`);
+}
+
 /** Ajoute une copie contrôlée du produit partenaire à la boutique active. */
 export async function addPartnerListingAction(formData: FormData): Promise<void> {
   const locale = field(formData, "locale") || "fr";
