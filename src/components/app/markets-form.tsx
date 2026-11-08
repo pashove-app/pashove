@@ -31,12 +31,16 @@ export function MarketsForm({
   selected,
   storeCurrency,
   codEnabled,
+  planCode,
+  feeChargeMode,
 }: {
   locale: string;
   markets: PlatformMarket[];
   selected: string[];
   storeCurrency: string;
   codEnabled: boolean;
+  planCode: string;
+  feeChargeMode: "client" | "merchant";
 }) {
   const [state, formAction, pending] = useActionState<MarketsState, FormData>(
     saveMarketsAction,
@@ -45,6 +49,7 @@ export function MarketsForm({
 
   const [checked, setChecked] = useState<Set<string>>(new Set(selected));
   const [cod, setCod] = useState(codEnabled);
+  const [feeMode, setFeeMode] = useState<"client" | "merchant">(feeChargeMode);
 
   const enabled = markets.filter((market) => market.isEnabled);
   const groups = new Map<string, PlatformMarket[]>();
@@ -184,6 +189,58 @@ export function MarketsForm({
             </span>
           </span>
         </label>
+
+        {planCode === "free" ? (
+          <p className="mt-3 rounded-xl border border-border bg-bg px-3 py-2.5 text-[0.6875rem] leading-relaxed text-subtle">
+            Les frais SasPay sont inclus dans la commission de 10 % du plan Free.
+            Ce réglage est réservé aux plans Standard et Pro.
+          </p>
+        ) : (
+          <div className="mt-4">
+            <p className="text-[0.75rem] font-medium text-fg">
+              Frais SasPay
+            </p>
+            <div className="mt-2 grid gap-2 sm:grid-cols-2">
+              {(
+                [
+                  {
+                    code: "client" as const,
+                    title: "Le client paie les frais",
+                    text: "Les frais s’ajoutent au montant débité.",
+                  },
+                  {
+                    code: "merchant" as const,
+                    title: "Je paie les frais",
+                    text: "Les frais sont déduits de ton reversement.",
+                  },
+                ]
+              ).map((entry) => {
+                const active = feeMode === entry.code;
+                return (
+                  <button
+                    key={entry.code}
+                    type="button"
+                    onClick={() => setFeeMode(entry.code)}
+                    aria-pressed={active}
+                    className={`rounded-2xl border p-3 text-start transition-colors ${
+                      active
+                        ? "border-brand-500 bg-brand-500/[0.07]"
+                        : "border-border bg-surface hover:border-border-strong"
+                    }`}
+                  >
+                    <span className="block text-[0.75rem] font-medium text-fg">
+                      {entry.title}
+                    </span>
+                    <span className="mt-0.5 block text-[0.6875rem] leading-relaxed text-subtle">
+                      {entry.text}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <input type="hidden" name="feeChargeMode" value={feeMode} />
+          </div>
+        )}
 
         <div className="mt-4 space-y-1.5 text-[0.6875rem] leading-relaxed text-subtle">
           <p>

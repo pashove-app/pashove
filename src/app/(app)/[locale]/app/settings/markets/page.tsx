@@ -6,6 +6,7 @@ import { path } from "@/components/ui/types";
 import { resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getPlatformMarkets, getStoreMarkets } from "@/lib/markets/queries";
+import { getCurrentPlan } from "@/lib/plans/queries";
 import { currentStore } from "@/lib/stores/queries";
 
 export async function generateMetadata({
@@ -32,9 +33,10 @@ export default async function MarketsSettingsPage({
   if (!store) redirect(`/${locale}/onboarding/store`);
 
   const t = await getDictionary(locale);
-  const [platform, active] = await Promise.all([
+  const [platform, active, plan] = await Promise.all([
     getPlatformMarkets(),
     getStoreMarkets(store.id),
+    getCurrentPlan(),
   ]);
 
   return (
@@ -56,6 +58,8 @@ export default async function MarketsSettingsPage({
           selected={active.map((market) => market.code)}
           storeCurrency={store.currency}
           codEnabled={store.cod_enabled}
+          planCode={plan?.code ?? "free"}
+          feeChargeMode={store.fee_charge_mode}
         />
       </div>
     </div>

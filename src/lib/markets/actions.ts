@@ -30,6 +30,8 @@ export async function saveMarketsAction(
     p_store_id: store.id,
     p_codes: codes,
     p_cod_enabled: formData.get("codEnabled") === "on",
+    p_fee_charge_mode:
+      formData.get("feeChargeMode") === "client" ? "client" : "merchant",
   });
 
   if (error) {

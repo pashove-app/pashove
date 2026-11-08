@@ -30,6 +30,8 @@ export type Store = {
   shipping_flat_amount: number;
   /** Paiement à la livraison proposé au checkout. */
   cod_enabled: boolean;
+  /** Qui supporte les frais SasPay (Standard/Pro). */
+  fee_charge_mode: "client" | "merchant";
   /** Option « acheter comme cadeau » proposée au checkout. */
   gift_enabled: boolean;
   /** Clé R2 de l'image, lue par jointure — l'URL publique s'en déduit. */
@@ -41,7 +43,7 @@ export type Store = {
 const COLUMNS = [
   "id, name, slug, country, currency, category, status, product_types",
   "description, hero_title, hero_subtitle, contact_email, contact_phone",
-  "logo_media_id, banner_media_id, shipping_flat_amount, cod_enabled, gift_enabled",
+  "logo_media_id, banner_media_id, shipping_flat_amount, cod_enabled, gift_enabled, fee_charge_mode",
   "logo:media_assets!logo_media_id(object_key)",
   "banner:media_assets!banner_media_id(object_key)",
   "created_at",
@@ -70,10 +72,21 @@ export async function listStoreMemberships(): Promise<StoreMembership[]> {
   } = await supabase.auth.getUser();
   if (!user) return [];
 
-  const { data } = await supabase
-    .from("store_members")
-    .select(`role, store:stores!store_id(${COLUMNS})`)
-    .eq("user_id", user.id);
+  const query = (columns: string) =>
+    supabase
+      .from("store_members")
+      .select(`role, store:stores!store_id(${columns})`)
+      .eq("user_id", user.id);
+
+  const primary = await query(COLUMNS);
+  let data = primary.data;
+
+  // Déploiement du code avant la migration : la colonne `fee_charge_mode`
+  // peut manquer. On relit sans elle plutôt que de vider l'espace marchand.
+  if (primary.error) {
+    const fallback = await query(COLUMNS.replace(", fee_charge_mode", ""));
+    data = fallback.data;
+  }
 
   // Le client Supabase n'est pas typé : la forme renvoyée est vérifiée par le
   // select ci-dessus, pas par le compilateur.
@@ -86,6 +99,13 @@ export async function listStoreMemberships(): Promise<StoreMembership[]> {
     .filter(
       (row): row is { role: StoreRole; store: Store } => Boolean(row.store),
     )
+    .map((row) => ({
+      ...row,
+      store: {
+        ...row.store,
+        fee_charge_mode: row.store.fee_charge_mode ?? "merchant",
+      },
+    }))
     .sort((left, right) =>
       left.store.created_at.localeCompare(right.store.created_at),
     );
