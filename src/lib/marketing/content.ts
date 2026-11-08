@@ -37,6 +37,7 @@ const fr = {
   nav: {
     home: "Accueil",
     features: "Fonctionnalités",
+    themes: "Thèmes",
     about: "À propos",
     pricing: "Tarifs",
     login: "Connexion",
@@ -426,8 +427,8 @@ const fr = {
     developerTitle: "Développeurs",
     product: [
       { label: "Fonctionnalités", href: "/features" },
+      { label: "Thèmes", href: "/themes" },
       { label: "Tarifs", href: "/pricing" },
-      { label: "Thèmes", href: "/features#boutique" },
     ],
     company: [
       { label: "À propos", href: "/about" },
@@ -471,7 +472,7 @@ const en: SiteContent = {
     featuresDescription:
       "Catalog, orders, finance, themes, messaging, partners: everything Pashove already does for your store.",
   },
-  nav: { home: "Home", features: "Features", about: "About", pricing: "Pricing", login: "Sign in", cta: "Create my store", menu: "Open menu", close: "Close menu" },
+  nav: { home: "Home", features: "Features", themes: "Themes", about: "About", pricing: "Pricing", login: "Sign in", cta: "Create my store", menu: "Open menu", close: "Close menu" },
   hero: {
     eyebrow: "Discover the Pashove platform",
     titleBefore: "Grow your",
@@ -697,8 +698,8 @@ const en: SiteContent = {
     developerTitle: "Developers",
     product: [
       { label: "Features", href: "/features" },
+      { label: "Themes", href: "/themes" },
       { label: "Pricing", href: "/pricing" },
-      { label: "Themes", href: "/features#boutique" },
     ],
     company: [
       { label: "About", href: "/about" },
