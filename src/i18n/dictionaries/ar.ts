@@ -2659,6 +2659,7 @@ const ar: Dictionary = {
     cardExpiryLabel: "تاريخ الانتهاء",
     cardCvvLabel: "CVV",
     checkoutPaymentUnavailable: "طريقة الدفع هذه غير متاحة لهذه السلة.",
+    checkoutDeliveryUnavailable: "توصيل Pashove غير متاح لهذا الطلب.",
     checkoutPaymentFailed: "لم يتم الدفع. أعد المحاولة.",
     checkoutPaymentInvalid: "اختر طريقة دفع.",
     checkoutCardInvalid: "تحقق من بيانات البطاقة.",

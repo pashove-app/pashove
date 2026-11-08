@@ -9,6 +9,8 @@ import { RevenuePanel } from "@/components/dashboard/home/revenue-panel";
 import { WelcomeBanner } from "@/components/dashboard/home/welcome-banner";
 import { Icon, icons } from "@/components/ui/primitives";
 import { path } from "@/components/ui/types";
+import { SoundAlert } from "@/components/ui/sound-alert";
+import { AutoRefresh } from "@/components/ui/auto-refresh";
 import { LOCALE_META, resolveLocale } from "@/i18n/config";
 import { getDictionary, interpolate } from "@/i18n/get-dictionary";
 import { formatMoney } from "@/lib/money";
@@ -143,6 +145,9 @@ export default async function DashboardHomePage({
 
   return (
     <div className="mx-auto w-full max-w-5xl">
+      <SoundAlert triggerKey={counts.all} />
+      <AutoRefresh intervalMs={20000} />
+
       {published ? (
         <div
           role="status"

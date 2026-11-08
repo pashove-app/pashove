@@ -16,6 +16,7 @@ import { rememberOrderToken } from "@/lib/customer/order-cookie";
 import { paymentSchema } from "@/lib/payments/schema";
 import { activeOnlineProvider, getPaymentProvider } from "@/lib/payments/registry";
 import { getCheckoutOptions } from "@/lib/payments/queries";
+import { formatMinor } from "@/lib/fx/currency";
 import { SasPayError } from "@/lib/payments/saspay/client";
 import type { PaymentMethod } from "@/lib/payments/types";
 
@@ -281,6 +282,24 @@ export async function placeOrderAction(
       return { status: "error", messageKey: errorKey(error) };
     }
 
+    if (storefront.store.delivery_mode === "pashove" && requiresShipping) {
+      const zoneId = field(formData, "deliveryZone");
+      const token = (data as { token?: string } | null)?.token;
+
+      if (!zoneId || !token) {
+        return { status: "error", messageKey: "checkoutDeliveryUnavailable" };
+      }
+
+      const { error: zoneError } = await supabase.rpc("apply_delivery_zone", {
+        p_order_token: token,
+        p_zone_id: zoneId,
+      });
+
+      if (zoneError) {
+        return { status: "error", messageKey: "checkoutDeliveryUnavailable" };
+      }
+    }
+
     orderData = data;
   } else {
     const providerCode = activeOnlineProvider();
@@ -308,6 +327,42 @@ export async function placeOrderAction(
       return { status: "error", messageKey: "checkoutGeneric" };
     }
 
+    let paymentAmount = market.paymentAmountMinor;
+    let paymentCurrency = market.paymentCurrency;
+    let paymentAmountDecimal = market.paymentAmountDecimal;
+    let paymentFxRate = market.fxRate;
+    let paymentFxSource = market.fxSource;
+
+    if (storefront.store.delivery_mode === "pashove" && requiresShipping) {
+      const zoneId = field(formData, "deliveryZone");
+
+      if (!zoneId) {
+        return { status: "error", messageKey: "checkoutDeliveryUnavailable" };
+      }
+
+      const { data: applied, error: zoneError } = await supabase.rpc(
+        "apply_delivery_zone",
+        { p_order_token: online.token, p_zone_id: zoneId },
+      );
+
+      const zone = applied as { total?: number; currency?: string } | null;
+
+      if (
+        zoneError ||
+        !zone?.total ||
+        !zone.currency ||
+        zone.currency.toUpperCase() !== market.paymentCurrency.toUpperCase()
+      ) {
+        return { status: "error", messageKey: "checkoutDeliveryUnavailable" };
+      }
+
+      paymentAmount = zone.total;
+      paymentCurrency = zone.currency;
+      paymentAmountDecimal = formatMinor(zone.total, zone.currency);
+      paymentFxRate = 1;
+      paymentFxSource = "identity";
+    }
+
     // Les RPC de paiement sont réservées à la clé de service : la clé anonyme
     // est publique et permettrait sinon de confirmer une commande sans argent.
     const payments = createServiceClient();
@@ -322,17 +377,17 @@ export async function placeOrderAction(
       if (providerCode === "saspay" && market.paymentCurrency) {
         await payments.rpc("set_order_fx", {
           p_order_token: online.token,
-          p_payment_currency: market.paymentCurrency,
-          p_payment_amount: Number(market.paymentAmountDecimal),
-          p_fx_rate: market.fxRate,
-          p_fx_source: market.fxSource,
+          p_payment_currency: paymentCurrency,
+          p_payment_amount: Number(paymentAmountDecimal),
+          p_fx_rate: paymentFxRate,
+          p_fx_source: paymentFxSource,
         });
       }
 
       const intent = await provider.createIntent({
         orderId: online.orderId,
-        amount: market.paymentAmountMinor,
-        currency: market.paymentCurrency,
+        amount: paymentAmount,
+        currency: paymentCurrency,
         country: market.countryCode,
         method,
         network: option.code,

@@ -2754,6 +2754,7 @@ const fr = {
     cardExpiryLabel: "Expiration",
     cardCvvLabel: "CVV",
     checkoutPaymentUnavailable: "Ce moyen de paiement n’est pas disponible pour ce panier.",
+    checkoutDeliveryUnavailable: "La livraison Pashove n’est pas disponible pour cette commande.",
     checkoutPaymentFailed: "Le paiement n’a pas abouti. Réessaie.",
     checkoutPaymentInvalid: "Choisis un moyen de paiement.",
     checkoutCardInvalid: "Vérifie les informations de la carte.",

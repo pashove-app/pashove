@@ -2679,6 +2679,7 @@ const bm: Dictionary = {
     cardExpiryLabel: "Waati",
     cardCvvLabel: "CVV",
     checkoutPaymentUnavailable: "Nin sara fɛɛrɛ man available nin paniyɛrɛ ye.",
+    checkoutDeliveryUnavailable: "Pashove Delivery tɛ se ka kɛ nin komandi ye.",
     checkoutPaymentFailed: "Sara man tɛmɛ. Aw baara.",
     checkoutPaymentInvalid: "Sara fɛɛrɛ sugandi.",
     checkoutCardInvalid: "Karti kunnafoniw lajɛ.",

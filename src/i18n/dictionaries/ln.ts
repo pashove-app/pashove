@@ -2687,6 +2687,7 @@ const ln: Dictionary = {
     cardExpiryLabel: "Ekipi",
     cardCvvLabel: "CVV",
     checkoutPaymentUnavailable: "Moyen oyo ezali te mpo na panier oyo.",
+    checkoutDeliveryUnavailable: "Livraison Pashove ezali te mpo na commande oyo.",
     checkoutPaymentFailed: "Kofuta esalemi te. Meka lisusu.",
     checkoutPaymentInvalid: "Pona moyen ya kofuta.",
     checkoutCardInvalid: "Tala makambo ya carte.",

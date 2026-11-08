@@ -17,6 +17,7 @@ import {
 } from "@/lib/delivery/courier-actions";
 import { OfferCountdown } from "@/components/couriers/offer-countdown";
 import { CourierRefresh } from "@/components/couriers/courier-refresh";
+import { SoundAlert } from "@/components/ui/sound-alert";
 import { LOCALE_META } from "@/i18n/config";
 import { formatMoney } from "@/lib/money";
 import { currentStore } from "@/lib/stores/queries";
@@ -283,6 +284,7 @@ export default async function CourierDashboardPage({
       {courier?.status === "approved" ? (
         <>
           {courier.isOnline ? <CourierRefresh /> : null}
+          <SoundAlert triggerKey={deliveries.offer?.id ?? ""} />
 
           <section className="mt-4 rounded-3xl border border-border bg-surface p-5 sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">

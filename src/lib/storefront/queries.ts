@@ -19,6 +19,7 @@ export type PublicStore = {
   shipping_flat_amount: number;
   cod_enabled: boolean;
   gift_enabled: boolean;
+  delivery_mode: "self" | "pashove";
 };
 
 export type StorefrontStatus = "active" | "suspended" | "missing";
@@ -28,7 +29,7 @@ const COLUMNS = [
   "logo:media_assets!logo_media_id(object_key)",
   "banner:media_assets!banner_media_id(object_key)",
   "contact_email, contact_phone, country, currency, category",
-  "shipping_flat_amount, cod_enabled, gift_enabled",
+  "shipping_flat_amount, cod_enabled, gift_enabled, delivery_mode",
 ].join(", ");
 
 /** Normalise un segment d'URL avant de le comparer : les slugs sont minuscules. */
@@ -52,13 +53,33 @@ async function readStore(slug: string): Promise<PublicStore | null> {
 
   // Aucun filtre sur `status` ici : la politique RLS ne rend que les boutiques
   // ouvertes, et c'est la base qui décide, pas la requête.
-  const { data } = await supabase
+  const primary = await supabase
     .from("stores")
     .select(COLUMNS)
     .eq("slug", normalize(slug))
     .maybeSingle();
 
-  return (data as PublicStore | null) ?? null;
+  let data = primary.data;
+
+  // Déploiement avant la migration : on relit sans `delivery_mode`.
+  if (primary.error) {
+    const legacy = await supabase
+      .from("stores")
+      .select(COLUMNS.replace(", delivery_mode", ""))
+      .eq("slug", normalize(slug))
+      .maybeSingle();
+    data = legacy.data;
+  }
+
+  if (!data) return null;
+
+  return {
+    ...(data as unknown as PublicStore),
+    delivery_mode:
+      (data as { delivery_mode?: unknown }).delivery_mode === "pashove"
+        ? "pashove"
+        : "self",
+  };
 }
 
 /**

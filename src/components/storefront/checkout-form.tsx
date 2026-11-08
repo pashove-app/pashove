@@ -13,6 +13,8 @@ import type { Dictionary } from "@/i18n/get-dictionary";
 import { interpolate } from "@/i18n/get-dictionary";
 import { LOCALE_META, type Locale } from "@/i18n/config";
 import { formatMinor } from "@/lib/fx/currency";
+import { formatMoney } from "@/lib/money";
+import type { DeliveryZone } from "@/lib/delivery/queries";
 import {
   placeOrderAction,
   type CheckoutFormState,
@@ -106,6 +108,8 @@ export function CheckoutForm({
   defaultMarket,
   settings,
   payLabel,
+  deliveryMode,
+  deliveryZones,
   giftEnabled,
 }: {
   t: Dictionary;
@@ -118,6 +122,8 @@ export function CheckoutForm({
   defaultMarket: string;
   settings: CheckoutSettings;
   payLabel: string;
+  deliveryMode: "self" | "pashove";
+  deliveryZones: DeliveryZone[];
   giftEnabled: boolean;
 }) {
   const labels = t.storefront;
@@ -127,6 +133,12 @@ export function CheckoutForm({
     FormData
   >(placeOrderAction, INITIAL);
   const [createAccount, setCreateAccount] = useState(false);
+  const pashoveDelivery = deliveryMode === "pashove" && requiresShipping;
+  const tag = LOCALE_META[locale].tag;
+  const defaultZone =
+    deliveryZones.find((zone) => zone.isDefault) ?? deliveryZones[0];
+
+  const [zoneId, setZoneId] = useState(defaultZone?.id ?? "");
   const [marketCode, setMarketCode] = useState(defaultMarket);
   const initialMarket = markets.find((entry) => entry.code === defaultMarket);
   const [network, setNetwork] = useState(
@@ -134,6 +146,8 @@ export function CheckoutForm({
   );
   const [gift, setGift] = useState(false);
 
+  const selectedZone =
+    deliveryZones.find((zone) => zone.id === zoneId) ?? defaultZone;
   const selectedMarket = markets.find((entry) => entry.code === marketCode);
   const options = selectedMarket?.options ?? [];
   const selectedOption = options.find((entry) => entry.code === network);
@@ -263,23 +277,51 @@ export function CheckoutForm({
         text={labels.checkoutShippingText}
       >
         <div className="grid gap-4 sm:grid-cols-2">
-          <SelectField
-            name="country"
-            label={labels.checkoutCountryLabel}
-            defaultValue={
-              markets.find((market) => market.code === defaultMarket)?.countryCode ??
-              defaultCountry
-            }
-            error={fieldError("country")}
-          >
-            {markets
-              .filter((market) => market.available)
-              .map((market) => (
-                <option key={market.code} value={market.countryCode}>
-                  {market.countryName}
-                </option>
-              ))}
-          </SelectField>
+          {pashoveDelivery ? (
+            <>
+              <input type="hidden" name="country" value={defaultCountry} />
+              {deliveryZones.length > 0 ? (
+                <SelectField
+                  name="deliveryZone"
+                  label={locale === "en" ? "Delivery zone" : "Zone de livraison"}
+                  value={zoneId}
+                  onChange={(event) => setZoneId(event.target.value)}
+                  error={fieldError("deliveryZone")}
+                >
+                  {deliveryZones.map((zone) => (
+                    <option key={zone.id} value={zone.id}>
+                      {zone.name} —{" "}
+                      {formatMoney(zone.feeAmount, zone.currency, tag)}
+                    </option>
+                  ))}
+                </SelectField>
+              ) : (
+                <p className="rounded-xl border border-amber-400/25 bg-amber-400/[0.06] px-3 py-2.5 text-[0.75rem] leading-relaxed text-amber-700 dark:text-amber-300">
+                  {locale === "en"
+                    ? "Pashove Delivery is not available yet in this country."
+                    : "Pashove Delivery n’est pas encore disponible dans ce pays."}
+                </p>
+              )}
+            </>
+          ) : (
+            <SelectField
+              name="country"
+              label={labels.checkoutCountryLabel}
+              defaultValue={
+                markets.find((market) => market.code === defaultMarket)?.countryCode ??
+                defaultCountry
+              }
+              error={fieldError("country")}
+            >
+              {markets
+                .filter((market) => market.available)
+                .map((market) => (
+                  <option key={market.code} value={market.countryCode}>
+                    {market.countryName}
+                  </option>
+                ))}
+            </SelectField>
+          )}
           <TextField
             name="city"
             label={labels.checkoutCityLabel}
@@ -713,7 +755,7 @@ export function CheckoutForm({
 
       <button
         type="submit"
-        disabled={pending || !selectedOption}
+        disabled={pending || !selectedOption || (pashoveDelivery && !selectedZone)}
         className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-6 text-[0.875rem] font-medium text-white transition-colors hover:bg-brand-600 disabled:pointer-events-none disabled:opacity-50"
       >
         {pending ? <Spinner /> : <Icon path={icons.lock} className="h-4 w-4" strokeWidth={2} />}

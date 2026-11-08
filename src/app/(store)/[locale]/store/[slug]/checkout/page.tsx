@@ -13,6 +13,7 @@ import { getDictionary } from "@/i18n/get-dictionary";
 import { readCart } from "@/lib/storefront/cart";
 import { getCheckoutOptions } from "@/lib/payments/queries";
 import { getPublicCheckoutSettings } from "@/lib/checkout/queries";
+import { getPublicDeliveryZones } from "@/lib/delivery/queries";
 import { checkoutTexts } from "@/lib/checkout/settings";
 import { loadStorefront } from "@/lib/storefront/queries";
 
@@ -45,7 +46,7 @@ export default async function CheckoutPage({
   const hasPhysical = cart.items.some(
     (item) => item.productType === "physical" || item.productType === "bundle",
   );
-  const [checkout, settings] = await Promise.all([
+  const [checkout, settings, deliveryZones] = await Promise.all([
     getCheckoutOptions(
       slug,
       hasNonPhysical,
@@ -55,6 +56,9 @@ export default async function CheckoutPage({
       hasPhysical,
     ),
     getPublicCheckoutSettings(slug),
+    store.delivery_mode === "pashove"
+      ? getPublicDeliveryZones(slug)
+      : Promise.resolve([]),
   ]);
 
   const copy = checkoutTexts(settings, locale, {
@@ -105,6 +109,8 @@ export default async function CheckoutPage({
                 defaultMarket={checkout.defaultMarket}
                 settings={settings}
                 payLabel={copy.payLabel}
+                deliveryMode={store.delivery_mode}
+                deliveryZones={deliveryZones}
                 giftEnabled={store.gift_enabled}
               />
             </div>
