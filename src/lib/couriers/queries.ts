@@ -8,6 +8,7 @@ export type CourierProfile = {
   phone: string;
   email: string;
   status: CourierStatus;
+  isOnline: boolean;
   rejectionReason: string | null;
   createdAt: string;
   reviewedAt: string | null;
@@ -34,6 +35,7 @@ function normalize(value: unknown): CourierProfile | null {
     phone: String(row.phone ?? ""),
     email: String(row.email ?? ""),
     status,
+    isOnline: row.isOnline === true,
     rejectionReason:
       typeof row.rejectionReason === "string" ? row.rejectionReason : null,
     createdAt: String(row.createdAt ?? ""),

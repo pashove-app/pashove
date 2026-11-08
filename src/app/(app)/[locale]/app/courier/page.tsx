@@ -7,6 +7,16 @@ import { path } from "@/components/ui/types";
 import { resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getMyCourierProfile } from "@/lib/couriers/queries";
+import { myCourierDeliveries } from "@/lib/delivery/courier-queries";
+import {
+  acceptDeliveryAction,
+  declineDeliveryAction,
+  setCourierOnlineAction,
+} from "@/lib/delivery/courier-actions";
+import { OfferCountdown } from "@/components/couriers/offer-countdown";
+import { CourierRefresh } from "@/components/couriers/courier-refresh";
+import { LOCALE_META } from "@/i18n/config";
+import { formatMoney } from "@/lib/money";
 import { currentStore } from "@/lib/stores/queries";
 
 export async function generateMetadata({
@@ -42,6 +52,20 @@ const COPY = {
     pending: "En attente",
     approved: "Validé",
     rejected: "Refusé",
+    onlineTitle: "Disponibilité",
+    onlineText: "Tu ne reçois des courses que lorsque tu es en ligne.",
+    goOnline: "Passer en ligne",
+    goOffline: "Passer hors ligne",
+    offerTitle: "Nouvelle course",
+    timeLeft: "Temps restant",
+    accept: "Accepter",
+    decline: "Refuser",
+    pickup: "Ramassage",
+    dropoff: "Livraison",
+    courseFee: "Course",
+    orderLabel: "Commande",
+    activeTitle: "Course en cours",
+    activeText: "Récupère le colis chez le marchand puis livre le client.",
   },
   en: {
     title: "Courier space",
@@ -63,6 +87,20 @@ const COPY = {
     pending: "Pending",
     approved: "Approved",
     rejected: "Rejected",
+    onlineTitle: "Availability",
+    onlineText: "You only receive rides while online.",
+    goOnline: "Go online",
+    goOffline: "Go offline",
+    offerTitle: "New ride",
+    timeLeft: "Time left",
+    accept: "Accept",
+    decline: "Decline",
+    pickup: "Pickup",
+    dropoff: "Drop-off",
+    courseFee: "Ride",
+    orderLabel: "Order",
+    activeTitle: "Ride in progress",
+    activeText: "Pick up the parcel from the store, then deliver to the customer.",
   },
 };
 
@@ -71,11 +109,11 @@ export default async function CourierDashboardPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ submitted?: string }>;
+  searchParams: Promise<{ submitted?: string; error?: string }>;
 }) {
   const { locale: raw } = await params;
   const locale = resolveLocale(raw);
-  const { submitted } = await searchParams;
+  const { submitted, error } = await searchParams;
 
   const store = await currentStore();
   if (!store) redirect(`/${locale}/onboarding/store`);
@@ -83,6 +121,14 @@ export default async function CourierDashboardPage({
   const t = await getDictionary(locale);
   const copy = locale === "en" ? COPY.en : COPY.fr;
   const courier = await getMyCourierProfile();
+  const deliveries =
+    courier?.status === "approved"
+      ? await myCourierDeliveries()
+      : { offer: null, active: null };
+
+  const tag = LOCALE_META[locale].tag;
+  const money = (amount: number, currency: string) =>
+    formatMoney(amount, currency, tag);
 
   const statusLabel = courier
     ? courier.status === "approved"
@@ -174,6 +220,164 @@ export default async function CourierDashboardPage({
           </>
         )}
       </section>
+
+      {error ? (
+        <p className="mt-4 rounded-xl border border-red-500/25 bg-red-500/[0.06] px-3.5 py-3 text-[0.8125rem] text-red-600 dark:text-red-400">
+          {decodeURIComponent(error)}
+        </p>
+      ) : null}
+
+      {courier?.status === "approved" ? (
+        <>
+          {courier.isOnline ? <CourierRefresh /> : null}
+
+          <section className="mt-4 rounded-3xl border border-border bg-surface p-5 sm:p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-faint">
+                  {copy.onlineTitle}
+                </p>
+                <p className="mt-1 text-[0.875rem] text-subtle">
+                  {copy.onlineText}
+                </p>
+              </div>
+              <form action={setCourierOnlineAction}>
+                <input type="hidden" name="locale" value={locale} />
+                <input
+                  type="hidden"
+                  name="online"
+                  value={courier.isOnline ? "false" : "true"}
+                />
+                <button
+                  type="submit"
+                  className={`inline-flex h-11 items-center gap-2 rounded-full px-5 text-[0.8125rem] font-semibold text-white transition-colors ${
+                    courier.isOnline
+                      ? "bg-emerald-600 hover:bg-emerald-700"
+                      : "bg-brand-500 hover:bg-brand-600"
+                  }`}
+                >
+                  <span className="h-2 w-2 rounded-full bg-white" />
+                  {courier.isOnline ? copy.goOffline : copy.goOnline}
+                </button>
+              </form>
+            </div>
+          </section>
+
+          {deliveries.offer ? (
+            <section className="mt-4 rounded-3xl border-2 border-brand-500 bg-brand-500/[0.06] p-5 sm:p-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-accent">
+                  {copy.offerTitle}
+                </p>
+                {deliveries.offer.offerExpiresAt ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-3 py-1 text-[0.75rem] font-semibold text-white">
+                    {copy.timeLeft}
+                    <OfferCountdown
+                      deliveryId={deliveries.offer.id}
+                      expiresAt={deliveries.offer.offerExpiresAt}
+                    />
+                  </span>
+                ) : null}
+              </div>
+
+              <p className="mt-2 text-[1.0625rem] font-medium text-fg">
+                {copy.orderLabel} #{deliveries.offer.orderNumber} ·{" "}
+                {deliveries.offer.storeName}
+              </p>
+
+              <dl className="mt-4 space-y-2 text-[0.8125rem]">
+                <div className="flex justify-between gap-3">
+                  <dt className="text-subtle">{copy.pickup}</dt>
+                  <dd className="text-end font-medium text-fg">
+                    {deliveries.offer.storeName}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt className="text-subtle">{copy.dropoff}</dt>
+                  <dd className="text-end font-medium text-fg">
+                    {deliveries.offer.shippingAddress}
+                    {deliveries.offer.shippingExtra
+                      ? `, ${deliveries.offer.shippingExtra}`
+                      : ""}
+                    , {deliveries.offer.shippingCity}{" "}
+                    ({deliveries.offer.shippingCountry})
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt className="text-subtle">{copy.courseFee}</dt>
+                  <dd className="text-end font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+                    {money(deliveries.offer.feeAmount, deliveries.offer.currency)}
+                  </dd>
+                </div>
+              </dl>
+
+              <div className="mt-5 grid gap-2 sm:grid-cols-2">
+                <form action={acceptDeliveryAction}>
+                  <input type="hidden" name="locale" value={locale} />
+                  <input type="hidden" name="deliveryId" value={deliveries.offer.id} />
+                  <button
+                    type="submit"
+                    className="flex h-11 w-full items-center justify-center rounded-full bg-emerald-600 text-[0.875rem] font-semibold text-white transition-colors hover:bg-emerald-700"
+                  >
+                    {copy.accept}
+                  </button>
+                </form>
+                <form action={declineDeliveryAction}>
+                  <input type="hidden" name="locale" value={locale} />
+                  <input type="hidden" name="deliveryId" value={deliveries.offer.id} />
+                  <button
+                    type="submit"
+                    className="flex h-11 w-full items-center justify-center rounded-full border border-border text-[0.875rem] font-medium text-body transition-colors hover:border-border-strong"
+                  >
+                    {copy.decline}
+                  </button>
+                </form>
+              </div>
+            </section>
+          ) : null}
+
+          {deliveries.active ? (
+            <section className="mt-4 rounded-3xl border border-emerald-400/30 bg-emerald-400/[0.05] p-5 sm:p-6">
+              <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-300">
+                {copy.activeTitle}
+              </p>
+              <p className="mt-2 text-[1.0625rem] font-medium text-fg">
+                {copy.orderLabel} #{deliveries.active.orderNumber} ·{" "}
+                {deliveries.active.storeName}
+              </p>
+              <p className="mt-1 text-[0.8125rem] leading-relaxed text-subtle">
+                {copy.activeText}
+              </p>
+              <dl className="mt-4 space-y-2 text-[0.8125rem]">
+                <div className="flex justify-between gap-3">
+                  <dt className="text-subtle">{copy.dropoff}</dt>
+                  <dd className="text-end font-medium text-fg">
+                    {deliveries.active.shippingAddress}
+                    {deliveries.active.shippingExtra
+                      ? `, ${deliveries.active.shippingExtra}`
+                      : ""}
+                    , {deliveries.active.shippingCity}{" "}
+                    ({deliveries.active.shippingCountry})
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt className="text-subtle">{copy.courseFee}</dt>
+                  <dd className="text-end font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+                    {money(deliveries.active.feeAmount, deliveries.active.currency)}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt className="text-subtle">{copy.orderLabel}</dt>
+                  <dd className="text-end text-fg">
+                    {deliveries.active.customerName} ·{" "}
+                    {deliveries.active.customerPhone}
+                  </dd>
+                </div>
+              </dl>
+            </section>
+          ) : null}
+        </>
+      ) : null}
     </div>
   );
 }
