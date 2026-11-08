@@ -4,6 +4,7 @@ import { VerifyEmailForm } from "@/components/auth/verify-email-form";
 import { isLocale, resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { readPendingEmail } from "@/lib/auth/pending-email";
+import { safeAppPath } from "@/lib/auth/redirects";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 
 export async function generateMetadata({
@@ -27,11 +28,15 @@ export async function generateMetadata({
  */
 export default async function VerifyEmailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ redirect?: string }>;
 }) {
   const { locale: raw } = await params;
   const locale = resolveLocale(raw);
+  const { redirect: redirectParam } = await searchParams;
+  const redirectTo = safeAppPath(redirectParam);
 
   if (!isSupabaseConfigured()) redirect(`/${locale}/auth/login`);
 
@@ -41,10 +46,17 @@ export default async function VerifyEmailPage({
   } = await supabase.auth.getUser();
 
   // Une session ouverte signifie que l'adresse a déjà été confirmée.
-  if (user) redirect(`/${locale}/app`);
+  if (user) redirect(`/${locale}${redirectTo ?? "/app"}`);
 
   const email = await readPendingEmail();
   const t = await getDictionary(locale);
 
-  return <VerifyEmailForm t={t} locale={locale} email={email} />;
+  return (
+    <VerifyEmailForm
+      t={t}
+      locale={locale}
+      email={email}
+      redirectTo={redirectTo}
+    />
+  );
 }

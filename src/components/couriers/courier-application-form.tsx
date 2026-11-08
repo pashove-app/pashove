@@ -15,6 +15,9 @@ const COPY = {
     name: "Nom complet",
     phone: "Téléphone",
     email: "E-mail",
+    country: "Pays d’opération",
+    countryPlaceholder: "Choisis ton pays",
+    countryHint: "Les courses proposées dépendent de ce pays.",
     idLabel: "Pièce d’identité",
     idHint: "Photo recto, lisible, JPEG ou PNG (5 Mo max).",
     selfieLabel: "Selfie",
@@ -28,6 +31,9 @@ const COPY = {
     name: "Full name",
     phone: "Phone",
     email: "Email",
+    country: "Operating country",
+    countryPlaceholder: "Choose your country",
+    countryHint: "Rides offered depend on this country.",
     idLabel: "ID document",
     idHint: "Front photo, readable, JPEG or PNG (5 MB max).",
     selfieLabel: "Selfie",
@@ -43,11 +49,15 @@ export function CourierApplicationForm({
   defaultName,
   defaultEmail,
   defaultPhone,
+  countries,
+  defaultCountry,
 }: {
   locale: "fr" | "en";
   defaultName: string;
   defaultEmail: string;
   defaultPhone: string;
+  countries: { code: string; name: string }[];
+  defaultCountry: string;
 }) {
   const copy = locale === "en" ? COPY.en : COPY.fr;
   const [state, formAction, pending] = useActionState<
@@ -86,6 +96,34 @@ export function CourierApplicationForm({
             defaultValue={defaultEmail}
             maxLength={254}
           />
+        </div>
+
+        <div className="flex flex-col gap-2 sm:col-span-2">
+          <label
+            htmlFor="courier-country"
+            className="text-[0.8125rem] font-medium text-[#0A0E1A]"
+          >
+            {copy.country}
+          </label>
+          <select
+            id="courier-country"
+            name="country"
+            required
+            defaultValue={defaultCountry}
+            className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-[0.875rem] text-[#0A0E1A] outline-none transition-colors focus:border-brand-500"
+          >
+            <option value="" disabled>
+              {copy.countryPlaceholder}
+            </option>
+            {countries.map((country) => (
+              <option key={country.code} value={country.code}>
+                {country.name}
+              </option>
+            ))}
+          </select>
+          <span className="text-[0.6875rem] leading-relaxed text-[#7B8496]">
+            {copy.countryHint}
+          </span>
         </div>
       </div>
 

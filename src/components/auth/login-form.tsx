@@ -6,9 +6,20 @@ import { FormNotice, PasswordField, TextField } from "@/components/ui/field";
 import { buttonClass, Icon, icons, Spinner } from "@/components/ui/primitives";
 import { path, type SectionProps } from "@/components/ui/types";
 import { signInAction } from "@/lib/auth/actions";
+import { authLink } from "@/lib/auth/redirects";
 import { INITIAL_AUTH_STATE } from "@/lib/auth/types";
 
-export function LoginForm({ t, locale }: SectionProps) {
+type Props = SectionProps & {
+  courier?: boolean;
+  redirectTo?: string | null;
+};
+
+export function LoginForm({
+  t,
+  locale,
+  courier = false,
+  redirectTo = null,
+}: Props) {
   const [state, formAction, pending] = useActionState(signInAction, INITIAL_AUTH_STATE);
 
   const dictionaryErrors = t.auth.errors as Record<string, string>;
@@ -21,13 +32,20 @@ export function LoginForm({ t, locale }: SectionProps) {
   return (
     <div>
       <h1 className="text-[1.75rem] font-medium tracking-[-0.03em] text-fg sm:text-[2rem]">
-        {t.auth.loginTitle}
+        {courier ? "Connexion livreur" : t.auth.loginTitle}
       </h1>
-      <p className="mt-2 text-[0.9375rem] text-muted">{t.auth.loginSubtitle}</p>
+      <p className="mt-2 text-[0.9375rem] text-muted">
+        {courier
+          ? "Retrouve tes courses, ta disponibilité et ton espace Pashove Delivery."
+          : t.auth.loginSubtitle}
+      </p>
 
       {/* `noValidate` : on garde la main sur les messages, dans la bonne langue */}
       <form action={formAction} noValidate className="mt-8 space-y-5">
         <input type="hidden" name="locale" value={locale} />
+        {redirectTo ? (
+          <input type="hidden" name="redirect" value={redirectTo} />
+        ) : null}
 
         <TextField
           name="email"
@@ -89,7 +107,7 @@ export function LoginForm({ t, locale }: SectionProps) {
       <p className="mt-7 text-center text-[0.875rem] text-muted">
         {t.auth.noAccount}{" "}
         <Link
-          href={path(locale, "/auth/register")}
+          href={authLink(path(locale, "/auth/register"), redirectTo)}
           className="font-medium text-accent transition-colors hover:text-accent-soft"
         >
           {t.auth.switchToRegister}

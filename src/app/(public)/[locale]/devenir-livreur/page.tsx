@@ -12,6 +12,8 @@ import { resolveLocale } from "@/i18n/config";
 import { createClient } from "@/lib/supabase/server";
 import { readProfile } from "@/lib/profile/queries";
 import { getMyCourierProfile } from "@/lib/couriers/queries";
+import { getPlatformMarkets } from "@/lib/markets/queries";
+import { countryOptions } from "@/lib/markets/options";
 import { CourierApplicationForm } from "@/components/couriers/courier-application-form";
 
 const COPY = {
@@ -144,6 +146,7 @@ export default async function CourierPage({
   } = await supabase.auth.getUser();
   const courier = user ? await getMyCourierProfile() : null;
   const profile = user ? await readProfile() : null;
+  const countries = countryOptions(await getPlatformMarkets());
 
   return (
     <>
@@ -282,13 +285,13 @@ export default async function CourierPage({
                   </p>
                   <div className="mt-4 flex flex-wrap gap-3">
                     <Link
-                      href={`/${locale}/auth/register`}
+                      href={`/${locale}/auth/register?redirect=/app/courier`}
                       className="inline-flex h-10 items-center rounded-full bg-brand-500 px-5 text-[0.8125rem] font-semibold text-white transition-colors hover:bg-brand-600"
                     >
                       {copy.register}
                     </Link>
                     <Link
-                      href={`/${locale}/auth/login`}
+                      href={`/${locale}/auth/login?redirect=/app/courier`}
                       className="inline-flex h-10 items-center rounded-full border border-slate-300 px-5 text-[0.8125rem] font-medium text-[#0A0E1A] transition-colors hover:border-slate-400"
                     >
                       {copy.login}
@@ -336,7 +339,9 @@ export default async function CourierPage({
                     locale={locale === "en" ? "en" : "fr"}
                     defaultName={profile?.full_name ?? ""}
                     defaultEmail={user.email ?? ""}
-                    defaultPhone=""
+                    defaultPhone={profile?.phone ?? ""}
+                    countries={countries}
+                    defaultCountry={profile?.country ?? ""}
                   />
                 </>
               )}

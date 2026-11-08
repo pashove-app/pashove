@@ -43,14 +43,6 @@ export async function submitCourierApplicationAction(
   formData: FormData,
 ): Promise<CourierFormState> {
   const locale = field(formData, "locale") || "fr";
-  const store = await currentStore();
-
-  if (!store) {
-    return {
-      status: "error",
-      message: "Termine d’abord la création de ta boutique, puis reviens.",
-    };
-  }
 
   const supabase = await createClient();
   const {
@@ -64,9 +56,15 @@ export async function submitCourierApplicationAction(
     };
   }
 
+  // Le livreur n'a pas forcément de boutique : les pièces sont rangées sous son
+  // identifiant de compte à défaut. Le bucket reste privé dans les deux cas.
+  const store = await currentStore();
+  const namespace = store?.id ?? user.id;
+
   const fullName = field(formData, "fullName");
   const phone = field(formData, "phone");
   const email = field(formData, "email");
+  const country = field(formData, "country").toUpperCase();
 
   if (fullName.length < 2 || phone.length < 6 || !email.includes("@")) {
     return {
@@ -75,9 +73,16 @@ export async function submitCourierApplicationAction(
     };
   }
 
+  if (!/^[A-Z]{2}$/.test(country)) {
+    return {
+      status: "error",
+      message: "Choisis ton pays d’opération.",
+    };
+  }
+
   const [idDocumentKey, selfieKey] = await Promise.all([
-    storeDocument(formData.get("idDocument"), store.id),
-    storeDocument(formData.get("selfie"), store.id),
+    storeDocument(formData.get("idDocument"), namespace),
+    storeDocument(formData.get("selfie"), namespace),
   ]);
 
   if (!idDocumentKey || !selfieKey) {
@@ -92,6 +97,7 @@ export async function submitCourierApplicationAction(
     p_full_name: fullName,
     p_phone: phone,
     p_email: email,
+    p_country: country,
     p_id_key: idDocumentKey,
     p_selfie_key: selfieKey,
   });
@@ -108,6 +114,7 @@ export async function submitCourierApplicationAction(
   }
 
   revalidatePath(`/${locale}/devenir-livreur`);
+  revalidatePath(`/${locale}/app/courier`);
   redirect(`/${locale}/app/courier?submitted=1`);
 }
 

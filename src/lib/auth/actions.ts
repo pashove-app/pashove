@@ -7,6 +7,8 @@ import { after } from "next/server";
 import { emailWelcome } from "@/lib/email/events";
 import { loginSchema, registerSchema, emailOnlySchema, resetPasswordSchema, changePasswordSchema, totpCodeSchema, verifyEmailSchema, toFieldErrors } from "@/lib/validation";
 import { clearPendingEmail, rememberPendingEmail } from "@/lib/auth/pending-email";
+import { clearPostAuth, readPostAuth, rememberPostAuth } from "@/lib/auth/post-auth";
+import { COURIER_HOME, safeAppPath } from "@/lib/auth/redirects";
 import type { AuthState, RecoveryCodesState, TotpEnrollmentState } from "@/lib/auth/types";
 
 /* ------------------------------------------------------------------ *
@@ -76,8 +78,15 @@ export async function signInAction(
 
   if (error) return { status: "error", messageKey: messageKeyFor(error) };
 
+  // L'intention livreur arrive soit du formulaire, soit du cookie posé à
+  // l'inscription quand la confirmation d'e-mail est passée par un autre écran.
+  const requested = safeAppPath(field(formData, "redirect"));
+  const stored = requested ? null : await readPostAuth();
+  const next = requested ?? stored ?? "/app";
+  if (stored) await clearPostAuth();
+
   revalidatePath("/", "layout");
-  redirect(`/${locale}/app`);
+  redirect(`/${locale}${next}`);
 }
 
 /* ------------------------------------------------------------------ *
@@ -103,6 +112,18 @@ export async function signUpAction(
 
   if (!isSupabaseConfigured()) return { status: "unconfigured" };
 
+  // Intention livreur : l'inscription ne doit pas déboucher sur l'onboarding
+  // marchand. On ne retient que les destinations connues.
+  const redirectTo = safeAppPath(field(formData, "redirect"));
+  const courier =
+    field(formData, "intent") === "courier" || redirectTo === COURIER_HOME;
+  const next = courier ? COURIER_HOME : redirectTo ?? "/app";
+
+  const callback = new URL(`${siteUrl()}/${locale}/auth/callback`);
+  if (courier || redirectTo) {
+    callback.searchParams.set("next", `/${locale}${next}`);
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
@@ -111,7 +132,7 @@ export async function signUpAction(
       // Seul le nom est conservé ici : il alimentera la ligne `profiles` créée
       // à l'inscription. Le reste appartient à l'onboarding.
       data: { full_name: parsed.data.fullName },
-      emailRedirectTo: `${siteUrl()}/${locale}/auth/callback`,
+      emailRedirectTo: callback.toString(),
     },
   });
 
@@ -130,11 +151,12 @@ export async function signUpAction(
   // vérification sache quoi vérifier, et puisse renvoyer un code.
   if (!data.session) {
     await rememberPendingEmail(parsed.data.email);
+    if (courier) await rememberPostAuth(COURIER_HOME);
     return { status: "check-email", email: parsed.data.email };
   }
 
   revalidatePath("/", "layout");
-  redirect(`/${locale}/app`);
+  redirect(`/${locale}${next}`);
 }
 
 /* ------------------------------------------------------------------ *
@@ -341,9 +363,14 @@ export async function verifyEmailCodeAction(
 
   if (error) return { status: "error", messageKey: otpMessageKey(error, "emailCodeExpired") };
 
+  const requested = safeAppPath(field(formData, "redirect"));
+  const stored = requested ? null : await readPostAuth();
+  const next = requested ?? stored ?? "/app";
+  if (stored) await clearPostAuth();
+
   await clearPendingEmail();
   revalidatePath("/", "layout");
-  redirect(`/${locale}/app`);
+  redirect(`/${locale}${next}`);
 }
 
 /* ------------------------------------------------------------------ *

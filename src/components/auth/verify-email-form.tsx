@@ -9,9 +9,9 @@ import { path, type SectionProps } from "@/components/ui/types";
 import { resendVerificationAction, verifyEmailCodeAction } from "@/lib/auth/actions";
 import { INITIAL_AUTH_STATE, type AuthState } from "@/lib/auth/types";
 
-type Props = SectionProps & { email: string | null };
+type Props = SectionProps & { email: string | null; redirectTo?: string | null };
 
-export function VerifyEmailForm({ t, locale, email }: Props) {
+export function VerifyEmailForm({ t, locale, email, redirectTo = null }: Props) {
   const [resendState, resendAction, resending] = useActionState(
     resendVerificationAction,
     INITIAL_AUTH_STATE,
@@ -139,6 +139,9 @@ export function VerifyEmailForm({ t, locale, email }: Props) {
       >
         <input type="hidden" name="locale" value={locale} />
         <input type="hidden" name="email" value={address} />
+        {redirectTo ? (
+          <input type="hidden" name="redirect" value={redirectTo} />
+        ) : null}
 
         <TextField
           name="code"

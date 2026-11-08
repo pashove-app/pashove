@@ -79,6 +79,7 @@ export default async function AdminCouriersPage({
                   </p>
                   <p className="mt-0.5 text-[0.8125rem] text-subtle">
                     {courier.email} · {courier.phone}
+                    {courier.country ? ` · ${courier.country}` : ""}
                   </p>
                   <p className="mt-0.5 text-[0.6875rem] text-faint">
                     Déposé le{" "}

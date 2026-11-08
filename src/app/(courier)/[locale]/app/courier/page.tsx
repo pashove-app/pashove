@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { BackLink } from "@/components/ui/back-link";
 import { Icon, icons } from "@/components/ui/primitives";
-import { path } from "@/components/ui/types";
 import { resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
+import { CourierApplicationForm } from "@/components/couriers/courier-application-form";
 import { getMyCourierProfile } from "@/lib/couriers/queries";
 import { myCourierDeliveries } from "@/lib/delivery/courier-queries";
 import {
@@ -19,8 +16,11 @@ import { OfferCountdown } from "@/components/couriers/offer-countdown";
 import { CourierRefresh } from "@/components/couriers/courier-refresh";
 import { SoundAlert } from "@/components/ui/sound-alert";
 import { LOCALE_META } from "@/i18n/config";
+import { getPlatformMarkets } from "@/lib/markets/queries";
+import { countryOptions } from "@/lib/markets/options";
 import { formatMoney } from "@/lib/money";
-import { currentStore } from "@/lib/stores/queries";
+import { readProfile } from "@/lib/profile/queries";
+import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata({
   params,
@@ -40,14 +40,13 @@ const COPY = {
     subtitle: "Ton dossier Pashove Delivery.",
     welcome: "Bienvenue",
     noProfile: "Tu n’as pas encore de dossier livreur.",
-    noProfileText: "Dépose ta candidature : pièce d’identité et selfie.",
-    apply: "Devenir livreur",
+    noProfileText: "Dépose ta candidature : pièce d’identité, selfie et pays d’opération.",
     pendingTitle: "Dossier en cours de vérification",
     pendingText:
       "L’équipe Pashove vérifie ta pièce et ton selfie. Tu recevras une réponse ici.",
     approvedTitle: "Compte livreur validé",
     approvedText:
-      "Ton compte est actif. Les courses, le dispatch et le solde arrivent au lot L2.",
+      "Ton compte est actif. Passe en ligne pour recevoir les courses de ton pays.",
     rejectedTitle: "Dossier refusé",
     reapply: "Déposer un nouveau dossier",
     submitted: "Dossier envoyé. Il est en attente de vérification.",
@@ -91,14 +90,13 @@ const COPY = {
     subtitle: "Your Pashove Delivery application.",
     welcome: "Welcome",
     noProfile: "You do not have a courier application yet.",
-    noProfileText: "Apply with your ID document and a selfie.",
-    apply: "Become a courier",
+    noProfileText: "Apply with your ID document, a selfie and your operating country.",
     pendingTitle: "Application under review",
     pendingText:
       "The Pashove team is checking your ID and selfie. You will see the answer here.",
     approvedTitle: "Courier account approved",
     approvedText:
-      "Your account is active. Rides, dispatch and balance arrive in lot L2.",
+      "Your account is active. Go online to receive rides in your country.",
     rejectedTitle: "Application rejected",
     reapply: "Submit a new application",
     submitted: "Application sent. It is awaiting review.",
@@ -155,16 +153,34 @@ export default async function CourierDashboardPage({
   const locale = resolveLocale(raw);
   const { submitted, error, delivered, disputed } = await searchParams;
 
-  const store = await currentStore();
-  if (!store) redirect(`/${locale}/onboarding/store`);
+  // Aucune boutique n'est exigée ici : le livreur n'est pas un marchand en
+  // attente d'onboarding. Un dossier approuvé crée sa boutique technique côté
+  // serveur, au moment de la vérification.
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const t = await getDictionary(locale);
+  const profile = await readProfile();
+  const countries = countryOptions(await getPlatformMarkets());
+
   const copy = locale === "en" ? COPY.en : COPY.fr;
   const courier = await getMyCourierProfile();
   const deliveries =
     courier?.status === "approved"
       ? await myCourierDeliveries()
       : { offer: null, active: null };
+
+  const applicationForm = (
+    <CourierApplicationForm
+      locale={locale === "en" ? "en" : "fr"}
+      defaultName={profile?.full_name ?? ""}
+      defaultEmail={user?.email ?? ""}
+      defaultPhone={profile?.phone ?? ""}
+      countries={countries}
+      defaultCountry={profile?.country ?? ""}
+    />
+  );
 
   const tag = LOCALE_META[locale].tag;
   const money = (amount: number, currency: string) =>
@@ -180,9 +196,7 @@ export default async function CourierDashboardPage({
 
   return (
     <div className="mx-auto w-full max-w-2xl">
-      <BackLink href={path(locale, "/app")} label={t.settings.backToApp} />
-
-      <h1 className="mt-5 text-[1.75rem] font-medium tracking-[-0.03em] text-fg sm:text-[2rem]">
+      <h1 className="text-[1.75rem] font-medium tracking-[-0.03em] text-fg sm:text-[2rem]">
         {copy.title}
       </h1>
       <p className="mt-2 text-[0.9375rem] text-muted">{copy.subtitle}</p>
@@ -203,12 +217,7 @@ export default async function CourierDashboardPage({
             <p className="mt-1 text-[0.8125rem] leading-relaxed text-subtle">
               {copy.noProfileText}
             </p>
-            <Link
-              href={path(locale, "/devenir-livreur#inscription")}
-              className="mt-4 inline-flex h-10 items-center rounded-full bg-brand-500 px-5 text-[0.8125rem] font-semibold text-white transition-colors hover:bg-brand-600"
-            >
-              {copy.apply}
-            </Link>
+            <div className="mt-5">{applicationForm}</div>
           </>
         ) : (
           <>
@@ -250,12 +259,12 @@ export default async function CourierDashboardPage({
             </p>
 
             {courier.status === "rejected" ? (
-              <Link
-                href={path(locale, "/devenir-livreur#inscription")}
-                className="mt-4 inline-flex h-10 items-center rounded-full border border-border px-5 text-[0.8125rem] font-medium text-body transition-colors hover:border-border-strong"
-              >
-                {copy.reapply}
-              </Link>
+              <div className="mt-5 border-t border-border pt-5">
+                <p className="text-[0.8125rem] font-medium text-fg">
+                  {copy.reapply}
+                </p>
+                <div className="mt-3">{applicationForm}</div>
+              </div>
             ) : null}
           </>
         )}

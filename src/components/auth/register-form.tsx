@@ -6,7 +6,13 @@ import { Checkbox, FormNotice, PasswordField, TextField } from "@/components/ui/
 import { buttonClass, Icon, icons, Spinner } from "@/components/ui/primitives";
 import { path, type SectionProps } from "@/components/ui/types";
 import { signUpAction } from "@/lib/auth/actions";
+import { authLink } from "@/lib/auth/redirects";
 import { INITIAL_AUTH_STATE } from "@/lib/auth/types";
+
+type Props = SectionProps & {
+  courier?: boolean;
+  redirectTo?: string | null;
+};
 
 /**
  * Inscription courte : nom, adresse, mot de passe, consentement.
@@ -14,8 +20,16 @@ import { INITIAL_AUTH_STATE } from "@/lib/auth/types";
  * Tout le reste — boutique, téléphone, pays — appartient à l'onboarding, une
  * fois le compte créé. Un formulaire qui demande deux fois la même chose au
  * même moment fait fuir avant même la première vente.
+ *
+ * Variante livreur (`?redirect=/app/courier`) : le même compte, mais sans
+ * boutique à configurer. Le ton et la destination changent, pas la validation.
  */
-export function RegisterForm({ t, locale }: SectionProps) {
+export function RegisterForm({
+  t,
+  locale,
+  courier = false,
+  redirectTo = null,
+}: Props) {
   const [state, formAction, pending] = useActionState(signUpAction, INITIAL_AUTH_STATE);
 
   const dictionaryErrors = t.auth.errors as Record<string, string>;
@@ -49,7 +63,7 @@ export function RegisterForm({ t, locale }: SectionProps) {
         {/* Le code à six chiffres est aussi dans l'e-mail : on donne le chemin
             vers l'écran qui le saisit. */}
         <Link
-          href={path(locale, "/auth/verify-email")}
+          href={authLink(path(locale, "/auth/verify-email"), redirectTo)}
           className={buttonClass({ size: "lg", className: "mt-8 w-full" })}
         >
           <Icon path={icons.check} className="h-4 w-4" strokeWidth={2} />
@@ -57,7 +71,7 @@ export function RegisterForm({ t, locale }: SectionProps) {
         </Link>
 
         <Link
-          href={path(locale, "/auth/login")}
+          href={authLink(path(locale, "/auth/login"), redirectTo)}
           className={buttonClass({ variant: "outline", size: "lg", className: "mt-3 w-full" })}
         >
           {t.auth.switchToLogin}
@@ -69,12 +83,20 @@ export function RegisterForm({ t, locale }: SectionProps) {
   return (
     <div>
       <h1 className="text-[1.75rem] font-medium tracking-[-0.03em] text-fg sm:text-[2rem]">
-        {t.auth.registerTitle}
+        {courier ? "Créer un compte Livreur Pashove" : t.auth.registerTitle}
       </h1>
-      <p className="mt-2 text-[0.9375rem] text-muted">{t.auth.registerSubtitle}</p>
+      <p className="mt-2 text-[0.9375rem] text-muted">
+        {courier
+          ? "Inscris-toi pour recevoir des courses Pashove Delivery. Aucune boutique à configurer : ton dossier livreur se remplit juste après."
+          : t.auth.registerSubtitle}
+      </p>
 
       <form action={formAction} noValidate className="mt-8 space-y-5">
         <input type="hidden" name="locale" value={locale} />
+        {redirectTo ? (
+          <input type="hidden" name="redirect" value={redirectTo} />
+        ) : null}
+        {courier ? <input type="hidden" name="intent" value="courier" /> : null}
 
         <TextField
           name="fullName"
@@ -154,7 +176,7 @@ export function RegisterForm({ t, locale }: SectionProps) {
           ) : (
             <>
               <Icon path={icons.user} className="h-4 w-4" />
-              {t.auth.registerCta}
+              {courier ? "Créer mon compte livreur" : t.auth.registerCta}
             </>
           )}
         </button>
@@ -163,7 +185,7 @@ export function RegisterForm({ t, locale }: SectionProps) {
       <p className="mt-7 text-center text-[0.875rem] text-muted">
         {t.auth.hasAccount}{" "}
         <Link
-          href={path(locale, "/auth/login")}
+          href={authLink(path(locale, "/auth/login"), redirectTo)}
           className="font-medium text-accent transition-colors hover:text-accent-soft"
         >
           {t.auth.switchToLogin}
