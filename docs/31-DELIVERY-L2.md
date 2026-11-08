@@ -36,3 +36,48 @@
 - Un remboursement n’annule pas encore la course.
 - Le ramassage affiche le nom de la boutique : l’adresse de retrait sera
   ajoutée aux réglages boutique.
+
+## L2c — OTP, escrow et litiges
+
+### Escrow
+
+- À la création de la course, `hold_delivery_fee` déplace les frais de
+  livraison de `available` vers `reserved` : le marchand ne peut plus les
+  retirer avant la livraison.
+- À la validation OTP, `settle_delivery` :
+  - marchand : `reserved` crédité, `fees` débité (la livraison sort de son
+    solde) ;
+  - livreur : `available` débité de **90 %** sur le ledger de sa boutique,
+    `delivery_income` crédité ;
+  - Pashove : **10 %** via `fees` / `delivery_commission_income`.
+- Clés d’idempotence : `delivery-hold`, `delivery-settle`,
+  `delivery-income`, `delivery-platform`, toutes suffixées par l’ordre.
+- Un litige laisse `reserved` intact.
+
+### OTP
+
+- À l’acceptation, `issue_delivery_otp` génère 4 chiffres, stocke
+  `sha256(code)`, expire en 24 h, remet le compteur de tentatives à zéro.
+- Le code est envoyé **uniquement au client** par e-mail, depuis l’action
+  serveur du livreur ; il n’est jamais renvoyé au navigateur du livreur.
+- `deliver_delivery` compare le hash, limite à 5 tentatives, passe la course
+  en `delivered` et déclenche le split.
+- En cas d’échec d’envoi de l’e-mail, le code reste stocké ; prévoir un
+  renvoi manuel support.
+
+### Litige
+
+- `report_delivery_problem` passe la course en `disputed`, enregistre le
+  motif et un `order_event`.
+- `/platform-admin/deliveries` liste les courses et les litiges.
+- Résolution admin (libérer ou rembourser) : lot ultérieur.
+
+### Comptes de ledger ajoutés
+
+`delivery_income`, `delivery_commission_income`.
+
+### Limites
+
+- OTP à 4 chiffres : sécurité portée par les 5 tentatives et l’expiration.
+- L’e-mail du code dépend de Brevo ; l’envoi n’est pas réessayé.
+- Un litige n’a pas encore d’écran de résolution.

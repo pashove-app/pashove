@@ -11,6 +11,8 @@ import { myCourierDeliveries } from "@/lib/delivery/courier-queries";
 import {
   acceptDeliveryAction,
   declineDeliveryAction,
+  deliverDeliveryAction,
+  reportDeliveryProblemAction,
   setCourierOnlineAction,
 } from "@/lib/delivery/courier-actions";
 import { OfferCountdown } from "@/components/couriers/offer-countdown";
@@ -66,6 +68,22 @@ const COPY = {
     orderLabel: "Commande",
     activeTitle: "Course en cours",
     activeText: "Récupère le colis chez le marchand puis livre le client.",
+    deliveredBanner: "Course terminée. Le paiement de la livraison est libéré.",
+    disputedBanner:
+      "Problème signalé. Le paiement reste bloqué jusqu’à la décision de Pashove.",
+    otpTitle: "Code de livraison",
+    otpText: "Demande les 4 chiffres au client et saisis-les à la réception.",
+    otpPlaceholder: "1234",
+    validate: "Valider la livraison",
+    disputeTitle: "Signaler un problème",
+    disputePlaceholder: "Client absent, adresse introuvable…",
+    report: "Signaler",
+    errors: {
+      invalidOtp: "Code incorrect. Vérifie avec le client.",
+      otpLocked: "Trop de tentatives. Contacte le support Pashove.",
+      otpExpired: "Le code a expiré. Contacte le support Pashove.",
+      problemFailed: "Signalement impossible pour le moment.",
+    },
   },
   en: {
     title: "Courier space",
@@ -101,6 +119,22 @@ const COPY = {
     orderLabel: "Order",
     activeTitle: "Ride in progress",
     activeText: "Pick up the parcel from the store, then deliver to the customer.",
+    deliveredBanner: "Ride complete. The delivery payment is released.",
+    disputedBanner:
+      "Problem reported. Payment stays locked until Pashove decides.",
+    otpTitle: "Delivery code",
+    otpText: "Ask the customer for the 4 digits and enter them on delivery.",
+    otpPlaceholder: "1234",
+    validate: "Validate delivery",
+    disputeTitle: "Report a problem",
+    disputePlaceholder: "Customer absent, address not found…",
+    report: "Report",
+    errors: {
+      invalidOtp: "Wrong code. Check with the customer.",
+      otpLocked: "Too many attempts. Contact Pashove support.",
+      otpExpired: "The code has expired. Contact Pashove support.",
+      problemFailed: "Could not report the problem.",
+    },
   },
 };
 
@@ -109,11 +143,16 @@ export default async function CourierDashboardPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ submitted?: string; error?: string }>;
+  searchParams: Promise<{
+    submitted?: string;
+    error?: string;
+    delivered?: string;
+    disputed?: string;
+  }>;
 }) {
   const { locale: raw } = await params;
   const locale = resolveLocale(raw);
-  const { submitted, error } = await searchParams;
+  const { submitted, error, delivered, disputed } = await searchParams;
 
   const store = await currentStore();
   if (!store) redirect(`/${locale}/onboarding/store`);
@@ -221,9 +260,23 @@ export default async function CourierDashboardPage({
         )}
       </section>
 
+      {delivered ? (
+        <p className="mt-4 flex items-start gap-2 rounded-xl border border-emerald-400/25 bg-emerald-400/[0.07] px-3.5 py-3 text-[0.8125rem] text-emerald-700 dark:text-emerald-300">
+          <Icon path={icons.check} className="mt-0.5 h-4 w-4" strokeWidth={2.4} />
+          {copy.deliveredBanner}
+        </p>
+      ) : null}
+
+      {disputed ? (
+        <p className="mt-4 rounded-xl border border-amber-400/25 bg-amber-400/[0.08] px-3.5 py-3 text-[0.8125rem] text-amber-700 dark:text-amber-300">
+          {copy.disputedBanner}
+        </p>
+      ) : null}
+
       {error ? (
         <p className="mt-4 rounded-xl border border-red-500/25 bg-red-500/[0.06] px-3.5 py-3 text-[0.8125rem] text-red-600 dark:text-red-400">
-          {decodeURIComponent(error)}
+          {(copy.errors as Record<string, string>)[error] ??
+            decodeURIComponent(error)}
         </p>
       ) : null}
 
@@ -374,6 +427,53 @@ export default async function CourierDashboardPage({
                   </dd>
                 </div>
               </dl>
+
+              <form
+                action={deliverDeliveryAction}
+                className="mt-5 flex flex-col gap-2 sm:flex-row"
+              >
+                <input type="hidden" name="locale" value={locale} />
+                <input type="hidden" name="deliveryId" value={deliveries.active.id} />
+                <input
+                  name="otp"
+                  required
+                  inputMode="numeric"
+                  pattern="[0-9]{4}"
+                  maxLength={4}
+                  placeholder={copy.otpPlaceholder}
+                  className="h-11 flex-1 rounded-full border border-border bg-bg px-4 text-center text-[1rem] font-semibold tracking-[0.3em] text-fg outline-none focus:border-brand-500"
+                />
+                <button
+                  type="submit"
+                  className="inline-flex h-11 items-center justify-center rounded-full bg-emerald-600 px-5 text-[0.875rem] font-semibold text-white transition-colors hover:bg-emerald-700"
+                >
+                  {copy.validate}
+                </button>
+              </form>
+              <p className="mt-2 text-[0.6875rem] leading-relaxed text-subtle">
+                {copy.otpText}
+              </p>
+
+              <form
+                action={reportDeliveryProblemAction}
+                className="mt-4 flex flex-col gap-2 border-t border-hairline pt-4 sm:flex-row"
+              >
+                <input type="hidden" name="locale" value={locale} />
+                <input type="hidden" name="deliveryId" value={deliveries.active.id} />
+                <input
+                  name="reason"
+                  required
+                  maxLength={300}
+                  placeholder={copy.disputePlaceholder}
+                  className="h-10 min-w-[12rem] flex-1 rounded-full border border-border bg-bg px-4 text-[0.75rem] text-fg outline-none focus:border-brand-500"
+                />
+                <button
+                  type="submit"
+                  className="inline-flex h-10 items-center justify-center rounded-full border border-red-500/30 px-4 text-[0.75rem] font-medium text-red-600 transition-colors hover:bg-red-500/[0.06] dark:text-red-400"
+                >
+                  {copy.report}
+                </button>
+              </form>
             </section>
           ) : null}
         </>
