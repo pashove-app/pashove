@@ -244,7 +244,7 @@ export default async function PublicHomePage({
       </section>
 
       {/* Logo cloud */}
-      <section className="border-y border-slate-200 bg-[#FAFAFA] py-16 sm:py-20">
+      <section className="border-y border-slate-200 bg-[#FAFAFA] py-12 sm:py-16">
         <MarketingContainer>
           <MarketingReveal>
             <div className="mx-auto max-w-2xl text-center">
@@ -329,7 +329,7 @@ export default async function PublicHomePage({
       </section>
 
       {/* Testimonials */}
-      <section className="bg-[#FAFAFA] py-20 sm:py-28">
+      <section className="bg-[#FAFAFA] py-14 sm:py-20">
         <MarketingContainer>
           <MarketingReveal>
             <SectionHeading
@@ -371,7 +371,7 @@ export default async function PublicHomePage({
       </section>
 
       {/* Founder conviction */}
-      <section className="bg-[#FAFAFA] pb-20 pt-4 sm:pb-24 sm:pt-5">
+      <section className="bg-[#FAFAFA] pb-14 pt-3 sm:pb-16 sm:pt-4">
         <MarketingContainer>
           <MarketingReveal>
             <div className="relative overflow-hidden rounded-[2rem] bg-[#0A0E1A] px-5 py-14 text-center sm:px-10 sm:py-18">
@@ -384,7 +384,7 @@ export default async function PublicHomePage({
               />
               <div className="relative mx-auto max-w-3xl">
                 <Image
-                  src="/about/ibrahim-suit.jpg"
+                  src="/about/ibrahim-avatar.jpg"
                   alt="Ibrahim Sidibé, initiateur de Pashove"
                   width={100}
                   height={100}
@@ -410,7 +410,7 @@ export default async function PublicHomePage({
       </section>
 
       {/* Appel à l’action clair */}
-      <section className="border-t border-slate-200 bg-white py-20 sm:py-28">
+      <section className="border-t border-slate-200 bg-white py-14 sm:py-20">
         <MarketingContainer className="text-center">
           <MarketingReveal>
             <Eyebrow tone="light">{c.cta.eyebrow}</Eyebrow>

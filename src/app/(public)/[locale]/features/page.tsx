@@ -140,7 +140,7 @@ export default async function FeaturesPage({
         </section>
       ))}
 
-      <section className="bg-[#0A0E1A] py-16 sm:py-20">
+      <section className="bg-[#0A0E1A] py-12 sm:py-16">
         <MarketingContainer>
           <MarketingReveal>
             <div className="rounded-[2rem] border border-white/10 bg-white/[0.035] p-6 sm:p-10">
@@ -169,7 +169,7 @@ export default async function FeaturesPage({
         </MarketingContainer>
       </section>
 
-      <section className="border-t border-slate-200 bg-white py-20 sm:py-24">
+      <section className="border-t border-slate-200 bg-white py-14 sm:py-20">
         <MarketingContainer className="text-center">
           <MarketingReveal>
             <Eyebrow tone="light">{c.cta.eyebrow}</Eyebrow>

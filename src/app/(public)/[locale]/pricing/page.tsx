@@ -173,7 +173,7 @@ export default async function PricingPage({
         </MarketingContainer>
       </section>
 
-      <section className="border-t border-slate-200 bg-white py-20 sm:py-24">
+      <section className="border-t border-slate-200 bg-white py-14 sm:py-20">
         <MarketingContainer className="text-center">
           <MarketingReveal>
             <SectionHeading

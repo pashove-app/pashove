@@ -115,7 +115,7 @@ export default async function AboutPage({
       </section>
 
       {/* Why */}
-      <section className="bg-[#FAFAFA] py-20 sm:py-28">
+      <section className="bg-[#FAFAFA] py-14 sm:py-20">
         <MarketingContainer>
           <div className="mx-auto max-w-4xl">
             <MarketingReveal>
@@ -155,7 +155,7 @@ export default async function AboutPage({
 
       {/* Founder */}
       <section className="bg-[#0A0E1A] px-3 py-4 sm:px-5 sm:py-5">
-        <div className="relative overflow-hidden rounded-[2rem] border border-white/10 px-4 py-14 sm:px-8 sm:py-20">
+        <div className="relative overflow-hidden rounded-[2rem] border border-white/10 px-4 py-12 sm:px-8 sm:py-16">
           <div
             className="pointer-events-none absolute inset-0"
             style={{
@@ -168,7 +168,7 @@ export default async function AboutPage({
               <div className="grid overflow-hidden rounded-[1.75rem] bg-white shadow-[0_40px_100px_-50px_rgba(0,0,0,0.8)] lg:grid-cols-[0.92fr_1.08fr]">
                 <div className="relative min-h-[26rem] lg:min-h-[34rem]">
                   <Image
-                    src="/about/ibrahim-suit.jpg"
+                    src="/about/ibrahim-portrait.jpg"
                     alt={c.founder.imageAlt}
                     fill
                     sizes="(max-width: 1024px) 100vw, 45vw"
@@ -199,7 +199,7 @@ export default async function AboutPage({
       </section>
 
       {/* Mission & vision */}
-      <section className="bg-[#FAFAFA] py-20 sm:py-28">
+      <section className="bg-[#FAFAFA] py-14 sm:py-20">
         <MarketingContainer>
           <MarketingReveal>
             <div className="mx-auto max-w-2xl text-center">
@@ -244,7 +244,7 @@ export default async function AboutPage({
 
       {/* Ambition */}
       <section className="bg-[#0A0E1A] px-3 py-4 sm:px-5 sm:py-5">
-        <div className="relative overflow-hidden rounded-[2rem] px-5 py-16 sm:px-10 sm:py-24">
+        <div className="relative overflow-hidden rounded-[2rem] px-5 py-12 sm:px-10 sm:py-16">
           <div
             className="pointer-events-none absolute inset-0"
             style={{
@@ -290,7 +290,7 @@ export default async function AboutPage({
 
       {/* CTA */}
       <section className="bg-[#FAFAFA] px-3 pb-4 sm:px-5 sm:pb-5">
-        <div className="relative overflow-hidden rounded-[2rem] bg-[#0A0E1A] px-5 py-20 text-center sm:px-10 sm:py-28">
+        <div className="relative overflow-hidden rounded-[2rem] bg-[#0A0E1A] px-5 py-14 text-center sm:px-10 sm:py-20">
           <div
             className="pointer-events-none absolute inset-0"
             style={{
