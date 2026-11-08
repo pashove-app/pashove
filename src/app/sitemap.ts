@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 import { createPublicClient } from "@/lib/supabase/public";
 
+export const dynamic = "force-dynamic";
+
 const BASE_URL = "https://pashove.com";
 const LOCALES = ["fr", "en"] as const;
 
