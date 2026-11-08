@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { drainDeliveryPush } from "@/lib/pwa/send";
 
 export const dynamic = "force-dynamic";
 
@@ -32,9 +33,13 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "cron_failed" }, { status: 500 });
   }
 
+  // Les expirations et le dispatch viennent d'écrire de nouvelles offres.
+  const pushed = await drainDeliveryPush();
+
   return NextResponse.json({
     ok: true,
     expired: expired.data,
     dispatched: dispatched.data,
+    pushed,
   });
 }

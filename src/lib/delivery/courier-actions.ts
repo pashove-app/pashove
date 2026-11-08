@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { afterDeliveryPush } from "@/lib/pwa/after-push";
 import { deliverEmail } from "@/lib/email/transport";
 import { resolveLocale } from "@/i18n/config";
 
@@ -23,6 +24,9 @@ export async function setCourierOnlineAction(formData: FormData): Promise<void> 
 
   if (error) {
     console.error("[courier] online toggle failed", error.message);
+  } else {
+    // Le passage en ligne peut dispatcher une course en attente.
+    afterDeliveryPush();
   }
 
   revalidatePath("/", "layout");
@@ -84,7 +88,13 @@ export async function declineDeliveryAction(formData: FormData): Promise<void> {
   const locale = resolveLocale(field(formData, "locale") || "fr");
   const id = field(formData, "deliveryId");
   const supabase = await createClient();
-  await supabase.rpc("decline_delivery", { p_delivery_id: id });
+  const { error } = await supabase.rpc("decline_delivery", {
+    p_delivery_id: id,
+  });
+
+  // Un refus passe la course au livreur suivant : sa notification part tout de
+  // suite, sans attendre le cron.
+  if (!error) afterDeliveryPush();
 
   revalidatePath("/", "layout");
   redirect(`/${locale}/app/courier`);

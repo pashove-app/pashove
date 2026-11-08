@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { MockProvider } from "@/lib/payments/mock";
 import { createServiceClient } from "@/lib/supabase/service";
+import { afterDeliveryPush } from "@/lib/pwa/after-push";
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -45,6 +46,8 @@ export async function POST(request: Request) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 409 });
   }
+
+  afterDeliveryPush();
 
   return NextResponse.json({ received: true });
 }

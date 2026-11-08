@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { afterDeliveryPush } from "@/lib/pwa/after-push";
 import {
   SasPayError,
   verifyPayment,
@@ -137,6 +138,10 @@ export async function POST(request: Request) {
     }
 
     const outcome = result as { status?: string; reason?: string } | null;
+
+    // La confirmation a pu créer une course et la dispatcher. L'offre ne dure
+    // que 10 secondes : on draine les notifications dès la réponse envoyée.
+    afterDeliveryPush();
 
     // Ce n'est pas une commande : peut-être un paiement d'abonnement.
     if (outcome?.status === "ignored" && outcome.reason === "payment_unknown") {

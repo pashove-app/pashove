@@ -18,6 +18,7 @@ import { activeOnlineProvider, getPaymentProvider } from "@/lib/payments/registr
 import { getCheckoutOptions } from "@/lib/payments/queries";
 import { formatMinor } from "@/lib/fx/currency";
 import { SasPayError } from "@/lib/payments/saspay/client";
+import { afterDeliveryPush } from "@/lib/pwa/after-push";
 import type { PaymentMethod } from "@/lib/payments/types";
 
 export type CheckoutFormState = {
@@ -438,6 +439,8 @@ export async function placeOrderAction(
         if (confirmError) {
           return { status: "error", messageKey: errorKey(confirmError) };
         }
+
+        afterDeliveryPush();
       }
 
       orderData = data;
