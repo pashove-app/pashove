@@ -26,6 +26,8 @@ export type CheckoutPaymentMethods = {
   country: string;
   methods: PaymentMethod[];
   provider: "mock" | "saspay";
+  feeIncluded: boolean;
+  feeChargeMode: "client" | "merchant";
 };
 
 export type CheckoutOptions = {
@@ -37,6 +39,8 @@ export type CheckoutOptions = {
   defaultMarket: string;
   minimumOnline: number;
   minimumCard: number;
+  feeIncluded: boolean;
+  feeChargeMode: "client" | "merchant";
 };
 
 const KNOWN_METHODS: PaymentMethod[] = [
@@ -98,12 +102,17 @@ export async function getCheckoutPaymentMethods(
       )
     : [];
 
+  const planCode = typeof raw.planCode === "string" ? raw.planCode : "free";
+
   return {
-    planCode: typeof raw.planCode === "string" ? raw.planCode : "free",
+    planCode,
     currency: typeof raw.currency === "string" ? raw.currency : "XOF",
     country: typeof raw.country === "string" ? raw.country : "",
     methods,
     provider: activeOnlineProvider(),
+    feeIncluded:
+      typeof raw.feeIncluded === "boolean" ? raw.feeIncluded : planCode === "free",
+    feeChargeMode: raw.feeChargeMode === "client" ? "client" : "merchant",
   };
 }
 
@@ -164,6 +173,7 @@ export async function getCheckoutOptions(
   const storeCountry = (base.country || country || "").toUpperCase();
   const onlineMethods = base.methods.filter((method) => method !== "cod");
   const codAllowed = base.methods.includes("cod");
+  const chargeClientFee = !base.feeIncluded && base.feeChargeMode === "client";
 
   let rates = [] as Awaited<ReturnType<typeof listPayinRates>>;
   if (provider === "saspay" && onlineMethods.length > 0) {
@@ -234,7 +244,9 @@ export async function getCheckoutOptions(
         for (const rate of countryRates) {
           if (!rate.network_code || seen.has(rate.network_code)) continue;
           seen.add(rate.network_code);
-          options.push(optionFromRate(rate, provider));
+          options.push(
+            optionFromRate(rate, provider, quote.amountMinor, chargeClientFee),
+          );
         }
       } else {
         for (const method of fallbackForCountry(onlineMethods, market.countryCode)) {
@@ -292,6 +304,8 @@ export async function getCheckoutOptions(
     defaultMarket,
     minimumOnline: 200,
     minimumCard: 25000,
+    feeIncluded: base.feeIncluded,
+    feeChargeMode: base.feeChargeMode,
   };
 }
 

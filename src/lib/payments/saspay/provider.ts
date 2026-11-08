@@ -55,6 +55,7 @@ export class SasPayProvider implements PaymentProvider {
       metadata: { order_id: input.orderId },
       returnUrl: input.returnUrl,
       otp: input.otp,
+      feeChargeMode: input.feeChargeMode,
       idempotencyKey: input.idempotencyKey,
     });
 

@@ -30,6 +30,16 @@ export type SasPayPayment = {
   [key: string]: unknown;
 };
 
+export type SasPayPayinTier = {
+  min_amount?: string;
+  max_amount?: string | null;
+  percent?: string;
+  fixed?: string;
+  floor_amount?: string | null;
+  cap_amount?: string | null;
+  fee_charge_mode?: string;
+};
+
 export type SasPayPayinRate = {
   country_code: string;
   country_name?: string;
@@ -40,6 +50,7 @@ export type SasPayPayinRate = {
     available: boolean;
     otp_required: boolean;
     otp_instructions?: string;
+    tiers?: SasPayPayinTier[];
   };
 };
 

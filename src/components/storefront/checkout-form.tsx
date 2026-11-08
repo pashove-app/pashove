@@ -12,6 +12,7 @@ import { Icon, icons, Spinner } from "@/components/ui/primitives";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import { interpolate } from "@/i18n/get-dictionary";
 import { LOCALE_META, type Locale } from "@/i18n/config";
+import { formatMinor } from "@/lib/fx/currency";
 import {
   placeOrderAction,
   type CheckoutFormState,
@@ -506,6 +507,33 @@ export function CheckoutForm({
           }).format(selectedMarket.fxRate)}{" "}
           {selectedMarket.paymentCurrency}
         </p>
+      ) : null}
+
+      {selectedOption &&
+      selectedOption.clientFeeMinor > 0 &&
+      selectedMarket ? (
+        <div className="mb-3 rounded-xl border border-brand-500/20 bg-brand-500/[0.05] px-3 py-2.5 text-[0.75rem] leading-relaxed">
+          <div className="flex justify-between gap-3 text-subtle">
+            <span>Frais de paiement</span>
+            <span className="tabular-nums">
+              {formatMinor(
+                selectedOption.clientFeeMinor,
+                selectedMarket.paymentCurrency,
+              )}{" "}
+              {selectedMarket.paymentCurrency}
+            </span>
+          </div>
+          <div className="mt-1 flex justify-between gap-3 font-medium text-fg">
+            <span>Total à payer</span>
+            <span className="tabular-nums">
+              {formatMinor(
+                selectedMarket.paymentAmountMinor + selectedOption.clientFeeMinor,
+                selectedMarket.paymentCurrency,
+              )}{" "}
+              {selectedMarket.paymentCurrency}
+            </span>
+          </div>
+        </div>
       ) : null}
 
       {selectedMarket && !selectedMarket.available ? (

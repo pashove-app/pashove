@@ -130,6 +130,11 @@ export async function placeOrderAction(
     (entry) => entry.code === payment.data.paymentNetwork,
   );
 
+  const feeChargeMode =
+    checkout.feeIncluded || checkout.feeChargeMode !== "client"
+      ? ("DEDUCTED" as const)
+      : ("ADD_ON" as const);
+
   if (!option) {
     return { status: "error", messageKey: "checkoutPaymentUnavailable" };
   }
@@ -332,6 +337,7 @@ export async function placeOrderAction(
         method,
         network: option.code,
         otp: payment.data.paymentOtp || undefined,
+        feeChargeMode,
         idempotencyKey: cart.checkoutKey,
         description: `Commande ${online.orderId.slice(0, 8)} · ${storefront.store.name}`,
         returnUrl: `${siteUrl()}/${locale}/store/${storefront.store.slug}/checkout/success/${online.token}`,

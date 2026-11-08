@@ -16,6 +16,8 @@ export type CreateIntentInput = {
   network?: string;
   /** OTP pré-paiement exigé par certains réseaux (Orange CI/BF). */
   otp?: string;
+  /** Frais ajoutés au client (ADD_ON) ou déduits du marchand (DEDUCTED). */
+  feeChargeMode?: "ADD_ON" | "DEDUCTED";
   /** Clé stable par tentative de paiement (en-tête Idempotency-Key). */
   idempotencyKey: string;
   description?: string;

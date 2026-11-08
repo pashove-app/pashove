@@ -34,6 +34,8 @@ export type CheckoutPaymentOption = {
   requiresCard: boolean;
   requiresOtp: boolean;
   otpInstructions?: string;
+  /** Frais ajoutés au client, en unité mineure de la devise de paiement. */
+  clientFeeMinor: number;
 };
 
 export type CheckoutMarket = {
@@ -135,19 +137,20 @@ export function methodMeta(
   if (method === "cod") {
     return {
       code: method, method, provider: "cod", kind: "cod", label: "",
-      brand, requiresPhone: false, requiresCard: false, requiresOtp: false,
+      brand, requiresPhone: false, requiresCard: false, requiresOtp: false, clientFeeMinor: 0,
     };
   }
 
   if (method === "card") {
     return {
       code: method, method, provider, kind: "card", label: "",
-      brand, requiresPhone: false, requiresCard: true, requiresOtp: false,
+      brand, requiresPhone: false, requiresCard: true, requiresOtp: false, clientFeeMinor: 0,
     };
   }
 
   return {
     code: method, method, provider, kind: "mobile_money", label: "",
     brand, requiresPhone: true, requiresCard: false, requiresOtp: false,
+    clientFeeMinor: 0,
   };
 }

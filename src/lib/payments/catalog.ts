@@ -3,7 +3,11 @@ import type {
   CheckoutPaymentOption,
   PaymentMethod,
 } from "@/lib/payments/types";
-import type { SasPayPayinRate } from "@/lib/payments/saspay/client";
+import type {
+  SasPayPayinRate,
+  SasPayPayinTier,
+} from "@/lib/payments/saspay/client";
+import { currencyDecimals } from "@/lib/fx/currency";
 
 type BrandRule = {
   match: string;
@@ -65,10 +69,47 @@ export function methodForNetwork(code: string): PaymentMethod {
   return ruleFor(code)?.method ?? "mobile_money";
 }
 
+/** Frais du réseau pour un montant donné, en unité mineure. */
+export function networkFeeMinor(
+  amountMinor: number,
+  currency: string,
+  tiers?: SasPayPayinTier[],
+): number {
+  if (!tiers || tiers.length === 0) return 0;
+
+  const decimals = currencyDecimals(currency);
+  const major = amountMinor / 10 ** decimals;
+
+  const tier =
+    tiers.find((entry) => {
+      const min = entry.min_amount == null ? 0 : Number(entry.min_amount);
+      const max =
+        entry.max_amount == null ? Number.POSITIVE_INFINITY : Number(entry.max_amount);
+      return major >= min && major <= max;
+    }) ?? null;
+
+  if (!tier) return 0;
+
+  let fee =
+    (major * Number(tier.percent ?? 0)) / 100 + Number(tier.fixed ?? 0);
+
+  const floor = Number(tier.floor_amount ?? 0);
+  if (floor > 0) fee = Math.max(fee, floor);
+
+  if (tier.cap_amount != null) {
+    const cap = Number(tier.cap_amount);
+    if (Number.isFinite(cap)) fee = Math.min(fee, cap);
+  }
+
+  return Math.max(0, Math.round(fee * 10 ** decimals));
+}
+
 /** Option construite depuis la grille réelle SasPay (`/pricing/my-rates/`). */
 export function optionFromRate(
   rate: SasPayPayinRate,
   provider: "saspay" | "mock",
+  amountMinor = 0,
+  chargeFee = false,
 ): CheckoutPaymentOption {
   const method = methodForNetwork(rate.network_code);
   const isCard = method === "card";
@@ -84,6 +125,9 @@ export function optionFromRate(
     requiresCard: isCard,
     requiresOtp: Boolean(rate.payin?.otp_required),
     otpInstructions: rate.payin?.otp_instructions?.trim() || undefined,
+    clientFeeMinor: chargeFee
+      ? networkFeeMinor(amountMinor, rate.currency, rate.payin?.tiers)
+      : 0,
   };
 }
 
@@ -113,6 +157,7 @@ export function fallbackOption(
     requiresPhone: !isCard,
     requiresCard: isCard,
     requiresOtp: false,
+    clientFeeMinor: 0,
   };
 }
 
@@ -127,5 +172,6 @@ export function codOption(): CheckoutPaymentOption {
     requiresPhone: false,
     requiresCard: false,
     requiresOtp: false,
+    clientFeeMinor: 0,
   };
 }
