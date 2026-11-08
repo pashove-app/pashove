@@ -186,7 +186,7 @@ const fr = {
       {
         icon: "palette" as IconKey,
         title: "Un thème qui te ressemble.",
-        text: "Quatre modèles, couleurs, typographies et ordre des sections. Aperçu en direct, puis publication sur ta vitrine.",
+        text: "Cinq modèles, couleurs, typographies et ordre des sections. Aperçu en direct, puis publication sur ta vitrine.",
         image: "/marketing/editor.png",
         imageAlt: "Éditeur de thèmes Pashove",
         cta: "Créer ma boutique",
@@ -262,7 +262,7 @@ const fr = {
       {
         icon: "palette" as IconKey,
         title: "Thèmes & éditeur",
-        text: "Quatre modèles, couleurs, typographies, ordre des sections. Aperçu avant publication.",
+        text: "Cinq modèles, couleurs, typographies, ordre des sections. Aperçu avant publication.",
       },
       {
         icon: "chat" as IconKey,
@@ -381,7 +381,7 @@ const fr = {
         text: "Fais venir plus de monde et fais revenir ceux qui achètent.",
         items: [
           { icon: "route" as IconKey, title: "Partenaires", text: "D’autres boutiques vendent ton catalogue, avec commissions justes." },
-          { icon: "palette" as IconKey, title: "Thèmes & éditeur", text: "Quatre modèles, couleurs, typographie, sections dans l’ordre que tu veux." },
+          { icon: "palette" as IconKey, title: "Thèmes & éditeur", text: "Cinq modèles, couleurs, typographie, sections dans l’ordre que tu veux." },
           { icon: "chat" as IconKey, title: "Messagerie", text: "Conversations client et support plateforme, avec pièces jointes." },
           { icon: "users" as IconKey, title: "Équipe & rôles", text: "Invite ton équipe et donne à chacun les droits exacts." },
         ],
@@ -584,7 +584,7 @@ const en: SiteContent = {
       {
         icon: "palette" as IconKey,
         title: "A theme that feels like you.",
-        text: "Four themes, colors, fonts and section order. Live preview, then publish to your storefront.",
+        text: "Five themes, colors, fonts and section order. Live preview, then publish to your storefront.",
         image: "/marketing/editor.png",
         imageAlt: "Pashove theme editor",
         cta: "Create my store",
@@ -624,7 +624,7 @@ const en: SiteContent = {
       { icon: "tag" as IconKey, title: "Full catalog", text: "Physical, digital and service products, variants, stock, images and collections." },
       { icon: "bag" as IconKey, title: "Orders & COD", text: "Checkout, cash on delivery, preparation, shipping, tracking and refunds." },
       { icon: "chart" as IconKey, title: "Clear finance", text: "An immutable ledger: sales, commissions, balances and payouts." },
-      { icon: "palette" as IconKey, title: "Themes & editor", text: "Four themes, colours, fonts, section order. Preview before publishing." },
+      { icon: "palette" as IconKey, title: "Themes & editor", text: "Five themes, colours, fonts, section order. Preview before publishing." },
       { icon: "chat" as IconKey, title: "Messaging", text: "Customer ↔ merchant and merchant ↔ platform, with images, videos and PDFs." },
       { icon: "route" as IconKey, title: "Partners", text: "Let other stores sell your catalog, with server-side commissions." },
     ],

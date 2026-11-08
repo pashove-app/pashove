@@ -69,7 +69,7 @@ export default async function AboutPage({
             }}
           />
 
-          <MarketingContainer className="relative grid min-h-[82vh] items-center gap-10 py-14 lg:grid-cols-[1.02fr_0.98fr] lg:gap-16 lg:py-20">
+          <MarketingContainer className="relative grid items-center gap-10 py-14 lg:grid-cols-[1.02fr_0.98fr] lg:gap-16 lg:py-20">
             <div>
               <MarketingReveal>
                 <Eyebrow>{c.hero.eyebrow}</Eyebrow>
@@ -244,7 +244,7 @@ export default async function AboutPage({
 
       {/* Ambition */}
       <section className="bg-[#0A0E1A] px-3 py-4 sm:px-5 sm:py-5">
-        <div className="relative overflow-hidden rounded-[2rem] px-5 py-12 sm:px-10 sm:py-16">
+        <div className="relative overflow-hidden rounded-[2rem] px-5 py-10 sm:px-10 sm:py-14">
           <div
             className="pointer-events-none absolute inset-0"
             style={{
@@ -273,7 +273,7 @@ export default async function AboutPage({
 
             <MarketingReveal delay={0.12}>
               <MarketingParallax>
-                <div className="relative mx-auto aspect-[4/5] w-full max-w-[26rem] overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/5 shadow-[0_40px_90px_-45px_rgba(0,0,0,0.9)]">
+                <div className="relative mx-auto aspect-[4/5] w-full max-w-[22rem] overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/5 shadow-[0_40px_90px_-45px_rgba(0,0,0,0.9)]">
                   <Image
                     src="/about/ibrahim-beanie.jpg"
                     alt={c.ambition.imageAlt}
