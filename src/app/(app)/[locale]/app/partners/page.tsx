@@ -172,6 +172,36 @@ export default async function PartnersPage({
                     </div>
                   </div>
 
+                  <details className="mt-3 rounded-2xl border border-border bg-bg px-3 py-2.5">
+                    <summary className="cursor-pointer text-[0.75rem] font-medium text-accent">
+                      {labels.offerDetails}
+                    </summary>
+                    <dl className="mt-2 space-y-1.5 text-[0.6875rem]">
+                      <div className="flex justify-between gap-3">
+                        <dt className="text-subtle">{labels.offerSales}</dt>
+                        <dd className="tabular-nums text-fg">{offer.salesCount}</dd>
+                      </div>
+                      <div className="flex justify-between gap-3">
+                        <dt className="text-subtle">{labels.offerCreated}</dt>
+                        <dd className="text-fg">
+                          {new Intl.DateTimeFormat(tag, { dateStyle: "medium" }).format(
+                            new Date(offer.createdAt),
+                          )}
+                        </dd>
+                      </div>
+                      <div className="flex justify-between gap-3">
+                        <dt className="text-subtle">{labels.offerCreator}</dt>
+                        <dd className="truncate text-fg">{offer.storeName}</dd>
+                      </div>
+                      <div className="flex justify-between gap-3">
+                        <dt className="text-subtle">{labels.offerForecast}</dt>
+                        <dd className="font-medium text-emerald-600 dark:text-emerald-400">
+                          {offer.commissionLabel}
+                        </dd>
+                      </div>
+                    </dl>
+                  </details>
+
                   {canAdd ? (
                     <form action={addPartnerListingAction} className="mt-4">
                       <input type="hidden" name="locale" value={locale} />

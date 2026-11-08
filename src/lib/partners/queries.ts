@@ -21,6 +21,8 @@ export type DiscoverOffer = {
   imageKey: string | null;
   storeName: string;
   storeSlug: string;
+  salesCount: number;
+  createdAt: string;
 };
 
 export type PartnerListing = {
@@ -48,6 +50,7 @@ export type PartnerSale = {
 type OfferRow = {
   id: string;
   commission_bps: number;
+  created_at: string;
   product: {
     id: string;
     name: string;
@@ -66,7 +69,7 @@ type OfferRow = {
 };
 
 const OFFER_COLUMNS = [
-  "id, commission_bps",
+  "id, commission_bps, created_at",
   "product:products!product_id(id, name, slug, description, price_amount, stock_quantity, product_type, status, images:product_images(position, media:media_assets(object_key)), store:stores!store_id(id, name, slug, status))",
 ].join(", ");
 
@@ -106,12 +109,16 @@ export async function listDiscoverOffers(
       .filter((value): value is string => Boolean(value)),
   );
 
-  const { data } = await supabase
-    .from("partner_offers")
-    .select(OFFER_COLUMNS)
-    .eq("active", true)
-    .neq("store_id", storeId);
+  const [{ data }, { data: stats }] = await Promise.all([
+    supabase
+      .from("partner_offers")
+      .select(OFFER_COLUMNS)
+      .eq("active", true)
+      .neq("store_id", storeId),
+    supabase.rpc("partner_offer_stats"),
+  ]);
 
+  const counts = (stats ?? {}) as Record<string, number>;
   const rows = (data ?? []) as unknown as OfferRow[];
 
   return rows
@@ -146,6 +153,8 @@ export async function listDiscoverOffers(
         imageKey: images[0]?.media?.object_key ?? null,
         storeName: product.store?.name ?? "",
         storeSlug: product.store?.slug ?? "",
+        salesCount: Number(counts[row.id] ?? 0),
+        createdAt: row.created_at,
       } satisfies DiscoverOffer;
     });
 }

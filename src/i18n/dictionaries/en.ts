@@ -1804,6 +1804,11 @@ const en: Dictionary = {
       title: "Partners",
       subtitle: "Share your products and sell other merchants' products.",
       discoverTitle: "Discover",
+    offerDetails: "View details",
+    offerSales: "Sales",
+    offerCreated: "Created",
+    offerCreator: "Creator",
+    offerForecast: "Your commission",
       discoverSubtitle: "Products opened to sharing by other stores.",
       discoverEmpty: "No shared products",
       discoverEmptyText:

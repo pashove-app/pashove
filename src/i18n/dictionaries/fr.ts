@@ -1863,6 +1863,11 @@ const fr = {
       title: "Partenaires",
       subtitle: "Partage tes produits et vends ceux d’autres marchands.",
       discoverTitle: "Découvrir",
+    offerDetails: "Voir les détails",
+    offerSales: "Ventes",
+    offerCreated: "Créée le",
+    offerCreator: "Créateur",
+    offerForecast: "Ta commission",
       discoverSubtitle: "Des produits ouverts au partage par d’autres boutiques.",
       discoverEmpty: "Aucun produit partagé",
       discoverEmptyText:
