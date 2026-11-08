@@ -20,7 +20,7 @@ const COPY = {
     titleA: "Deviens livreur.",
     titleB: "Chaque course compte.",
     description:
-      "Le réseau de livraison moto de Pashove arrive. Inscris-toi pour être prévenu à l’ouverture dans ta ville.",
+      "Le réseau de livraison moto de Pashove arrive. Dépose ton dossier dès maintenant : l’équipe vérifie ton identité avant d’activer ton compte.",
     primary: "S’inscrire maintenant",
     secondary: "Comment ça marche",
     benefitsTitleA: "Ton temps,",
@@ -58,16 +58,17 @@ const COPY = {
     statusRejected: "Dossier refusé",
     openSpace: "Ouvrir mon espace livreur",
     reapply: "Déposer un nouveau dossier",
-    ctaTitle: "Prêt à pédaler sur les commandes ?",
-    ctaText: "Laisse ton e-mail, nous te contactons dès l’ouverture dans ta ville.",
-    cta: "Je veux être livreur",
+    ctaTitle: "Prêt à prendre la route ?",
+    ctaText:
+      "Dépose ton dossier livreur : pièce d’identité, selfie, et l’équipe vérifie ton compte.",
+    cta: "Je m’inscris",
   },
   en: {
     eyebrow: "Pashove Delivery",
     titleA: "Become a courier.",
     titleB: "Every ride counts.",
     description:
-      "Pashove’s moto delivery network is coming. Sign up to be notified when it opens in your city.",
+      "Pashove’s moto delivery network is coming. Submit your application now: the team verifies your identity before activating your account.",
     primary: "Sign up now",
     secondary: "How it works",
     benefitsTitleA: "Your time,",
@@ -106,8 +107,9 @@ const COPY = {
     openSpace: "Open my courier space",
     reapply: "Submit a new application",
     ctaTitle: "Ready to ride?",
-    ctaText: "Leave your email and we will contact you when it opens in your city.",
-    cta: "I want to be a courier",
+    ctaText:
+      "Submit your courier application: ID document, selfie, and the team reviews your account.",
+    cta: "Sign me up",
   },
 };
 
