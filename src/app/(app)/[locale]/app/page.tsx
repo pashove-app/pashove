@@ -1,18 +1,24 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { KpiGrid } from "@/components/dashboard/home/kpi-grid";
-import { QuickActions } from "@/components/dashboard/home/quick-actions";
+import {
+  QuickActions,
+  type QuickActionAlert,
+} from "@/components/dashboard/home/quick-actions";
 import { RevenuePanel } from "@/components/dashboard/home/revenue-panel";
 import { WelcomeBanner } from "@/components/dashboard/home/welcome-banner";
 import { Icon, icons } from "@/components/ui/primitives";
+import { path } from "@/components/ui/types";
 import { LOCALE_META, resolveLocale } from "@/i18n/config";
-import { getDictionary } from "@/i18n/get-dictionary";
+import { getDictionary, interpolate } from "@/i18n/get-dictionary";
 import { formatMoney } from "@/lib/money";
 import { listStoreCustomers } from "@/lib/customers/queries";
 import { orderCounts } from "@/lib/orders/queries";
 import { countProducts } from "@/lib/products/queries";
 import { readProfile } from "@/lib/profile/queries";
 import { currentStore } from "@/lib/stores/queries";
+import { getDashboardAlerts } from "@/lib/dashboard/alerts";
+import { getDashboardCopy } from "@/lib/dashboard/copy";
 import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata({
@@ -63,11 +69,77 @@ export default async function DashboardHomePage({
     "—";
 
   const revenue = formatMoney(0, store.currency, LOCALE_META[locale].tag);
-  const [productsCount, counts, customers] = await Promise.all([
+  const [productsCount, counts, customers, alertsData] = await Promise.all([
     countProducts(store.id),
     orderCounts(store.id, null),
     listStoreCustomers(store.id),
+    getDashboardAlerts(store),
   ]);
+
+  const copy = getDashboardCopy(locale);
+  const alerts: QuickActionAlert[] = [];
+
+  if (alertsData.ordersToShip > 0) {
+    alerts.push({
+      key: "orders",
+      icon: "box",
+      tone: "warning",
+      title: copy.ordersTitle,
+      text: interpolate(copy.ordersText, { count: alertsData.ordersToShip }),
+      href: path(locale, "/app/orders?status=preparing"),
+      cta: copy.ordersCta,
+    });
+  }
+
+  if (alertsData.lowStock.length > 0) {
+    const product = alertsData.lowStock[0];
+    alerts.push({
+      key: "stock",
+      icon: "bundle",
+      tone: "warning",
+      title: copy.stockTitle,
+      text: interpolate(copy.stockText, { name: product.name }),
+      href: path(locale, "/app/products"),
+      cta: copy.stockCta,
+    });
+  }
+
+  if (alertsData.available > 0) {
+    alerts.push({
+      key: "payout",
+      icon: "wallet",
+      tone: "success",
+      title: copy.payoutTitle,
+      text: interpolate(copy.payoutText, {
+        amount: formatMoney(
+          alertsData.available,
+          store.currency,
+          LOCALE_META[locale].tag,
+        ),
+      }),
+      href: path(locale, "/app/finance/payouts/new"),
+      cta: copy.payoutCta,
+    });
+  }
+
+  if (
+    alertsData.planCode !== "free" &&
+    alertsData.planDaysLeft !== null &&
+    alertsData.planDaysLeft <= 7
+  ) {
+    alerts.push({
+      key: "plan",
+      icon: "sparkle",
+      tone: "info",
+      title: copy.planTitle,
+      text: interpolate(copy.planText, {
+        plan: alertsData.planCode.charAt(0).toUpperCase() + alertsData.planCode.slice(1),
+        days: Math.max(0, alertsData.planDaysLeft),
+      }),
+      href: path(locale, "/app/settings/plan"),
+      cta: copy.planCta,
+    });
+  }
 
   return (
     <div className="mx-auto w-full max-w-5xl">
@@ -107,7 +179,15 @@ export default async function DashboardHomePage({
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <RevenuePanel t={t} amount={revenue} />
-        <QuickActions t={t} locale={locale} />
+        <QuickActions
+          t={t}
+          locale={locale}
+          sectionTitle={copy.title}
+          emptyTitle={copy.emptyTitle}
+          emptyText={copy.emptyText}
+          shortcutsLabel={t.dashboard.home.quickActions}
+          alerts={alerts}
+        />
       </div>
     </div>
   );

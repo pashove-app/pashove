@@ -214,6 +214,32 @@ export async function getProduct(
 }
 
 /** Nombre de produits de la boutique. */
+export type LowStockProduct = {
+  id: string;
+  name: string;
+  stock_quantity: number;
+};
+
+/** Produits physiques dont le stock est bas (0 inclus = rupture). */
+export async function lowStockProducts(
+  storeId: string,
+  threshold = 5,
+  limit = 3,
+): Promise<LowStockProduct[]> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("products")
+    .select("id, name, stock_quantity")
+    .eq("store_id", storeId)
+    .eq("product_type", "physical")
+    .lte("stock_quantity", threshold)
+    .order("stock_quantity", { ascending: true })
+    .limit(limit);
+
+  return (data ?? []) as LowStockProduct[];
+}
+
 export async function countProducts(storeId: string): Promise<number> {
   const supabase = await createClient();
 
