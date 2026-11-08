@@ -32,6 +32,10 @@ export type Store = {
   cod_enabled: boolean;
   /** Qui supporte les frais SasPay (Standard/Pro). */
   fee_charge_mode: "client" | "merchant";
+  /** Livraison gérée par le marchand ou par Pashove Delivery. */
+  delivery_mode: "self" | "pashove";
+  /** Pays desservis par la livraison (sous-ensemble des marchés). */
+  delivery_countries: string[];
   /** Option « acheter comme cadeau » proposée au checkout. */
   gift_enabled: boolean;
   /** Clé R2 de l'image, lue par jointure — l'URL publique s'en déduit. */
@@ -43,7 +47,8 @@ export type Store = {
 const COLUMNS = [
   "id, name, slug, country, currency, category, status, product_types",
   "description, hero_title, hero_subtitle, contact_email, contact_phone",
-  "logo_media_id, banner_media_id, shipping_flat_amount, cod_enabled, gift_enabled, fee_charge_mode",
+  "logo_media_id, banner_media_id, shipping_flat_amount, cod_enabled, gift_enabled",
+  "fee_charge_mode, delivery_mode, delivery_countries",
   "logo:media_assets!logo_media_id(object_key)",
   "banner:media_assets!banner_media_id(object_key)",
   "created_at",
@@ -84,7 +89,10 @@ export async function listStoreMemberships(): Promise<StoreMembership[]> {
   // Déploiement du code avant la migration : la colonne `fee_charge_mode`
   // peut manquer. On relit sans elle plutôt que de vider l'espace marchand.
   if (primary.error) {
-    const fallback = await query(COLUMNS.replace(", fee_charge_mode", ""));
+    const legacy = COLUMNS.replace(", fee_charge_mode", "")
+      .replace(", delivery_mode", "")
+      .replace(", delivery_countries", "");
+    const fallback = await query(legacy);
     data = fallback.data;
   }
 
@@ -104,6 +112,10 @@ export async function listStoreMemberships(): Promise<StoreMembership[]> {
       store: {
         ...row.store,
         fee_charge_mode: row.store.fee_charge_mode ?? "merchant",
+        delivery_mode: row.store.delivery_mode ?? "self",
+        delivery_countries: Array.isArray(row.store.delivery_countries)
+          ? row.store.delivery_countries
+          : [row.store.country],
       },
     }))
     .sort((left, right) =>

@@ -78,6 +78,14 @@ export default async function SettingsHubPage({
         />
 
         <SettingsLink
+          href={path(locale, "/app/settings/shipping")}
+          icon="route"
+          title="Livraison"
+          text="Mode de livraison et zones desservies par Pashove Delivery."
+          cta="Configurer"
+        />
+
+        <SettingsLink
           href={path(locale, "/app/settings/policies")}
           icon="file"
           title={t.dashboard.settings.policiesTitle}
