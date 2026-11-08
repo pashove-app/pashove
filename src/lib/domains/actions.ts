@@ -24,24 +24,133 @@ function field(formData: FormData, key: string): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function errorMessage(result: { code: string; message: string }): string {
+type MessageKey =
+  | "invalidDomain"
+  | "storeNotFound"
+  | "ownerOnly"
+  | "notConfigured"
+  | "alreadyConnected"
+  | "domainAlreadyOurs"
+  | "domainUsed"
+  | "serviceMissing"
+  | "insertFailed"
+  | "domainRace"
+  | "noDomainVerify"
+  | "noDomainRemove"
+  | "verificationFailed"
+  | "deleteFailed"
+  | "addActive"
+  | "addPending"
+  | "tokenInvalid"
+  | "forbidden"
+  | "paymentRequired"
+  | "domainTaken"
+  | "invalidDomainVercel"
+  | "network"
+  | "generic";
+
+const MESSAGES: Record<"fr" | "en", Record<MessageKey, string>> = {
+  fr: {
+    invalidDomain:
+      "Saisis un domaine valide, par exemple maboutique.com ou boutique.maboutique.com.",
+    storeNotFound: "Boutique introuvable.",
+    ownerOnly: "Seul le propriétaire de la boutique peut connecter un domaine.",
+    notConfigured:
+      "Les domaines personnalisés ne sont pas configurés sur cette plateforme.",
+    alreadyConnected:
+      "Un domaine est déjà connecté à cette boutique ({domain}). Supprime-le avant d’en ajouter un autre.",
+    domainAlreadyOurs: "Ce domaine est déjà connecté à ta boutique.",
+    domainUsed: "Ce domaine est déjà utilisé par une autre boutique Pashove.",
+    serviceMissing:
+      "Le service de domaines n’est pas configuré. Contacte le support Pashove.",
+    insertFailed: "Impossible d’enregistrer le domaine. Réessaie.",
+    domainRace: "Ce domaine vient d’être connecté par une autre boutique.",
+    noDomainVerify: "Aucun domaine à vérifier.",
+    noDomainRemove: "Aucun domaine à supprimer.",
+    verificationFailed: "Vérification impossible pour le moment.",
+    deleteFailed: "Suppression impossible pour le moment.",
+    addActive: "Domaine connecté et actif.",
+    addPending:
+      "Domaine ajouté. Configure les enregistrements DNS ci-dessous, puis clique sur Vérifier.",
+    tokenInvalid: "Le jeton Vercel est invalide. Contacte le support Pashove.",
+    forbidden:
+      "Le projet Vercel refuse l’ajout de ce domaine. Contacte le support Pashove.",
+    paymentRequired: "Le compte Vercel demande une mise à jour de paiement.",
+    domainTaken:
+      "Ce domaine est déjà rattaché à un autre projet Vercel. Retire-le là-bas avant de réessayer.",
+    invalidDomainVercel: "Ce domaine n’est pas valide.",
+    network: "L’API Vercel est injoignable. Réessaie dans quelques instants.",
+    generic: "Vercel a refusé la demande.",
+  },
+  en: {
+    invalidDomain:
+      "Enter a valid domain, for example mystore.com or shop.mystore.com.",
+    storeNotFound: "Store not found.",
+    ownerOnly: "Only the store owner can connect a domain.",
+    notConfigured: "Custom domains are not configured on this platform.",
+    alreadyConnected:
+      "A domain is already connected to this store ({domain}). Remove it before adding another one.",
+    domainAlreadyOurs: "This domain is already connected to your store.",
+    domainUsed: "This domain is already used by another Pashove store.",
+    serviceMissing:
+      "The domain service is not configured. Contact Pashove support.",
+    insertFailed: "Could not save the domain. Try again.",
+    domainRace: "This domain was just connected by another store.",
+    noDomainVerify: "No domain to check.",
+    noDomainRemove: "No domain to remove.",
+    verificationFailed: "Could not check the domain right now.",
+    deleteFailed: "Could not remove the domain right now.",
+    addActive: "Domain connected and active.",
+    addPending:
+      "Domain added. Add the DNS records below, then click Check.",
+    tokenInvalid: "The Vercel token is invalid. Contact Pashove support.",
+    forbidden:
+      "The Vercel project refused this domain. Contact Pashove support.",
+    paymentRequired: "The Vercel account requires a payment update.",
+    domainTaken:
+      "This domain is already attached to another Vercel project. Remove it there before trying again.",
+    invalidDomainVercel: "This domain is not valid.",
+    network: "The Vercel API is unreachable. Try again shortly.",
+    generic: "Vercel refused the request.",
+  },
+};
+
+function message(
+  locale: string,
+  key: MessageKey,
+  values?: Record<string, string>,
+): string {
+  const pack = locale.startsWith("en") ? MESSAGES.en : MESSAGES.fr;
+  let text = pack[key];
+  if (values) {
+    for (const [name, value] of Object.entries(values)) {
+      text = text.replace(`{${name}}`, value);
+    }
+  }
+  return text;
+}
+
+function errorMessage(
+  result: { code: string; message: string },
+  locale: string,
+): string {
   switch (result.code) {
     case "not_configured":
-      return "Les domaines personnalisés ne sont pas encore configurés sur cette plateforme.";
+      return message(locale, "notConfigured");
     case "token_invalid":
-      return "Le jeton Vercel est invalide. Contacte le support Pashove.";
+      return message(locale, "tokenInvalid");
     case "forbidden":
-      return "Le projet Vercel refuse l’ajout de ce domaine. Contacte le support Pashove.";
+      return message(locale, "forbidden");
     case "payment_required":
-      return "Le compte Vercel demande une mise à jour de paiement.";
+      return message(locale, "paymentRequired");
     case "domain_taken":
-      return "Ce domaine est déjà rattaché à un autre projet Vercel. Retire-le là-bas avant de réessayer.";
+      return message(locale, "domainTaken");
     case "invalid_domain":
-      return "Ce domaine n’est pas valide.";
+      return message(locale, "invalidDomainVercel");
     case "network_error":
-      return "L’API Vercel est injoignable. Réessaie dans quelques instants.";
+      return message(locale, "network");
     default:
-      return result.message || "Vercel a refusé la demande.";
+      return result.message || message(locale, "generic");
   }
 }
 
@@ -53,29 +162,18 @@ export async function addDomainAction(
   const domain = normalizeCustomDomain(field(formData, "domain"));
 
   if (!domain) {
-    return {
-      status: "error",
-      message:
-        "Saisis un domaine valide, par exemple maboutique.com ou boutique.maboutique.com.",
-    };
+    return { status: "error", message: message(locale, "invalidDomain") };
   }
 
   const membership = await currentMembership();
   if (!membership) {
-    return { status: "error", message: "Boutique introuvable." };
+    return { status: "error", message: message(locale, "storeNotFound") };
   }
   if (membership.role !== "owner") {
-    return {
-      status: "error",
-      message: "Seul le propriétaire de la boutique peut connecter un domaine.",
-    };
+    return { status: "error", message: message(locale, "ownerOnly") };
   }
   if (!isDomainsConfigured()) {
-    return {
-      status: "error",
-      message:
-        "Les domaines personnalisés ne sont pas configurés sur cette plateforme.",
-    };
+    return { status: "error", message: message(locale, "notConfigured") };
   }
 
   const supabase = await createClient();
@@ -89,7 +187,9 @@ export async function addDomainAction(
   if (current) {
     return {
       status: "error",
-      message: `Un domaine est déjà connecté à cette boutique (${current.domain}). Supprime-le avant d’en ajouter un autre.`,
+      message: message(locale, "alreadyConnected", {
+        domain: current.domain,
+      }),
     };
   }
 
@@ -97,10 +197,7 @@ export async function addDomainAction(
   // La RLS ne montre que la boutique courante, d'où le client de service.
   const service = createServiceClient();
   if (!service) {
-    return {
-      status: "error",
-      message: "Le service de domaines n’est pas configuré. Contacte le support Pashove.",
-    };
+    return { status: "error", message: message(locale, "serviceMissing") };
   }
 
   const { data: existing } = await service
@@ -114,8 +211,8 @@ export async function addDomainAction(
       status: "error",
       message:
         existing.store_id === membership.store.id
-          ? "Ce domaine est déjà connecté à ta boutique."
-          : "Ce domaine est déjà utilisé par une autre boutique Pashove.",
+          ? message(locale, "domainAlreadyOurs")
+          : message(locale, "domainUsed"),
     };
   }
 
@@ -126,7 +223,7 @@ export async function addDomainAction(
       status: added.status,
       code: added.code,
     });
-    return { status: "error", message: errorMessage(added) };
+    return { status: "error", message: errorMessage(added, locale) };
   }
 
   const [project, config] = await Promise.all([
@@ -158,10 +255,10 @@ export async function addDomainAction(
 
     return {
       status: "error",
-      message:
-        error.code === "23505"
-          ? "Ce domaine vient d’être connecté par une autre boutique."
-          : "Impossible d’enregistrer le domaine. Réessaie.",
+      message: message(
+        locale,
+        error.code === "23505" ? "domainRace" : "insertFailed",
+      ),
     };
   }
 
@@ -169,10 +266,7 @@ export async function addDomainAction(
 
   return {
     status: "success",
-    message:
-      status === "verified"
-        ? "Domaine connecté et actif."
-        : "Domaine ajouté. Configure les enregistrements DNS ci-dessous, puis clique sur Vérifier.",
+    message: message(locale, status === "verified" ? "addActive" : "addPending"),
   };
 }
 
@@ -183,7 +277,7 @@ export async function verifyDomainAction(formData: FormData): Promise<void> {
   if (!membership || membership.role !== "owner") {
     redirect(
       `/${locale}/app/settings/domains?error=${encodeURIComponent(
-        "Seul le propriétaire peut gérer le domaine.",
+        message(locale, "ownerOnly"),
       )}`,
     );
   }
@@ -191,7 +285,7 @@ export async function verifyDomainAction(formData: FormData): Promise<void> {
   if (!isDomainsConfigured()) {
     redirect(
       `/${locale}/app/settings/domains?error=${encodeURIComponent(
-        "Les domaines personnalisés ne sont pas configurés sur cette plateforme.",
+        message(locale, "notConfigured"),
       )}`,
     );
   }
@@ -206,7 +300,7 @@ export async function verifyDomainAction(formData: FormData): Promise<void> {
   if (!row) {
     redirect(
       `/${locale}/app/settings/domains?error=${encodeURIComponent(
-        "Aucun domaine à vérifier.",
+        message(locale, "noDomainVerify"),
       )}`,
     );
   }
@@ -221,7 +315,7 @@ export async function verifyDomainAction(formData: FormData): Promise<void> {
   if (!project.ok) {
     redirect(
       `/${locale}/app/settings/domains?error=${encodeURIComponent(
-        errorMessage(project),
+        errorMessage(project, locale),
       )}`,
     );
   }
@@ -244,7 +338,7 @@ export async function verifyDomainAction(formData: FormData): Promise<void> {
   if (error) {
     redirect(
       `/${locale}/app/settings/domains?error=${encodeURIComponent(
-        "Vérification impossible pour le moment.",
+        message(locale, "verificationFailed"),
       )}`,
     );
   }
@@ -262,7 +356,7 @@ export async function removeDomainAction(formData: FormData): Promise<void> {
   if (!membership || membership.role !== "owner") {
     redirect(
       `/${locale}/app/settings/domains?error=${encodeURIComponent(
-        "Seul le propriétaire peut gérer le domaine.",
+        message(locale, "ownerOnly"),
       )}`,
     );
   }
@@ -277,7 +371,7 @@ export async function removeDomainAction(formData: FormData): Promise<void> {
   if (!row) {
     redirect(
       `/${locale}/app/settings/domains?error=${encodeURIComponent(
-        "Aucun domaine à supprimer.",
+        message(locale, "noDomainRemove"),
       )}`,
     );
   }
@@ -287,7 +381,7 @@ export async function removeDomainAction(formData: FormData): Promise<void> {
     if (!removed.ok) {
       redirect(
         `/${locale}/app/settings/domains?error=${encodeURIComponent(
-          errorMessage(removed),
+          errorMessage(removed, locale),
         )}`,
       );
     }
@@ -301,7 +395,7 @@ export async function removeDomainAction(formData: FormData): Promise<void> {
   if (error) {
     redirect(
       `/${locale}/app/settings/domains?error=${encodeURIComponent(
-        "Suppression impossible pour le moment.",
+        message(locale, "deleteFailed"),
       )}`,
     );
   }

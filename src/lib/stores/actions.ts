@@ -10,6 +10,7 @@ import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { ACTIVE_STORE_COOKIE, currentStore } from "@/lib/stores/queries";
 import { parsePrice } from "@/lib/products/schema";
 import { createStoreSchema, sellingSchema, storeSettingsSchema } from "@/lib/stores/schema";
+import { geocodeAddress } from "@/lib/geo/geocode";
 import type { StoreFormState, StoreSettingsState } from "@/lib/stores/types";
 import { toFieldErrors } from "@/lib/validation";
 
@@ -188,6 +189,7 @@ export async function saveStoreSettingsAction(
     description: field(formData, "description"),
     contactEmail: field(formData, "contactEmail"),
     contactPhone: field(formData, "contactPhone"),
+    storeAddress: field(formData, "storeAddress"),
     logoMediaId: field(formData, "logoMediaId"),
     bannerMediaId: field(formData, "bannerMediaId"),
     shippingFlat: field(formData, "shippingFlat"),
@@ -210,6 +212,29 @@ export async function saveStoreSettingsAction(
 
   const logoMediaId = parsed.data.logoMediaId || null;
   const bannerMediaId = parsed.data.bannerMediaId || null;
+  const storeAddress = blankToNull(parsed.data.storeAddress);
+
+  // On ne relance le géocodage que si l'adresse a changé : une sauvegarde de
+  // description ne doit pas dépendre du réseau OSM.
+  let latitude = store.latitude ?? null;
+  let longitude = store.longitude ?? null;
+
+  if (
+    storeAddress !== store.address ||
+    (storeAddress !== null && latitude === null)
+  ) {
+    if (!storeAddress) {
+      latitude = null;
+      longitude = null;
+    } else {
+      const point = await geocodeAddress({
+        address: storeAddress,
+        country: store.country,
+      });
+      latitude = point?.latitude ?? null;
+      longitude = point?.longitude ?? null;
+    }
+  }
 
   const shippingFlat =
     parsed.data.shippingFlat === ""
@@ -231,6 +256,9 @@ export async function saveStoreSettingsAction(
       description: blankToNull(parsed.data.description),
       contact_email: blankToNull(parsed.data.contactEmail),
       contact_phone: blankToNull(parsed.data.contactPhone),
+      address: storeAddress,
+      latitude,
+      longitude,
       logo_media_id: logoMediaId,
       banner_media_id: bannerMediaId,
       shipping_flat_amount: shippingFlat,

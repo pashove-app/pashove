@@ -7,10 +7,22 @@ import { getPublicTracking } from "@/lib/delivery/tracking";
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export const metadata: Metadata = {
-  title: "Suivi de commande · Pashove",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale: raw } = await params;
+  const locale = resolveLocale(raw);
+
+  return {
+    title:
+      locale === "en"
+        ? "Order tracking · Pashove"
+        : "Suivi de commande · Pashove",
+    robots: { index: false, follow: false },
+  };
+}
 
 export const dynamic = "force-dynamic";
 

@@ -13,6 +13,29 @@ import {
 import { isDomainsConfigured } from "@/lib/domains/vercel";
 import { currentMembership } from "@/lib/stores/queries";
 
+const COPY = {
+  fr: {
+    title: "Domaine",
+    subtitle:
+      "Ton adresse Pashove est incluse. Connecte aussi ton propre nom de domaine pour vendre sous ta marque.",
+    back: "Retour aux réglages",
+    checked:
+      "Vérification effectuée. Le statut ci-dessous reflète la configuration DNS au moment du contrôle.",
+    removed:
+      "Domaine supprimé. La vitrine reste accessible sur ton adresse Pashove.",
+  },
+  en: {
+    title: "Domain",
+    subtitle:
+      "Your Pashove address is included. Connect your own domain name to sell under your brand too.",
+    back: "Back to settings",
+    checked:
+      "Check completed. The status below reflects the DNS configuration at the time of the check.",
+    removed:
+      "Domain removed. Your storefront remains available on your Pashove address.",
+  },
+};
+
 export async function generateMetadata({
   params,
 }: {
@@ -21,8 +44,9 @@ export async function generateMetadata({
   const { locale: raw } = await params;
   const locale = resolveLocale(raw);
   const t = await getDictionary(locale);
+  const copy = locale === "en" ? COPY.en : COPY.fr;
 
-  return { title: `${t.dashboard.settings.title} · Domaine` };
+  return { title: `${t.dashboard.settings.title} · ${copy.title}` };
 }
 
 export default async function DomainSettingsPage({
@@ -34,6 +58,7 @@ export default async function DomainSettingsPage({
 }) {
   const { locale: raw } = await params;
   const locale = resolveLocale(raw);
+  const copy = locale === "en" ? COPY.en : COPY.fr;
   const { checked, removed, error } = await searchParams;
 
   const membership = await currentMembership();
@@ -45,27 +70,25 @@ export default async function DomainSettingsPage({
     <div className="mx-auto w-full max-w-3xl">
       <BackLink
         href={path(locale, "/app/settings")}
-        label="Retour aux réglages"
+        label={copy.back}
       />
 
       <h1 className="mt-5 text-[1.75rem] font-medium tracking-[-0.03em] text-fg sm:text-[2rem]">
-        Domaine
+        {copy.title}
       </h1>
       <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
-        Ton adresse Pashove est incluse. Connecte aussi ton propre nom de
-        domaine pour vendre sous ta marque.
+        {copy.subtitle}
       </p>
 
       {checked ? (
         <p className="mt-5 rounded-xl border border-emerald-400/25 bg-emerald-400/[0.07] px-3.5 py-3 text-[0.8125rem] text-emerald-700 dark:text-emerald-300">
-          Vérification effectuée. Le statut ci-dessous reflète la configuration
-          DNS au moment du contrôle.
+          {copy.checked}
         </p>
       ) : null}
 
       {removed ? (
         <p className="mt-5 rounded-xl border border-emerald-400/25 bg-emerald-400/[0.07] px-3.5 py-3 text-[0.8125rem] text-emerald-700 dark:text-emerald-300">
-          Domaine supprimé. La vitrine reste accessible sur ton adresse Pashove.
+          {copy.removed}
         </p>
       ) : null}
 

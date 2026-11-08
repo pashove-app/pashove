@@ -88,9 +88,13 @@ export default async function SettingsHubPage({
         <SettingsLink
           href={path(locale, "/app/settings/domains")}
           icon="globe"
-          title="Domaine"
-          text="Ton adresse slug.pashove.com et ton propre nom de domaine."
-          cta="Configurer"
+          title={locale === "en" ? "Domain" : "Domaine"}
+          text={
+            locale === "en"
+              ? "Your slug.pashove.com address and your own domain name."
+              : "Ton adresse slug.pashove.com et ton propre nom de domaine."
+          }
+          cta={locale === "en" ? "Configure" : "Configurer"}
         />
 
         <SettingsLink

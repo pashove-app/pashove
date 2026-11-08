@@ -24,6 +24,10 @@ export type Store = {
   banner_url: string | null;
   contact_email: string | null;
   contact_phone: string | null;
+  /** Adresse de retrait, utilisée par la carte de suivi. */
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
   logo_media_id: string | null;
   banner_media_id: string | null;
   /** Frais fixes de livraison, en unité mineure. 0 = offerte. */
@@ -47,6 +51,7 @@ export type Store = {
 const COLUMNS = [
   "id, name, slug, country, currency, category, status, product_types",
   "description, hero_title, hero_subtitle, contact_email, contact_phone",
+  "address, latitude, longitude",
   "logo_media_id, banner_media_id, shipping_flat_amount, cod_enabled, gift_enabled",
   "fee_charge_mode, delivery_mode, delivery_countries",
   "logo:media_assets!logo_media_id(object_key)",
@@ -89,7 +94,8 @@ export async function listStoreMemberships(): Promise<StoreMembership[]> {
   // Déploiement du code avant la migration : la colonne `fee_charge_mode`
   // peut manquer. On relit sans elle plutôt que de vider l'espace marchand.
   if (primary.error) {
-    const legacy = COLUMNS.replace(", fee_charge_mode", "")
+    const legacy = COLUMNS.replace(", address, latitude, longitude", "")
+      .replace(", fee_charge_mode", "")
       .replace(", delivery_mode", "")
       .replace(", delivery_countries", "");
     const fallback = await query(legacy);
@@ -111,6 +117,11 @@ export async function listStoreMemberships(): Promise<StoreMembership[]> {
       ...row,
       store: {
         ...row.store,
+        address: typeof row.store.address === "string" ? row.store.address : null,
+        latitude:
+          typeof row.store.latitude === "number" ? row.store.latitude : null,
+        longitude:
+          typeof row.store.longitude === "number" ? row.store.longitude : null,
         fee_charge_mode: row.store.fee_charge_mode ?? "merchant",
         delivery_mode: row.store.delivery_mode ?? "self",
         delivery_countries: Array.isArray(row.store.delivery_countries)

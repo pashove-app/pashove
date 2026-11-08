@@ -51,6 +51,25 @@ export function StoreSettingsForm({
     state.fieldErrors?.logoMediaId ?? state.fieldErrors?.bannerMediaId;
   const mediaError = mediaKey ? errors[mediaKey] : undefined;
 
+  const pickupCopy =
+    locale === "en"
+      ? {
+          title: "Pickup point",
+          text: "Address shown on the tracking map to locate your store.",
+          label: "Store address",
+          help: "Street, district, city. We locate it automatically.",
+          notLocated:
+            "This address could not be located. Tracking will use the courier’s position when the ride starts.",
+        }
+      : {
+          title: "Point de retrait",
+          text: "Adresse affichée sur la carte de suivi pour situer ta boutique.",
+          label: "Adresse de la boutique",
+          help: "Rue, quartier, ville. Nous la localisons automatiquement.",
+          notLocated:
+            "Cette adresse n’a pas pu être localisée. Le suivi utilisera la position du livreur au démarrage.",
+        };
+
   return (
     <form action={formAction} noValidate>
       <input type="hidden" name="locale" value={locale} />
@@ -113,6 +132,25 @@ export function StoreSettingsForm({
           error={fieldError("contactPhone")}
           onChange={() => clear("contactPhone")}
         />
+      </Card>
+
+      <Card title={pickupCopy.title} text={pickupCopy.text}>
+        <TextField
+          name="storeAddress"
+          label={pickupCopy.label}
+          help={pickupCopy.help}
+          autoComplete="street-address"
+          maxLength={200}
+          defaultValue={store.address ?? ""}
+          error={fieldError("storeAddress")}
+          onChange={() => clear("storeAddress")}
+        />
+
+        {store.address && store.latitude === null ? (
+          <p className="text-[0.75rem] leading-relaxed text-amber-700 dark:text-amber-300">
+            {pickupCopy.notLocated}
+          </p>
+        ) : null}
       </Card>
 
       <Card title={t.settings.visualTitle} text={t.settings.visualText}>

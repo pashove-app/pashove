@@ -106,6 +106,7 @@ export const storeSettingsSchema = z.object({
     .trim()
     .max(24, "contactPhoneInvalid")
     .refine((value) => value === "" || value.length >= 6, "contactPhoneInvalid"),
+  storeAddress: z.string().trim().max(200, "serverError"),
   logoMediaId: optionalMediaId,
   bannerMediaId: optionalMediaId,
   shippingFlat: z
