@@ -86,6 +86,14 @@ export default async function SettingsHubPage({
         />
 
         <SettingsLink
+          href={path(locale, "/app/settings/domains")}
+          icon="globe"
+          title="Domaine"
+          text="Ton adresse slug.pashove.com et ton propre nom de domaine."
+          cta="Configurer"
+        />
+
+        <SettingsLink
           href={path(locale, "/app/settings/policies")}
           icon="file"
           title={t.dashboard.settings.policiesTitle}

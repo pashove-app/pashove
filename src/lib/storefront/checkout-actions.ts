@@ -1,6 +1,6 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { emailGiftReceived, emailOrderPlaced, loadOrderEmailContext } from "@/lib/email/events";
@@ -19,6 +19,8 @@ import { getCheckoutOptions } from "@/lib/payments/queries";
 import { formatMinor } from "@/lib/fx/currency";
 import { SasPayError } from "@/lib/payments/saspay/client";
 import { afterDeliveryPush } from "@/lib/pwa/after-push";
+import { classifyHost, normalizeHost } from "@/lib/domains/hosts";
+import { resolveCustomDomain } from "@/lib/domains/lookup";
 import type { PaymentMethod } from "@/lib/payments/types";
 
 export type CheckoutFormState = {
@@ -40,6 +42,27 @@ function siteUrl(): string {
   return (
     process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? "http://localhost:3000"
   );
+}
+
+/**
+ * Base du retour de paiement : le domaine marqué quand le checkout a été ouvert
+ * depuis celui-ci, sinon pashove.com. Le retour SasPay doit ramener le client
+ * sur la boutique qu'il a visitée, pas sur la plateforme.
+ */
+async function returnBase(): Promise<{ base: string; branded: boolean }> {
+  const requestHeaders = await headers();
+  const host = normalizeHost(requestHeaders.get("host"));
+  const kind = classifyHost(host);
+
+  if (kind.kind === "subdomain") {
+    return { base: `https://${host}`, branded: true };
+  }
+
+  if (kind.kind === "custom" && (await resolveCustomDomain(kind.domain))) {
+    return { base: `https://${host}`, branded: true };
+  }
+
+  return { base: siteUrl(), branded: false };
 }
 
 function errorKey(error: { message?: string }): string {
@@ -385,6 +408,11 @@ export async function placeOrderAction(
         });
       }
 
+      const destination = await returnBase();
+      const successPath = destination.branded
+        ? `/checkout/success/${online.token}`
+        : `/${locale}/store/${storefront.store.slug}/checkout/success/${online.token}`;
+
       const intent = await provider.createIntent({
         orderId: online.orderId,
         amount: paymentAmount,
@@ -396,7 +424,7 @@ export async function placeOrderAction(
         feeChargeMode,
         idempotencyKey: cart.checkoutKey,
         description: `Commande ${online.orderId.slice(0, 8)} · ${storefront.store.name}`,
-        returnUrl: `${siteUrl()}/${locale}/store/${storefront.store.slug}/checkout/success/${online.token}`,
+        returnUrl: `${destination.base}${successPath}`,
         customer: {
           name: parsed.data.name,
           email: parsed.data.email,

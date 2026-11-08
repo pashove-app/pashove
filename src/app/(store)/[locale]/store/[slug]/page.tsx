@@ -15,6 +15,7 @@ import { StorefrontShell } from "@/components/storefront/storefront-shell";
 import { TrustStrip } from "@/components/storefront/trust-strip";
 import { LOCALE_META, isLocale } from "@/i18n/config";
 import { getDictionary, interpolate } from "@/i18n/get-dictionary";
+import { isBrandedRequest } from "@/lib/domains/request";
 import { publicUrl } from "@/lib/r2/media";
 import { listStoreProducts } from "@/lib/storefront/products";
 import { listPublicBundles } from "@/lib/storefront/bundles";
@@ -51,15 +52,19 @@ export async function generateMetadata({
     store.description?.trim() ||
     interpolate(t.storefront.metaFallback, { name: store.name });
 
+  const homePath = (await isBrandedRequest())
+    ? "/"
+    : `/${locale}/store/${store.slug}`;
+
   return {
     title: store.hero_title ? `${store.hero_title} · ${store.name}` : store.name,
     description,
-    alternates: { canonical: `/${locale}/store/${store.slug}` },
+    alternates: { canonical: homePath },
     openGraph: {
       title: store.name,
       description,
       type: "website",
-      url: `/${locale}/store/${store.slug}`,
+      url: homePath,
     },
     robots: { index: true, follow: true },
   };

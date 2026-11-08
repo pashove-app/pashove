@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "@/i18n/config";
 import { courierIntent } from "@/lib/auth/redirects";
+import { classifyHost, normalizeHost } from "@/lib/domains/hosts";
+import { resolveCustomDomain } from "@/lib/domains/lookup";
 import { refreshSession } from "@/lib/supabase/session";
 
 /** Fichiers servis tels quels (images, polices, robots.txt…). */
@@ -61,6 +63,84 @@ export async function proxy(request: NextRequest) {
   // Pages légales publiques de la plateforme, hors préfixe de langue.
   if (pathname === "/legal" || pathname.startsWith("/legal/")) {
     return withRef(NextResponse.next());
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Domaines des boutiques
+   *
+   *  `slug.pashove.com` et un domaine personnalisé vérifié servent la même
+   *  vitrine, mais à la racine du domaine. En interne, Next continue de
+   *  travailler sous `/{locale}/store/{slug}` : le proxy réécrit, et les liens
+   *  internes sont nettoyés côté client (BrandedLinks).
+   * ------------------------------------------------------------------ */
+
+  const host = normalizeHost(request.headers.get("host"));
+  const hostKind = classifyHost(host);
+
+  const resolvedSlug =
+    hostKind.kind === "subdomain"
+      ? hostKind.slug
+      : hostKind.kind === "custom"
+        ? await resolveCustomDomain(hostKind.domain)
+        : null;
+
+  if (hostKind.kind === "custom" && !resolvedSlug) {
+    return new NextResponse("Boutique introuvable.", {
+      status: 404,
+      headers: { "content-type": "text/plain; charset=utf-8" },
+    });
+  }
+
+  const branded = resolvedSlug ? { slug: resolvedSlug } : null;
+
+  if (branded) {
+    const prefix = pathname.split("/")[1] ?? "";
+
+    // Une URL interne complète (favori, lien e-mail, redirection serveur) est
+    // ramenée à l'URL propre du domaine.
+    if (isLocale(prefix)) {
+      const afterLocale = pathname.slice(prefix.length + 1);
+      const storeBase = `/store/${branded.slug}`;
+      const clean =
+        afterLocale === storeBase || afterLocale.startsWith(`${storeBase}/`)
+          ? afterLocale.slice(storeBase.length) || "/"
+          : "/";
+
+      const url = request.nextUrl.clone();
+      // `nextUrl` peut garder l'hôte de connexion (localhost, déploiement) :
+      // la redirection doit rester sur le domaine visité.
+      const rawHost = request.headers.get("host");
+      if (rawHost) url.host = rawHost;
+      url.pathname = clean;
+
+      const response = NextResponse.redirect(url, 308);
+      response.cookies.set(LOCALE_COOKIE, prefix, {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 365,
+        sameSite: "lax",
+      });
+      return withRef(response);
+    }
+
+    const locale = negotiate(request);
+    const headers = new Headers(request.headers);
+    headers.set("x-pashove-locale", locale);
+    headers.set("x-pashove-branded", "1");
+    headers.set("x-pashove-store-slug", branded.slug);
+
+    const url = request.nextUrl.clone();
+    url.pathname = `/${locale}/store/${branded.slug}${
+      pathname === "/" ? "" : pathname
+    }`;
+
+    const response = NextResponse.rewrite(url, { request: { headers } });
+    response.cookies.set(LOCALE_COOKIE, locale, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+      sameSite: "lax",
+    });
+
+    return withRef(await refreshSession(request, response));
   }
 
   // Route déjà préfixée par une langue : on l'annonce au layout racine, et on

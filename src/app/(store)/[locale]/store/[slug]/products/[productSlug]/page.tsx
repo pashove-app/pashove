@@ -18,6 +18,7 @@ import { cn } from "@/lib/cn";
 import { path } from "@/components/ui/types";
 import { LOCALE_META, isLocale } from "@/i18n/config";
 import { getDictionary, type Dictionary } from "@/i18n/get-dictionary";
+import { isBrandedRequest } from "@/lib/domains/request";
 import { formatMoney } from "@/lib/money";
 import { publicUrl } from "@/lib/r2/media";
 import {
@@ -61,16 +62,19 @@ export async function generateMetadata({
     ? publicUrl(product.images[0].object_key)
     : undefined;
 
+  const productPath = (await isBrandedRequest())
+    ? `/products/${product.slug}`
+    : `/${locale}/store/${store.slug}/products/${product.slug}`;
+
   return {
     title: `${product.name} · ${store.name}`,
     description,
-    alternates: {
-      canonical: `/${locale}/store/${store.slug}/products/${product.slug}`,
-    },
+    alternates: { canonical: productPath },
     openGraph: {
       title: product.name,
       description,
       type: "website",
+      url: productPath,
       images: image ? [image] : undefined,
     },
   };

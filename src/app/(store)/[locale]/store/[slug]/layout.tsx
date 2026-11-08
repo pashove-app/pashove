@@ -1,11 +1,29 @@
+import type { Metadata } from "next";
+import { headers } from "next/headers";
 import type { ReactNode } from "react";
 import { MotionConfig } from "motion/react";
+import { BrandedLinks } from "@/components/storefront/branded-links";
 import { CartProvider } from "@/components/storefront/cart-provider";
 import { WishlistProvider } from "@/components/storefront/wishlist-provider";
 import { LOCALE_META, isLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
+import { normalizeHost } from "@/lib/domains/hosts";
 import { readCart } from "@/lib/storefront/cart";
 import { loadStorefront } from "@/lib/storefront/queries";
+
+/**
+ * Sur un domaine marqué, les URLs canoniques et les images Open Graph doivent
+ * pointer vers ce domaine, pas vers pashove.com.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const requestHeaders = await headers();
+  if (requestHeaders.get("x-pashove-branded") !== "1") return {};
+
+  const host = normalizeHost(requestHeaders.get("host"));
+  if (!host) return {};
+
+  return { metadataBase: new URL(`https://${host}`) };
+}
 
 /**
  * Enveloppe client commune à toutes les pages d'une boutique : le panier,
@@ -37,9 +55,11 @@ export default async function StoreLayout({
       : null;
 
   const mediaBase = (process.env.R2_PUBLIC_URL ?? "").replace(/\/+$/, "");
+  const branded = (await headers()).get("x-pashove-branded") === "1";
 
   return (
     <MotionConfig reducedMotion="user">
+      {branded ? <BrandedLinks locale={raw} slug={slug} /> : null}
       <WishlistProvider storeId={store?.id ?? slug}>
         <CartProvider
           slug={slug}
