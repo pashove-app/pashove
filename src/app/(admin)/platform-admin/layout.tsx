@@ -16,6 +16,7 @@ const NAV = [
   { href: "/platform-admin/stores", label: "Boutiques", icon: icons.store },
   { href: "/platform-admin/users", label: "Utilisateurs", icon: icons.user },
   { href: "/platform-admin/kyc", label: "KYC", icon: icons.shield },
+  { href: "/platform-admin/couriers", label: "Livreurs", icon: icons.route },
   { href: "/platform-admin/payouts", label: "Retraits", icon: icons.wallet },
   { href: "/platform-admin/payments", label: "Paiements", icon: icons.wallet },
   { href: "/platform-admin/payment-providers", label: "Fournisseurs", icon: icons.code },

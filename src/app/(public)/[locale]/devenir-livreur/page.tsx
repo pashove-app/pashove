@@ -9,6 +9,10 @@ import {
   SectionHeading,
 } from "@/components/marketing/ui";
 import { resolveLocale } from "@/i18n/config";
+import { createClient } from "@/lib/supabase/server";
+import { readProfile } from "@/lib/profile/queries";
+import { getMyCourierProfile } from "@/lib/couriers/queries";
+import { CourierApplicationForm } from "@/components/couriers/courier-application-form";
 
 const COPY = {
   fr: {
@@ -17,7 +21,7 @@ const COPY = {
     titleB: "Chaque course compte.",
     description:
       "Le réseau de livraison moto de Pashove arrive. Inscris-toi pour être prévenu à l’ouverture dans ta ville.",
-    primary: "Être prévenu",
+    primary: "S’inscrire maintenant",
     secondary: "Comment ça marche",
     benefitsTitleA: "Ton temps,",
     benefitsTitleB: "tes revenus.",
@@ -41,7 +45,19 @@ const COPY = {
       "Un compte Pashove pour recevoir tes gains",
     ],
     soon:
-      "Les inscriptions ne sont pas encore ouvertes. Écris-nous pour être prévenu en priorité.",
+      "Les inscriptions sont ouvertes. Ton dossier est vérifié par l’équipe avant activation.",
+    signupTitle: "Inscription livreur",
+    signupText:
+      "Remplis ton dossier. L’équipe vérifie ta pièce d’identité et ton selfie avant d’activer ton compte.",
+    authTitle: "Crée ton compte Pashove",
+    authText: "Un compte suffit pour candidater et suivre ton dossier.",
+    register: "Créer mon compte",
+    login: "J’ai déjà un compte",
+    statusPending: "Dossier en cours de vérification",
+    statusApproved: "Compte livreur validé",
+    statusRejected: "Dossier refusé",
+    openSpace: "Ouvrir mon espace livreur",
+    reapply: "Déposer un nouveau dossier",
     ctaTitle: "Prêt à pédaler sur les commandes ?",
     ctaText: "Laisse ton e-mail, nous te contactons dès l’ouverture dans ta ville.",
     cta: "Je veux être livreur",
@@ -52,7 +68,7 @@ const COPY = {
     titleB: "Every ride counts.",
     description:
       "Pashove’s moto delivery network is coming. Sign up to be notified when it opens in your city.",
-    primary: "Get notified",
+    primary: "Sign up now",
     secondary: "How it works",
     benefitsTitleA: "Your time,",
     benefitsTitleB: "your earnings.",
@@ -76,7 +92,19 @@ const COPY = {
       "A Pashove account to receive your earnings",
     ],
     soon:
-      "Sign-ups are not open yet. Write to us to be notified first.",
+      "Sign-ups are open. Your application is reviewed by the team before activation.",
+    signupTitle: "Courier application",
+    signupText:
+      "Fill in your application. The team checks your ID document and selfie before activating your account.",
+    authTitle: "Create your Pashove account",
+    authText: "One account lets you apply and track your file.",
+    register: "Create my account",
+    login: "I already have an account",
+    statusPending: "Application under review",
+    statusApproved: "Courier account approved",
+    statusRejected: "Application rejected",
+    openSpace: "Open my courier space",
+    reapply: "Submit a new application",
     ctaTitle: "Ready to ride?",
     ctaText: "Leave your email and we will contact you when it opens in your city.",
     cta: "I want to be a courier",
@@ -107,7 +135,13 @@ export default async function CourierPage({
   const { locale: raw } = await params;
   const locale = resolveLocale(raw);
   const copy = locale === "en" ? COPY.en : COPY.fr;
-  const mailto = "mailto:livreurs@pashove.com?subject=Devenir%20livreur";
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const courier = user ? await getMyCourierProfile() : null;
+  const profile = user ? await readProfile() : null;
 
   return (
     <>
@@ -131,7 +165,7 @@ export default async function CourierPage({
                 {copy.description}
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <PrimaryLink href={mailto}>{copy.primary}</PrimaryLink>
+                <PrimaryLink href="#inscription">{copy.primary}</PrimaryLink>
                 <Link
                   href="#comment"
                   className="inline-flex h-12 items-center justify-center rounded-full border border-white/15 px-6 text-[0.875rem] font-semibold text-white/80 transition-colors hover:border-white/30 hover:text-white"
@@ -222,6 +256,93 @@ export default async function CourierPage({
         </MarketingContainer>
       </section>
 
+      <section
+        id="inscription"
+        className="scroll-mt-24 bg-[#FAFAFA] py-14 sm:py-20"
+      >
+        <MarketingContainer>
+          <div className="mx-auto max-w-2xl rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_24px_60px_-50px_rgba(10,14,26,0.5)] sm:p-8">
+            <h2 className="font-display text-[clamp(1.8rem,3.4vw,2.6rem)] leading-[1.08] tracking-[-0.03em] text-[#0A0E1A]">
+              {copy.signupTitle}
+            </h2>
+            <p className="mt-2 text-[0.875rem] leading-relaxed text-[#5B6475]">
+              {copy.signupText}
+            </p>
+
+            <div className="mt-6">
+              {!user ? (
+                <div className="rounded-2xl border border-slate-200 bg-[#FAFAFA] p-5">
+                  <p className="text-[0.9375rem] font-medium text-[#0A0E1A]">
+                    {copy.authTitle}
+                  </p>
+                  <p className="mt-1 text-[0.8125rem] leading-relaxed text-[#6B7280]">
+                    {copy.authText}
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <Link
+                      href={`/${locale}/auth/register`}
+                      className="inline-flex h-10 items-center rounded-full bg-brand-500 px-5 text-[0.8125rem] font-semibold text-white transition-colors hover:bg-brand-600"
+                    >
+                      {copy.register}
+                    </Link>
+                    <Link
+                      href={`/${locale}/auth/login`}
+                      className="inline-flex h-10 items-center rounded-full border border-slate-300 px-5 text-[0.8125rem] font-medium text-[#0A0E1A] transition-colors hover:border-slate-400"
+                    >
+                      {copy.login}
+                    </Link>
+                  </div>
+                </div>
+              ) : courier && courier.status !== "rejected" ? (
+                <div
+                  className={`rounded-2xl border p-5 ${
+                    courier.status === "approved"
+                      ? "border-emerald-300 bg-emerald-50"
+                      : "border-amber-300 bg-amber-50"
+                  }`}
+                >
+                  <p className="text-[0.9375rem] font-semibold text-[#0A0E1A]">
+                    {courier.status === "approved"
+                      ? copy.statusApproved
+                      : copy.statusPending}
+                  </p>
+                  <Link
+                    href={`/${locale}/app/courier`}
+                    className="mt-3 inline-flex h-9 items-center rounded-full border border-slate-300 px-4 text-[0.75rem] font-medium text-[#0A0E1A] transition-colors hover:border-slate-400"
+                  >
+                    {copy.openSpace}
+                  </Link>
+                </div>
+              ) : (
+                <>
+                  {courier?.status === "rejected" ? (
+                    <div className="mb-4 rounded-2xl border border-red-300 bg-red-50 p-4">
+                      <p className="text-[0.875rem] font-semibold text-red-800">
+                        {copy.statusRejected}
+                      </p>
+                      {courier.rejectionReason ? (
+                        <p className="mt-1 text-[0.8125rem] leading-relaxed text-red-700">
+                          {courier.rejectionReason}
+                        </p>
+                      ) : null}
+                      <p className="mt-2 text-[0.75rem] text-red-700/80">
+                        {copy.reapply}
+                      </p>
+                    </div>
+                  ) : null}
+                  <CourierApplicationForm
+                    locale={locale === "en" ? "en" : "fr"}
+                    defaultName={profile?.full_name ?? ""}
+                    defaultEmail={user.email ?? ""}
+                    defaultPhone=""
+                  />
+                </>
+              )}
+            </div>
+          </div>
+        </MarketingContainer>
+      </section>
+
       <section className="bg-[#FAFAFA] px-3 pb-4 sm:px-5 sm:pb-5">
         <div className="relative overflow-hidden rounded-[2rem] bg-[#0A0E1A] px-5 py-14 text-center sm:px-10 sm:py-20">
           <div
@@ -239,7 +360,7 @@ export default async function CourierPage({
               {copy.ctaText}
             </p>
             <div className="mt-8 flex justify-center">
-              <PrimaryLink href={mailto}>{copy.cta}</PrimaryLink>
+              <PrimaryLink href="#inscription">{copy.cta}</PrimaryLink>
             </div>
           </div>
         </div>

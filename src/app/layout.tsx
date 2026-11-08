@@ -45,6 +45,33 @@ export const metadata: Metadata = {
   applicationName: "Pashove",
   authors: [{ name: "Pashove", url: "https://pashove.com" }],
   robots: { index: true, follow: true },
+  description:
+    "Crée ta boutique, vends tes produits physiques, numériques ou tes services et encaisse en Mobile Money dans 22 pays.",
+  openGraph: {
+    type: "website",
+    siteName: "Pashove",
+    locale: "fr_FR",
+    alternateLocale: ["en_US"],
+    url: "https://pashove.com",
+    title: "Pashove — Le commerce en ligne, sans frontières",
+    description:
+      "Crée ta boutique, vends tes produits et encaisse en Mobile Money dans 22 pays. Pensé pour les marchands d’Afrique.",
+    images: [
+      {
+        url: "/marketing/storefront.png",
+        width: 1400,
+        height: 972,
+        alt: "Pashove — vitrine, commandes et paiements",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Pashove — Le commerce en ligne, sans frontières",
+    description:
+      "Crée ta boutique, vends tes produits et encaisse en Mobile Money dans 22 pays.",
+    images: ["/marketing/storefront.png"],
+  },
 };
 
 export const viewport: Viewport = {
