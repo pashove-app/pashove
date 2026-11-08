@@ -432,7 +432,8 @@ const fr = {
     ],
     company: [
       { label: "À propos", href: "/about" },
-      { label: "Blog", href: "/features", soon: true },
+      { label: "Aide", href: "/help" },
+      { label: "Devenir livreur", href: "/devenir-livreur" },
       { label: "Contact", href: "mailto:hello@pashove.com" },
     ],
     legal: [
@@ -441,6 +442,8 @@ const fr = {
       { label: "Confidentialité", href: "/legal/confidentialite" },
     ],
     developers: [
+      { label: "Documentation", href: "/docs" },
+      { label: "Statut", href: "/status" },
       { label: "API", href: "/features#vendre", soon: true },
       { label: "Webhooks", href: "/features#vendre", soon: true },
     ],
@@ -703,7 +706,8 @@ const en: SiteContent = {
     ],
     company: [
       { label: "About", href: "/about" },
-      { label: "Blog", href: "/features", soon: true },
+      { label: "Help", href: "/help" },
+      { label: "Become a courier", href: "/devenir-livreur" },
       { label: "Contact", href: "mailto:hello@pashove.com" },
     ],
     legal: [
@@ -712,6 +716,8 @@ const en: SiteContent = {
       { label: "Privacy", href: "/legal/confidentialite" },
     ],
     developers: [
+      { label: "Documentation", href: "/docs" },
+      { label: "Statut", href: "/status" },
       { label: "API", href: "/features#vendre", soon: true },
       { label: "Webhooks", href: "/features#vendre", soon: true },
     ],
