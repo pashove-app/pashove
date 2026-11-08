@@ -274,7 +274,7 @@ export default async function PublicHomePage({
         </MarketingContainer>
       </section>
 
-      {/* Dark stats panel — CinetPay-style */}
+      {/* Panneau de statistiques sombre */}
       <section className="bg-[#FAFAFA] px-3 py-4 sm:px-5 sm:py-5">
         <div className="relative overflow-hidden rounded-[2rem] bg-[#0A0E1A] px-5 py-16 sm:px-10 sm:py-20">
           <div
@@ -409,7 +409,7 @@ export default async function PublicHomePage({
         </MarketingContainer>
       </section>
 
-      {/* CTA — light, CinetPay-style */}
+      {/* Appel à l’action clair */}
       <section className="border-t border-slate-200 bg-white py-20 sm:py-28">
         <MarketingContainer className="text-center">
           <MarketingReveal>

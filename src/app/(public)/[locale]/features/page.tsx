@@ -127,11 +127,6 @@ export default async function FeaturesPage({
                         <h3 className="text-[0.9375rem] font-semibold text-[#0A0E1A]">
                           {item.title}
                         </h3>
-                        {"badge" in item && item.badge ? (
-                          <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[0.5625rem] font-semibold uppercase tracking-[0.1em] text-amber-700">
-                            {item.badge}
-                          </span>
-                        ) : null}
                       </div>
                       <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-[#6B7280]">
                         {item.text}

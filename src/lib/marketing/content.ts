@@ -285,9 +285,9 @@ const fr = {
     popular: "Le plus choisi",
     commissionLabel: "commission Pashove",
     paymentStatus:
-      "Le paiement à la livraison est disponible aujourd’hui. Les paiements en ligne (mobile money et carte) sont en cours d’intégration ; leurs frais seront affichés avant chaque transaction.",
+      "Les paiements en ligne sont actifs : mobile money dans 22 pays et 64 réseaux via SasPay, carte bancaire dès 25 000 FCFA de panier. Le paiement à la livraison reste disponible.",
     note:
-      "Les montants sont en FCFA (XOF), hors taxes. La commission Pashove s’ajoute aux frais éventuels du prestataire de paiement.",
+      "Montants en FCFA (XOF), hors taxes. Free : les frais SasPay sont inclus dans la commission de 10 %. Standard et Pro : les frais SasPay s’ajoutent, payés par le client ou par le marchand selon son réglage. La commission Pashove porte sur le sous-total après remise. Pays de vente illimités ; retraits sans frais Pashove.",
     plans: [
       {
         code: "free",
@@ -300,11 +300,11 @@ const fr = {
         team: "5 membres",
         features: [
           "Produits physiques, numériques et services",
-          "Commandes et paiement à la livraison",
+          "Mobile money dans 22 pays (64 réseaux)",
+          "Frais SasPay inclus dans les 10 %",
+          "Carte bancaire dès 25 000 FCFA",
           "Thèmes officiels et éditeur",
-          "Messagerie avec tes clients",
-          "Comptes clients et téléchargements protégés",
-          "Codes promo",
+          "Messagerie et téléchargements protégés",
         ],
         cta: "Commencer gratuitement",
       },
@@ -322,8 +322,8 @@ const fr = {
           "Tout le plan Free",
           "5 boutiques et 15 membres",
           "Commission réduite à 2 %",
-          "Partenaires et catalogue partagé",
-          "Codes promo avancés",
+          "Frais SasPay en plus, client ou marchand",
+          "Partenaires, affiliation et catalogue partagé",
           "Support prioritaire",
         ],
         cta: "Commencer gratuitement",
@@ -341,9 +341,9 @@ const fr = {
           "Tout le plan Standard",
           "10 boutiques et 50 membres",
           "0 % de commission Pashove",
+          "Frais SasPay en plus",
           "Rôles et permissions avancés",
           "Accompagnement dédié",
-          "Accès anticipé aux nouveaux modules",
         ],
         cta: "Commencer gratuitement",
       },
@@ -373,7 +373,7 @@ const fr = {
           { icon: "bag" as IconKey, title: "Checkout COD", text: "Une page, une adresse, un paiement à la livraison." },
           { icon: "percent" as IconKey, title: "Codes promo", text: "Pourcentage ou montant fixe, quotas, dates, montant minimum." },
           { icon: "users" as IconKey, title: "Comptes clients", text: "Commandes, téléchargements, rendez-vous et rattachement des achats invités." },
-          { icon: "wallet" as IconKey, title: "Paiements en ligne", text: "Mobile money et carte, en cours d’intégration avec un prestataire africain.", badge: "Bientôt" },
+          { icon: "wallet" as IconKey, title: "Paiements en ligne", text: "Mobile money dans 22 pays et carte bancaire, via SasPay." },
         ],
       },
       {
@@ -637,13 +637,13 @@ const en: SiteContent = {
     popular: "Most chosen",
     commissionLabel: "Pashove commission",
     paymentStatus:
-      "Cash on delivery is available today. Online payments (mobile money and card) are being integrated; their fees will be shown before every transaction.",
+      "Online payments are live: mobile money in 22 countries and 64 networks via SasPay, card from 25,000 FCFA carts. Cash on delivery remains available.",
     note:
-      "Amounts are in FCFA (XOF), excluding taxes. Pashove commission is added to any payment provider fees.",
+      "Amounts in FCFA (XOF), excluding taxes. Free: SasPay fees are included in the 10% commission. Standard and Pro: SasPay fees are added, paid by the customer or the merchant depending on their setting. Pashove commission applies to the subtotal after discount. Unlimited sales countries; withdrawals with no Pashove fee.",
     plans: [
-      { code: "free", name: "Free", price: "0", period: "forever", description: "Launch your first store and sell this week.", commission: "10 %", stores: "2 stores", team: "5 members", features: ["Physical, digital and service products", "Orders and cash on delivery", "Official themes and editor", "Messaging with customers", "Customer accounts and protected downloads", "Promo codes"], cta: "Start for free" },
-      { code: "standard", name: "Standard", price: "25,000", period: "FCFA / month", description: "For merchants selling every week.", commission: "2 %", stores: "5 stores", team: "15 members", popular: true, features: ["Everything in Free", "5 stores and 15 members", "Commission reduced to 2%", "Partners and shared catalog", "Advanced promo codes", "Priority support"], cta: "Start for free" },
-      { code: "pro", name: "Pro", price: "45,000", period: "FCFA / month", description: "For teams and high volumes.", commission: "0 %", stores: "10 stores", team: "50 members", features: ["Everything in Standard", "10 stores and 50 members", "0% Pashove commission", "Advanced roles and permissions", "Dedicated support", "Early access to new modules"], cta: "Start for free" },
+      { code: "free", name: "Free", price: "0", period: "forever", description: "Launch your first store and sell this week.", commission: "10 %", stores: "2 stores", team: "5 members", features: ["Physical, digital and service products", "Mobile money in 22 countries (64 networks)", "SasPay fees included in the 10%", "Card from 25,000 FCFA carts", "Official themes and editor", "Messaging and protected downloads"], cta: "Start for free" },
+      { code: "standard", name: "Standard", price: "25,000", period: "FCFA / month", description: "For merchants selling every week.", commission: "2 %", stores: "5 stores", team: "15 members", popular: true, features: ["Everything in Free", "5 stores and 15 members", "Commission reduced to 2%", "SasPay fees on top, customer or merchant", "Partners, affiliation and shared catalog", "Priority support"], cta: "Start for free" },
+      { code: "pro", name: "Pro", price: "45,000", period: "FCFA / month", description: "For teams and high volumes.", commission: "0 %", stores: "10 stores", team: "50 members", features: ["Everything in Standard", "10 stores and 50 members", "0% Pashove commission", "SasPay fees on top", "Advanced roles and permissions", "Dedicated support"], cta: "Start for free" },
     ] as MarketingPlan[],
   },
   featuresPage: {
@@ -662,11 +662,11 @@ const en: SiteContent = {
         { icon: "bag" as IconKey, title: "COD checkout", text: "One page, one address, cash on delivery." },
         { icon: "percent" as IconKey, title: "Promo codes", text: "Percentage or fixed amount, quotas, dates, minimum spend." },
         { icon: "users" as IconKey, title: "Customer accounts", text: "Orders, downloads, bookings and guest order claiming." },
-        { icon: "wallet" as IconKey, title: "Online payments", text: "Mobile money and cards, being integrated with an African provider.", badge: "Soon" },
+        { icon: "wallet" as IconKey, title: "Online payments", text: "Mobile money in 22 countries and cards, via SasPay." },
       ]},
       { title: "Grow", text: "Bring more people in and bring buyers back.", items: [
         { icon: "route" as IconKey, title: "Partners", text: "Other stores sell your catalog, with fair commissions." },
-        { icon: "palette" as IconKey, title: "Themes & editor", text: "Four themes, colours, typography, section order." },
+        { icon: "palette" as IconKey, title: "Themes & editor", text: "Five themes, colours, typography, section order." },
         { icon: "chat" as IconKey, title: "Messaging", text: "Customer and platform support conversations, with attachments." },
         { icon: "users" as IconKey, title: "Team & roles", text: "Invite your team and give each person exactly the right access." },
       ]},

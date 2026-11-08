@@ -160,9 +160,9 @@ export default async function PricingPage({
           </div>
 
           <MarketingReveal>
-            <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4">
-              <p className="flex items-start gap-2.5 text-[0.75rem] leading-relaxed text-amber-900/75">
-                <Icon path={icons.wallet} className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" strokeWidth={1.8} />
+            <div className="mt-6 rounded-2xl border border-brand-500/20 bg-brand-50 px-5 py-4">
+              <p className="flex items-start gap-2.5 text-[0.75rem] leading-relaxed text-brand-900/80">
+                <Icon path={icons.wallet} className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" strokeWidth={1.8} />
                 {c.pricing.paymentStatus}
               </p>
             </div>
