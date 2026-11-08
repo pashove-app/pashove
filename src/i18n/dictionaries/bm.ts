@@ -1812,6 +1812,8 @@ const bm: Dictionary = {
     offerCreator: "Da",
     offerForecast: "I ka jɔnin",
     affiliateTitle: "N ka affiliation liens",
+    tabReseller: "Feerebaga",
+    tabAffiliate: "Affiliation",
     affiliateSubtitle: "Ni ka lien jira: i bɛ commission sɔrɔ feere o feere.",
     affiliateGenerate: "N ka lien da",
     affiliateReady: "I ka lien sɔnnen",

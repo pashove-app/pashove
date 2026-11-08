@@ -1869,6 +1869,8 @@ const fr = {
     offerCreator: "Créateur",
     offerForecast: "Ta commission",
     affiliateTitle: "Mes liens d’affiliation",
+    tabReseller: "Revendeur",
+    tabAffiliate: "Affilié",
     affiliateSubtitle: "Partage ton lien : tu touches la commission de l’offre à chaque vente.",
     affiliateGenerate: "Générer mon lien",
     affiliateReady: "Ton lien est prêt",

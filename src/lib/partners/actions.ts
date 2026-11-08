@@ -90,7 +90,7 @@ export async function createAffiliateLinkAction(formData: FormData): Promise<voi
   if (!code) redirect(`/${locale}/app/partners?error=serverError`);
 
   revalidatePath(`/${locale}/app/partners`);
-  redirect(`/${locale}/app/partners?affiliate=${code}`);
+  redirect(`/${locale}/app/partners?tab=affiliate&affiliate=${code}`);
 }
 
 /** Ajoute une copie contrôlée du produit partenaire à la boutique active. */

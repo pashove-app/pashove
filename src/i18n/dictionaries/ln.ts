@@ -1820,6 +1820,8 @@ const ln: Dictionary = {
     offerCreator: "Mokeli",
     offerForecast: "Commission na yo",
     affiliateTitle: "Ba liens d’affiliation na ngai",
+    tabReseller: "Motekisi",
+    tabAffiliate: "Affiliation",
     affiliateSubtitle: "Kabola lien na yo: ozali kozwa commission na botɛki nyonso.",
     affiliateGenerate: "Salá lien na ngai",
     affiliateReady: "Lien na yo esili",

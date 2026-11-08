@@ -139,7 +139,6 @@ export async function listDiscoverOffers(
       (row) =>
         row.product &&
         row.product.status === "published" &&
-        row.product.product_type === "physical" &&
         row.product.store?.status === "active" &&
         !listed.has(row.product.id),
     )

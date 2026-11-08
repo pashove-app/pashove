@@ -1810,6 +1810,8 @@ const en: Dictionary = {
     offerCreator: "Creator",
     offerForecast: "Your commission",
     affiliateTitle: "My affiliate links",
+    tabReseller: "Reseller",
+    tabAffiliate: "Affiliate",
     affiliateSubtitle: "Share your link: you earn the offer commission on every sale.",
     affiliateGenerate: "Generate my link",
     affiliateReady: "Your link is ready",

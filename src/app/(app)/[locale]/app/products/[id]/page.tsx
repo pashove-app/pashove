@@ -122,11 +122,7 @@ export default async function EditProductPage({
             initial={offer}
             eligible={eligible}
             ineligibleReason={
-              product.variants.length > 0
-                ? "variants"
-                : product.product_type !== "physical"
-                  ? "physical"
-                  : null
+              product.variants.length > 0 ? "variants" : null
             }
             isCopy={Boolean(product.source_product_id)}
           />

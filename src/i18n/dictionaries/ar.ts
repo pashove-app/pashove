@@ -1797,6 +1797,8 @@ const ar: Dictionary = {
     offerCreator: "المُنشئ",
     offerForecast: "عمولتك",
     affiliateTitle: "روابط الإحالة الخاصة بي",
+    tabReseller: "إعادة البيع",
+    tabAffiliate: "الإحالة",
     affiliateSubtitle: "شارك رابطك: تربح عمولة العرض عند كل بيع.",
     affiliateGenerate: "إنشاء رابطي",
     affiliateReady: "رابطك جاهز",

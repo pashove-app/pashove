@@ -41,11 +41,17 @@ export default async function PartnersPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ added?: string; error?: string; affiliate?: string }>;
+  searchParams: Promise<{
+    added?: string;
+    error?: string;
+    affiliate?: string;
+    tab?: string;
+  }>;
 }) {
   const { locale: raw } = await params;
   const locale = resolveLocale(raw);
-  const { added, error, affiliate } = await searchParams;
+  const { added, error, affiliate, tab: rawTab } = await searchParams;
+  const tab = rawTab === "affiliate" || affiliate ? "affiliate" : "reseller";
 
   const membership = await currentMembership();
   if (!membership) redirect(`/${locale}/onboarding/store`);
@@ -115,7 +121,11 @@ export default async function PartnersPage({
       ) : null}
 
       {affiliateUrl ? (
-        <div className="mt-5 rounded-2xl border border-emerald-400/25 bg-emerald-400/[0.06] p-4">
+        <div
+          className={`mt-5 rounded-2xl border border-emerald-400/25 bg-emerald-400/[0.06] p-4 ${
+            tab === "reseller" ? "hidden" : ""
+          }`}
+        >
           <p className="text-[0.8125rem] font-medium text-emerald-700 dark:text-emerald-300">
             {labels.affiliateReady}
           </p>
@@ -129,7 +139,30 @@ export default async function PartnersPage({
         </div>
       ) : null}
 
-      <section className="mt-8">
+      <div className="mt-6 inline-flex rounded-full border border-border bg-surface p-1">
+        <Link
+          href={path(locale, "/app/partners?tab=reseller")}
+          className={`rounded-full px-4 py-2 text-[0.8125rem] font-medium transition-colors ${
+            tab === "reseller"
+              ? "bg-brand-500 text-white"
+              : "text-subtle hover:text-fg"
+          }`}
+        >
+          {labels.tabReseller}
+        </Link>
+        <Link
+          href={path(locale, "/app/partners?tab=affiliate")}
+          className={`rounded-full px-4 py-2 text-[0.8125rem] font-medium transition-colors ${
+            tab === "affiliate"
+              ? "bg-brand-500 text-white"
+              : "text-subtle hover:text-fg"
+          }`}
+        >
+          {labels.tabAffiliate}
+        </Link>
+      </div>
+
+      <section className={tab === "affiliate" ? "mt-8 hidden" : "mt-8"}>
         <h2 className="text-[1.0625rem] font-medium text-fg">
           {labels.discoverTitle}
         </h2>
@@ -265,7 +298,7 @@ export default async function PartnersPage({
         )}
       </section>
 
-      <section className="mt-8">
+      <section className={tab === "affiliate" ? "mt-8 hidden" : "mt-8"}>
         <h2 className="text-[1.0625rem] font-medium text-fg">
           {labels.myListingsTitle}
         </h2>
@@ -304,7 +337,7 @@ export default async function PartnersPage({
         )}
       </section>
 
-      <section className="mt-8">
+      <section className={tab === "reseller" ? "mt-8 hidden" : "mt-8"}>
         <h2 className="text-[1.0625rem] font-medium text-fg">
           {labels.affiliateTitle}
         </h2>
@@ -350,7 +383,7 @@ export default async function PartnersPage({
         )}
       </section>
 
-      <section className="mt-8">
+      <section className={tab === "affiliate" ? "mt-8 hidden" : "mt-8"}>
         <h2 className="text-[1.0625rem] font-medium text-fg">
           {labels.salesTitle}
         </h2>
