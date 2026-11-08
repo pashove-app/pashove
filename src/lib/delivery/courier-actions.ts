@@ -5,12 +5,128 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { afterDeliveryPush } from "@/lib/pwa/after-push";
+import { broadcastDeliveryLocation } from "@/lib/delivery/broadcast";
+import { geocodeAddress } from "@/lib/geo/geocode";
 import { deliverEmail } from "@/lib/email/transport";
 import { resolveLocale } from "@/i18n/config";
+import { z } from "zod";
 
 function field(formData: FormData, key: string): string {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
+}
+
+const locationSchema = z.object({
+  deliveryId: z.uuid(),
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+  accuracy: z.number().min(0).max(100000).nullable().optional(),
+  heading: z.number().min(0).max(360).nullable().optional(),
+  speed: z.number().min(0).max(1000).nullable().optional(),
+});
+
+export type CourierTrackingResult = {
+  ok: boolean;
+  error?: string;
+};
+
+/**
+ * Démarre la course : la position courante du livreur devient le point de
+ * ramassage. La destination est géocodée une seule fois, puis diffusée.
+ */
+export async function startDeliveryAction(
+  input: unknown,
+): Promise<CourierTrackingResult> {
+  const parsed = locationSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid_location" };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("start_delivery", {
+    p_delivery_id: parsed.data.deliveryId,
+    p_latitude: parsed.data.latitude,
+    p_longitude: parsed.data.longitude,
+  });
+
+  if (error) {
+    console.error("[tracking] start failed", error.message);
+    return { ok: false, error: error.message };
+  }
+
+  const started = data as {
+    orderToken?: string;
+    address?: string | null;
+    extra?: string | null;
+    city?: string | null;
+    country?: string | null;
+  } | null;
+
+  if (started?.orderToken) {
+    // La position part tout de suite : le client n'attend pas le géocodage.
+    const updatedAt = new Date().toISOString();
+    await broadcastDeliveryLocation(started.orderToken, {
+      latitude: parsed.data.latitude,
+      longitude: parsed.data.longitude,
+      accuracy: parsed.data.accuracy ?? null,
+      heading: parsed.data.heading ?? null,
+      speed: parsed.data.speed ?? null,
+      updatedAt,
+    });
+
+    const destination = await geocodeAddress({
+      address: started.address,
+      extra: started.extra,
+      city: started.city,
+      country: started.country,
+    });
+
+    if (destination) {
+      await supabase.rpc("set_delivery_destination", {
+        p_delivery_id: parsed.data.deliveryId,
+        p_latitude: destination.latitude,
+        p_longitude: destination.longitude,
+      });
+    }
+  }
+
+  return { ok: true };
+}
+
+/** Position GPS suivante. Ne rafraîchit pas la page : le suivi est continu. */
+export async function updateCourierLocationAction(
+  input: unknown,
+): Promise<CourierTrackingResult> {
+  const parsed = locationSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid_location" };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("update_delivery_location", {
+    p_delivery_id: parsed.data.deliveryId,
+    p_latitude: parsed.data.latitude,
+    p_longitude: parsed.data.longitude,
+    p_accuracy: parsed.data.accuracy ?? null,
+    p_heading: parsed.data.heading ?? null,
+    p_speed: parsed.data.speed ?? null,
+  });
+
+  if (error) {
+    console.error("[tracking] location update failed", error.message);
+    return { ok: false, error: error.message };
+  }
+
+  const result = data as { orderToken?: string; updatedAt?: string } | null;
+
+  if (result?.orderToken) {
+    await broadcastDeliveryLocation(result.orderToken, {
+      latitude: parsed.data.latitude,
+      longitude: parsed.data.longitude,
+      accuracy: parsed.data.accuracy ?? null,
+      heading: parsed.data.heading ?? null,
+      speed: parsed.data.speed ?? null,
+      updatedAt: result.updatedAt ?? new Date().toISOString(),
+    });
+  }
+
+  return { ok: true };
 }
 
 export async function setCourierOnlineAction(formData: FormData): Promise<void> {

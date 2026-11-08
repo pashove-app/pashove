@@ -140,6 +140,20 @@ export default async function CheckoutSuccessPage({
               </p>
             </div>
 
+            {hasPhysical ? (
+              <div className="mt-4 flex justify-center">
+                <Link
+                  href={path(locale, `/track/${orderId}`)}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-brand-500 px-6 text-[0.8125rem] font-semibold text-white transition-colors hover:bg-brand-600"
+                >
+                  <Icon path={icons.route} className="h-4 w-4" strokeWidth={2} />
+                  {locale === "en"
+                    ? "Track my delivery"
+                    : "Suivre ma livraison"}
+                </Link>
+              </div>
+            ) : null}
+
             <section className="mt-4 rounded-3xl border border-border bg-surface p-5 sm:p-6">
               <h2 className="text-[0.9375rem] font-medium text-fg">
                 {t.storefront.checkoutItemsTitle}

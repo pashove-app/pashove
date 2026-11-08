@@ -24,6 +24,8 @@ export type OrderEmailContext = {
   storeName: string;
   storeSlug: string;
   orderId: string;
+  /** Jeton public utilisé par la page de suivi. */
+  orderToken?: string | null;
   orderNumber: number;
   currency: string;
   total: number;
@@ -54,6 +56,10 @@ export function formatAddress(input: {
 }
 
 function orderEmailUrl(context: OrderEmailContext, locale: string): string {
+  if (context.orderToken) {
+    return `${siteUrl()}/${normalizedLocale(locale)}/track/${context.orderToken}`;
+  }
+
   return `${siteUrl()}/${normalizedLocale(locale)}/store/${context.storeSlug}/account/orders/${context.orderId}`;
 }
 
@@ -641,6 +647,7 @@ export async function loadOrderEmailContext(input: {
     storeName: storeRow.name,
     storeSlug: storeRow.slug,
     orderId: order.id,
+    orderToken: input.token,
     orderNumber: order.number,
     currency: order.currency,
     total: order.total,

@@ -7,6 +7,11 @@ export type CourierDelivery = {
   currency: string;
   offerExpiresAt: string | null;
   acceptedAt: string | null;
+  startedAt: string | null;
+  pickupLatitude: number | null;
+  pickupLongitude: number | null;
+  destinationLatitude: number | null;
+  destinationLongitude: number | null;
   createdAt: string;
   orderNumber: number;
   storeName: string;
@@ -36,6 +41,19 @@ function normalize(value: unknown): CourierDelivery | null {
     offerExpiresAt:
       typeof row.offerExpiresAt === "string" ? row.offerExpiresAt : null,
     acceptedAt: typeof row.acceptedAt === "string" ? row.acceptedAt : null,
+    startedAt: typeof row.startedAt === "string" ? row.startedAt : null,
+    pickupLatitude:
+      typeof row.pickupLatitude === "number" ? row.pickupLatitude : null,
+    pickupLongitude:
+      typeof row.pickupLongitude === "number" ? row.pickupLongitude : null,
+    destinationLatitude:
+      typeof row.destinationLatitude === "number"
+        ? row.destinationLatitude
+        : null,
+    destinationLongitude:
+      typeof row.destinationLongitude === "number"
+        ? row.destinationLongitude
+        : null,
     createdAt: String(row.createdAt ?? ""),
     orderNumber: Number(row.orderNumber ?? 0),
     storeName: String(row.storeName ?? ""),

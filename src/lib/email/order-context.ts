@@ -18,6 +18,7 @@ type OrderRow = {
   shipping_city: string | null;
   shipping_country: string | null;
   tracking_number: string | null;
+  public_token: string | null;
   order_items: {
     product_name: string;
     variant_label: string | null;
@@ -48,6 +49,7 @@ export async function loadOrderContextWithService(
         "id, number, store_id, currency, total_amount, subtotal_amount, discount_amount",
         "shipping_amount, customer_name, customer_email, payment_method",
         "shipping_address, shipping_city, shipping_country, tracking_number",
+        "public_token",
         "order_items(product_name, variant_label, product_type, quantity, line_total)",
         "stores(name, slug)",
       ].join(", "),
@@ -63,6 +65,7 @@ export async function loadOrderContextWithService(
     storeName: row.stores?.name ?? "Pashove",
     storeSlug: row.stores?.slug ?? "",
     orderId: row.id,
+    orderToken: row.public_token,
     orderNumber: row.number,
     currency: row.currency,
     total: row.total_amount,

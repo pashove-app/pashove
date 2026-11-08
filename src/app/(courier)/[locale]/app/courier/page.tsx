@@ -3,6 +3,7 @@ import { Icon, icons } from "@/components/ui/primitives";
 import { resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { CourierApplicationForm } from "@/components/couriers/courier-application-form";
+import { CourierLiveTracking } from "@/components/couriers/courier-live-tracking";
 import { CourierPwa } from "@/components/couriers/courier-pwa";
 import { getMyCourierProfile } from "@/lib/couriers/queries";
 import { myCourierDeliveries } from "@/lib/delivery/courier-queries";
@@ -444,6 +445,20 @@ export default async function CourierDashboardPage({
                   </dd>
                 </div>
               </dl>
+
+              <CourierLiveTracking
+                locale={locale === "en" ? "en" : "fr"}
+                deliveryId={deliveries.active.id}
+                started={Boolean(deliveries.active.startedAt)}
+                destination={[
+                  deliveries.active.shippingAddress,
+                  deliveries.active.shippingExtra,
+                  deliveries.active.shippingCity,
+                  deliveries.active.shippingCountry,
+                ]
+                  .filter(Boolean)
+                  .join(", ")}
+              />
 
               <form
                 action={deliverDeliveryAction}

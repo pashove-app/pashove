@@ -101,9 +101,15 @@ export async function proxy(request: NextRequest) {
     if (isLocale(prefix)) {
       const afterLocale = pathname.slice(prefix.length + 1);
       const storeBase = `/store/${branded.slug}`;
-      const clean =
-        afterLocale === storeBase || afterLocale.startsWith(`${storeBase}/`)
-          ? afterLocale.slice(storeBase.length) || "/"
+      const isStore =
+        afterLocale === storeBase || afterLocale.startsWith(`${storeBase}/`);
+      const isTrack =
+        afterLocale === "/track" || afterLocale.startsWith("/track/");
+
+      const clean = isStore
+        ? afterLocale.slice(storeBase.length) || "/"
+        : isTrack
+          ? afterLocale
           : "/";
 
       const url = request.nextUrl.clone();
@@ -125,10 +131,27 @@ export async function proxy(request: NextRequest) {
     const locale = negotiate(request);
     const headers = new Headers(request.headers);
     headers.set("x-pashove-locale", locale);
+
+    const url = request.nextUrl.clone();
+
+    // Le suivi est une page de la plateforme : il garde son URL `/track/…`
+    // même sur un domaine marqué, sans passer par la vitrine.
+    if (pathname === "/track" || pathname.startsWith("/track/")) {
+      url.pathname = `/${locale}${pathname}`;
+
+      const response = NextResponse.rewrite(url, { request: { headers } });
+      response.cookies.set(LOCALE_COOKIE, locale, {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 365,
+        sameSite: "lax",
+      });
+
+      return withRef(await refreshSession(request, response));
+    }
+
     headers.set("x-pashove-branded", "1");
     headers.set("x-pashove-store-slug", branded.slug);
 
-    const url = request.nextUrl.clone();
     url.pathname = `/${locale}/store/${branded.slug}${
       pathname === "/" ? "" : pathname
     }`;
