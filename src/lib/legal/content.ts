@@ -73,6 +73,14 @@ export const LEGAL_DOCUMENTS: LegalDocument[] = [
         ],
       },
       {
+        title: "Délais de disponibilité et remboursements",
+        body: [
+          "Les fonds d’une vente en ligne sont retenus 24 heures après la validation de la livraison pour les produits physiques, ou après le paiement pour les produits numériques et les services, avant d’être disponibles au retrait.",
+          "En cas de remboursement accepté, le client est remboursé du prix du produit. Les frais de livraison et les frais du prestataire de paiement ne sont pas remboursables.",
+          "Le livreur est rémunéré dès la validation de la livraison ; les frais de livraison restent acquis.",
+        ],
+      },
+      {
         title: "Contenus et responsabilité",
         body: [
           "Le marchand garantit la licéité de ses contenus et le respect des droits des tiers.",

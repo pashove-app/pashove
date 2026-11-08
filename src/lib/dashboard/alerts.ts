@@ -33,7 +33,7 @@ export async function getDashboardAlerts(store: Store): Promise<DashboardAlerts>
   return {
     ordersToShip: (counts.pending ?? 0) + (counts.preparing ?? 0),
     lowStock,
-    available: balances.available,
+    available: Math.max(0, balances.available - balances.commissionDue),
     currency: store.currency,
     planCode: plan?.code ?? "free",
     planExpiresAt: plan?.expiresAt ?? null,

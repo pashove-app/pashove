@@ -77,7 +77,11 @@ export default async function PayoutsPage({
             {labels.availableLabel}
           </p>
           <p className="mt-2 text-[1.5rem] font-semibold tabular-nums text-fg">
-            {formatMoney(balances.available, store.currency, localeTag)}
+            {formatMoney(
+              Math.max(0, balances.available - balances.commissionDue),
+              store.currency,
+              localeTag,
+            )}
           </p>
         </div>
         <div className="rounded-3xl border border-border bg-surface p-5 sm:p-6">

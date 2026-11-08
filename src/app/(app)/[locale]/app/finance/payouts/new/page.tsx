@@ -139,7 +139,11 @@ export default async function NewPayoutPage({
           <PayoutForm
             t={t}
             locale={locale}
-            availableLabel={formatMoney(balances.available, store.currency, tag)}
+            availableLabel={formatMoney(
+              Math.max(0, balances.available - balances.commissionDue),
+              store.currency,
+              tag,
+            )}
             minLabel={formatMoney(1000, store.currency, tag)}
             methods={methods}
             idempotencyKey={randomUUID()}
