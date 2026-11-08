@@ -273,6 +273,7 @@ export type CreateSoftpayInput = {
   metadata?: Record<string, unknown>;
   returnUrl?: string;
   otp?: string;
+  feeChargeMode?: "ADD_ON" | "DEDUCTED";
   idempotencyKey: string;
 };
 
@@ -290,6 +291,7 @@ export async function createSoftpay(input: CreateSoftpayInput): Promise<SasPayPa
       metadata: input.metadata,
       ...(input.returnUrl ? { return_url: input.returnUrl } : {}),
       ...(input.otp ? { otp: input.otp } : {}),
+      ...(input.feeChargeMode ? { fee_charge_mode: input.feeChargeMode } : {}),
     }),
   });
 

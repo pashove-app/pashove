@@ -96,6 +96,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "service_role_missing" }, { status: 503 });
   }
 
+  const fee = parseAmount((data as { fee?: unknown }).fee);
+  const net = parseAmount((data as { net_amount?: unknown }).net_amount);
+
   if (event === "transaction.success") {
     let amount = parseAmount(data.amount);
     let currency = typeof data.currency === "string" ? data.currency : "";
@@ -124,6 +127,8 @@ export async function POST(request: Request) {
       p_reference: reference,
       p_amount: amount,
       p_currency: currency,
+      p_fee: fee ?? 0,
+      p_net: net,
     });
 
     if (error) {
@@ -131,10 +136,33 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "confirm_failed" }, { status: 500 });
     }
 
+    const outcome = result as { status?: string; reason?: string } | null;
+
+    // Ce n'est pas une commande : peut-être un paiement d'abonnement.
+    if (outcome?.status === "ignored" && outcome.reason === "payment_unknown") {
+      const { data: planResult, error: planError } = await service.rpc(
+        "confirm_plan_payment",
+        {
+          p_reference: reference,
+          p_amount: amount,
+          p_currency: currency,
+        },
+      );
+
+      if (planError) {
+        console.error("[saspay] plan confirm failed", planError.message);
+        return NextResponse.json({ error: "plan_confirm_failed" }, { status: 500 });
+      }
+
+      return NextResponse.json({ received: true, plan: planResult });
+    }
+
     return NextResponse.json({ received: true, result });
   }
 
   if (event === "transaction.failed" || event === "transaction.cancelled") {
+    await service.rpc("fail_plan_payment", { p_reference: reference });
+
     const { error } = await service.rpc("fail_saspay_payment", {
       p_reference: reference,
     });

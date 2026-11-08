@@ -54,6 +54,14 @@ export default async function SettingsHubPage({
         />
 
         <SettingsLink
+          href={path(locale, "/app/settings/plan")}
+          icon="sparkle"
+          title="Abonnement"
+          text="Plan actuel, commission et renouvellement par Mobile Money."
+          cta="Gérer mon plan"
+        />
+
+        <SettingsLink
           href={path(locale, "/app/settings/markets")}
           icon="globe"
           title="Pays de vente"
