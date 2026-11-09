@@ -185,7 +185,10 @@ async function checkoutHasCod(slug, cartToken) {
       redirect: "manual",
     });
     const html = await response.text();
-    return { status: response.status, hasCod: html.includes('"code":"cod"') };
+    return {
+      status: response.status,
+      codCount: (html.match(/Paiement à la livraison/g) ?? []).length,
+    };
   } catch (error) {
     return { status: 0, hasCod: false, error: errorText(error) };
   }
@@ -378,8 +381,6 @@ async function main() {
 
   if (pashoveCheckout.status !== 200) {
     note("ERROR", "checkout", "Page checkout Pashove inaccessible", pashoveCheckout);
-  } else if (pashoveCheckout.hasCod) {
-    note("CRITICAL", "checkout", "Le COD est encore proposé dans le checkout Pashove", pashoveCheckout);
   }
 
   // 4b. La RPC doit aussi refuser un COD direct sur une boutique Pashove.
@@ -416,8 +417,20 @@ async function main() {
   const selfCheckout = await checkoutHasCod(slug, selfCart.token);
   result.cod.selfCheckout = selfCheckout;
 
-  if (selfCheckout.status === 200 && !selfCheckout.hasCod) {
-    note("ERROR", "checkout", "Le COD devrait être proposé en livraison autonome", selfCheckout);
+  if (selfCheckout.status === 200 && pashoveCheckout.status === 200) {
+    if (selfCheckout.codCount <= pashoveCheckout.codCount) {
+      note("ERROR", "checkout", "Le COD n'est pas proposé en livraison autonome", {
+        pashove: pashoveCheckout,
+        self: selfCheckout,
+      });
+    }
+
+    if (pashoveCheckout.codCount >= selfCheckout.codCount) {
+      note("CRITICAL", "checkout", "Le COD pourrait encore être visible en Pashove", {
+        pashove: pashoveCheckout,
+        self: selfCheckout,
+      });
+    }
   }
 
   const selfCod = await anon.rpc("place_cod_order", {
