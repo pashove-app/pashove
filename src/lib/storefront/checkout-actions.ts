@@ -142,6 +142,7 @@ export async function placeOrderAction(
     cart.currency,
     cart.total,
     requiresShipping,
+    storefront.store.delivery_mode,
   );
 
   const market = checkout.markets.find(

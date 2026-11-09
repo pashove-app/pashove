@@ -158,6 +158,7 @@ export async function getCheckoutOptions(
   currency?: string | null,
   total = 0,
   hasPhysical = true,
+  deliveryMode?: "self" | "pashove" | null,
 ): Promise<CheckoutOptions> {
   const base = await getCheckoutPaymentMethods(
     slug,
@@ -265,8 +266,10 @@ export async function getCheckoutOptions(
       }
     }
 
-    // Le paiement à la livraison suppose une devise locale identique.
-    if (codAllowed && sameCurrency) {
+    // Le COD n'est proposé qu'en livraison autonome : une boutique en
+    // Pashove Delivery est payée en ligne, la course ne peut pas être
+    // encaissée à la livraison.
+    if (codAllowed && sameCurrency && deliveryMode !== "pashove") {
       options.push(codOption());
     }
 

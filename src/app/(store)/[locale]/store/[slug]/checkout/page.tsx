@@ -54,6 +54,7 @@ export default async function CheckoutPage({
       cart.currency,
       cart.total,
       hasPhysical,
+      store.delivery_mode,
     ),
     getPublicCheckoutSettings(slug),
     store.delivery_mode === "pashove"

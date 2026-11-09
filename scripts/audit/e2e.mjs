@@ -18,6 +18,7 @@ import { createClient } from "@supabase/supabase-js";
 const SUPABASE_URL = process.env.SB_URL;
 const ANON = process.env.SB_ANON;
 const SERVICE = process.env.SB_SERVICE;
+const APP_URL = (process.env.APP_URL ?? "https://pashove.com").replace(/\/$/, "");
 
 if (!SUPABASE_URL || !ANON || !SERVICE) {
   console.error("SB_URL, SB_ANON et SB_SERVICE sont requis.");
@@ -75,116 +76,51 @@ function errorText(error) {
 }
 
 async function geocodeAddress(input) {
-  const query = [input.address, input.extra, input.city].filter(Boolean).join(", ");
-  if (!query) return null;
+  const country = String(input.country ?? "").toUpperCase();
+  const base = [input.address, input.city].filter(Boolean).join(", ");
+  const full = [input.address, input.extra, input.city]
+    .filter(Boolean)
+    .join(", ");
 
-  const url = new URL("https://nominatim.openstreetmap.org/search");
-  url.searchParams.set("q", query);
-  url.searchParams.set("format", "jsonv2");
-  url.searchParams.set("limit", "1");
-  url.searchParams.set("countrycodes", String(input.country ?? "").toLowerCase());
+  if (!base) return null;
 
-  try {
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": "Pashove-Audit/1.0 (support@pashove.com)",
-        Accept: "application/json",
-      },
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!response.ok) return null;
-    const rows = await response.json();
-    const first = Array.isArray(rows) ? rows[0] : null;
-    const latitude = Number(first?.lat);
-    const longitude = Number(first?.lon);
-    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
-    return { latitude, longitude };
-  } catch {
-    return null;
+  const queries = full && full !== base ? [base, full] : [base];
+
+  for (let index = 0; index < queries.length; index += 1) {
+    if (index > 0) await new Promise((resolve) => setTimeout(resolve, 1100));
+
+    const url = new URL("https://nominatim.openstreetmap.org/search");
+    url.searchParams.set("q", queries[index]);
+    url.searchParams.set("format", "jsonv2");
+    url.searchParams.set("limit", "1");
+    if (/^[A-Z]{2}$/.test(country)) {
+      url.searchParams.set("countrycodes", country.toLowerCase());
+    }
+
+    try {
+      const response = await fetch(url, {
+        headers: {
+          "User-Agent": "Pashove-Audit/1.0 (support@pashove.com)",
+          Accept: "application/json",
+        },
+        signal: AbortSignal.timeout(5000),
+      });
+      if (!response.ok) continue;
+
+      const rows = await response.json();
+      const first = Array.isArray(rows) ? rows[0] : null;
+      const latitude = Number(first?.lat);
+      const longitude = Number(first?.lon);
+
+      if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+        return { latitude, longitude };
+      }
+    } catch {
+      // On tente la requête suivante.
+    }
   }
-}
 
-function randomPassword() {
-  return `Audit-${randomUUID()}-aA1!`;
-}
-
-async function createUser(label, fullName) {
-  const email = `audit-${label}-${stamp}@example.com`;
-  const password = randomPassword();
-  const { data, error } = await admin.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-    user_metadata: { full_name: fullName },
-  });
-  if (error) throw new Error(`createUser ${label}: ${error.message}`);
-  return { id: data.user.id, email, password };
-}
-
-async function signIn(account) {
-  const client = createClient(SUPABASE_URL, ANON, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-  const { error } = await client.auth.signInWithPassword({
-    email: account.email,
-    password: account.password,
-  });
-  if (error) throw new Error(`signIn ${account.email}: ${error.message}`);
-  return client;
-}
-
-async function rpc(client, name, args) {
-  const { data, error } = await client.rpc(name, args);
-  if (error) return { ok: false, error: errorText(error), data: null };
-  return { ok: true, error: null, data };
-}
-
-async function openCart(slug) {
-  const { data, error } = await anon.rpc("cart_open", {
-    p_slug: slug,
-    p_token: null,
-  });
-  if (error) throw new Error(`cart_open: ${error.message}`);
-  return data;
-}
-
-async function addToCart(token, productId) {
-  const { error } = await anon.rpc("cart_add", {
-    p_token: token,
-    p_product_id: productId,
-    p_variant_id: null,
-    p_quantity: 1,
-  });
-  if (error) throw new Error(`cart_add: ${error.message}`);
-}
-
-async function cleanup() {
-  try {
-    if (cleanupState.courierClient) {
-      await cleanupState.courierClient.rpc("set_courier_online", { p_online: false });
-    }
-    if (cleanupState.storeClient && cleanupState.storeId) {
-      const { error } = await cleanupState.storeClient
-        .from("stores")
-        .update({ status: "suspended" })
-        .eq("id", cleanupState.storeId);
-      if (error) note("ERROR", "cleanup", "Suspension boutique de test", errorText(error));
-    }
-    if (cleanupState.adminUserId) {
-      await admin.from("platform_admins").delete().eq("user_id", cleanupState.adminUserId);
-      await admin.auth.admin.deleteUser(cleanupState.adminUserId);
-    }
-    result.cleanup = {
-      testStoreSlug: result.store?.slug ?? null,
-      testStoreId: cleanupState.storeId,
-      merchantEmail: cleanupState.merchantEmail,
-      courierEmail: cleanupState.courierEmail,
-      adminRemoved: Boolean(cleanupState.adminUserId),
-      note: "Boutique suspendue ; utilisateurs/commandes/ledger de test conservés pour inspection.",
-    };
-  } catch (error) {
-    note("ERROR", "cleanup", "Nettoyage incomplet", errorText(error));
-  }
+  return null;
 }
 
 async function main() {
@@ -321,12 +257,13 @@ async function main() {
   result.fx = quote.error ? { error: errorText(quote.error) } : quote.data;
   if (quote.error) note("ERROR", "fx", "public_fx_quote XOF→GHS", errorText(quote.error));
 
-  /* ---------------- 4. COD Ghana avec Pashove Delivery ---------------- */
+  /* ---------------- 4. COD : masqué en Pashove, disponible en self ---------------- */
   const cart = await openCart(slug);
   await addToCart(cart.token, product.id);
   if (!cart.checkoutKey) {
     note("ERROR", "checkout", "cart_open n'a pas renvoyé checkoutKey", cart);
   }
+
   const codCustomer = {
     name: "Client Audit",
     email: `audit-client-${stamp}@example.com`,
@@ -337,54 +274,128 @@ async function main() {
     extra: "",
     notes: "Commande audit COD",
   };
-  const codOrder = await anon.rpc("place_cod_order", {
+
+  // 4a. Le checkout réel en mode Pashove ne doit pas rendre l'option COD.
+  const pashoveCheckout = await checkoutHasCod(slug, cart.token);
+  result.cod = { pashoveCheckout };
+
+  if (pashoveCheckout.status !== 200) {
+    note("ERROR", "checkout", "Page checkout Pashove inaccessible", pashoveCheckout);
+  } else if (pashoveCheckout.hasCod) {
+    note("CRITICAL", "checkout", "Le COD est encore proposé dans le checkout Pashove", pashoveCheckout);
+  }
+
+  // 4b. La RPC doit aussi refuser un COD direct sur une boutique Pashove.
+  const codAttempt = await anon.rpc("place_cod_order", {
     p_token: cart.token,
     p_customer: codCustomer,
     p_idempotency_key: cart.checkoutKey,
   });
-  if (codOrder.error) {
-    note("ERROR", "checkout", "place_cod_order (COD, GH)", errorText(codOrder.error));
+
+  if (codAttempt.error && String(codAttempt.error.message).includes("cod_unavailable")) {
+    result.cod.masked = true;
+  } else if (codAttempt.error) {
+    note("ERROR", "checkout", "Refus COD Pashove inattendu", errorText(codAttempt.error));
   } else {
-    const token = codOrder.data?.token;
+    result.cod.unexpectedOrder = codAttempt.data;
+    note(
+      "ERROR",
+      "checkout",
+      "La RPC place_cod_order accepte encore une boutique Pashove (migration 20261109110000 non appliquée).",
+      codAttempt.data,
+    );
+  }
+
+  // 4c. Le COD reste disponible en livraison autonome.
+  const selfMode = await rpc(merchant, "save_delivery_settings", {
+    p_store_id: storeId,
+    p_mode: "self",
+    p_countries: ["ML", "GH"],
+  });
+  if (!selfMode.ok) note("ERROR", "merchant", "Passage self delivery", selfMode.error);
+
+  const selfCart = await openCart(slug);
+  await addToCart(selfCart.token, product.id);
+  const selfCheckout = await checkoutHasCod(slug, selfCart.token);
+  result.cod.selfCheckout = selfCheckout;
+
+  if (selfCheckout.status === 200 && !selfCheckout.hasCod) {
+    note("ERROR", "checkout", "Le COD devrait être proposé en livraison autonome", selfCheckout);
+  }
+
+  const selfCod = await anon.rpc("place_cod_order", {
+    p_token: selfCart.token,
+    p_customer: codCustomer,
+    p_idempotency_key: selfCart.checkoutKey,
+  });
+
+  if (selfCod.error) {
+    note("ERROR", "checkout", "COD self delivery refusé", errorText(selfCod.error));
+  } else {
+    const token = selfCod.data?.token;
     const { data: order } = await admin
       .from("orders")
       .select("id, number, public_token, payment_status, status, currency, subtotal_amount, shipping_amount, total_amount, shipping_country")
       .eq("public_token", token)
       .maybeSingle();
-    result.cod = { response: codOrder.data, order };
+    result.cod.selfOrder = { response: selfCod.data, order };
+  }
 
-    const ghZoneRow = (zones ?? []).find(
-      (zone) => zone.country_code === "GH" && zone.currency === "GHS" && zone.is_active,
-    );
+  const backToPashove = await rpc(merchant, "save_delivery_settings", {
+    p_store_id: storeId,
+    p_mode: "pashove",
+    p_countries: ["ML", "GH"],
+  });
+  if (!backToPashove.ok) {
+    note("ERROR", "merchant", "Retour Pashove delivery", backToPashove.error);
+  }
 
-    if (token && ghZoneRow) {
+  // 4d. La zone Ghana doit être visible et facturée sur une commande en ligne
+  //     en attente (le COD Pashove étant désormais interdit).
+  const ghZoneRow = (zones ?? []).find(
+    (zone) => zone.country_code === "GH" && zone.currency === "GHS" && zone.is_active,
+  );
+
+  if (ghZoneRow) {
+    const ghCart = await openCart(slug);
+    await addToCart(ghCart.token, product.id);
+
+    const ghOnline = await anon.rpc("place_online_order", {
+      p_token: ghCart.token,
+      p_customer: codCustomer,
+      p_idempotency_key: ghCart.checkoutKey,
+      p_method: "mobile_money",
+      p_provider: "saspay",
+    });
+
+    if (ghOnline.error) {
+      note("ERROR", "checkout", "Commande en ligne GH", errorText(ghOnline.error));
+    } else {
+      const ghToken = ghOnline.data?.token;
       const applied = await anon.rpc("apply_delivery_zone", {
-        p_order_token: token,
+        p_order_token: ghToken,
         p_zone_id: ghZoneRow.id,
       });
-      result.cod.zone = applied.error ? errorText(applied.error) : applied.data;
+
+      result.ghZone = applied.error ? { error: errorText(applied.error) } : applied.data;
 
       if (applied.error) {
         note("CRITICAL", "checkout", "apply_delivery_zone GH", errorText(applied.error));
       } else {
-        const { data: updated } = await admin
+        const { data: ghUpdated } = await admin
           .from("orders")
           .select("id, number, public_token, payment_status, status, currency, subtotal_amount, shipping_amount, total_amount, shipping_country")
-          .eq("public_token", token)
+          .eq("public_token", ghToken)
           .maybeSingle();
-        result.cod.order = updated;
+        result.ghZone.order = ghUpdated;
 
-        if (!updated || !updated.shipping_amount) {
-          note("ERROR", "checkout", "La livraison GH n'a pas été ajoutée au total", updated);
+        if (!ghUpdated || !ghUpdated.shipping_amount) {
+          note("ERROR", "checkout", "La livraison GH n'a pas été ajoutée au total", ghUpdated);
         }
       }
-    } else {
-      note("ERROR", "checkout", "Zone GH introuvable pour le COD", zones);
     }
-
-    if (result.cod.order && result.cod.order.shipping_country !== "GH") {
-      note("ERROR", "checkout", "Pays de livraison COD inattendu", result.cod.order);
-    }
+  } else {
+    note("ERROR", "checkout", "Zone GH introuvable", zones);
   }
 
   /* ---------------- 5. Commande en ligne Mali + livraison ---------------- */
@@ -569,12 +580,6 @@ async function main() {
         });
         if (!location.ok) note("ERROR", "delivery", "update_delivery_location", location.error);
 
-        if (onlineToken) {
-          const tracking = await anon.rpc("public_tracking", { p_token: onlineToken });
-          result.tracking = tracking.error ? errorText(tracking.error) : tracking.data;
-          if (tracking.error) note("ERROR", "tracking", "public_tracking", errorText(tracking.error));
-        }
-
         const destination = await geocodeAddress({
           address: "Hamdallaye ACI 2000",
           extra: "Immeuble B",
@@ -610,10 +615,18 @@ async function main() {
           }
         }
 
+        if (onlineToken) {
+          const tracking = await anon.rpc("public_tracking", { p_token: onlineToken });
+          result.tracking = tracking.error ? errorText(tracking.error) : tracking.data;
+          if (tracking.error) {
+            note("ERROR", "tracking", "public_tracking", errorText(tracking.error));
+          }
+        }
+
         result.delivery.final = (
           await admin
             .from("deliveries")
-            .select("id, status, fee_amount, currency, pickup_latitude, pickup_longitude, started_at, delivered_at")
+            .select("id, status, fee_amount, currency, pickup_latitude, pickup_longitude, destination_latitude, destination_longitude, started_at, delivered_at")
             .eq("id", offer.id)
             .maybeSingle()
         ).data;
