@@ -17,6 +17,7 @@ import { paymentSchema } from "@/lib/payments/schema";
 import { activeOnlineProvider, getPaymentProvider } from "@/lib/payments/registry";
 import { getCheckoutOptions } from "@/lib/payments/queries";
 import { formatMinor } from "@/lib/fx/currency";
+import { convertMinor } from "@/lib/fx/rates";
 import { SasPayError } from "@/lib/payments/saspay/client";
 import { afterDeliveryPush } from "@/lib/pwa/after-push";
 import { classifyHost, normalizeHost } from "@/lib/domains/hosts";
@@ -371,20 +372,36 @@ export async function placeOrderAction(
 
       const zone = applied as { total?: number; currency?: string } | null;
 
-      if (
-        zoneError ||
-        !zone?.total ||
-        !zone.currency ||
-        zone.currency.toUpperCase() !== market.paymentCurrency.toUpperCase()
-      ) {
+      if (zoneError || !zone?.total || !zone.currency) {
         return { status: "error", messageKey: "checkoutDeliveryUnavailable" };
       }
 
-      paymentAmount = zone.total;
-      paymentCurrency = zone.currency;
-      paymentAmountDecimal = formatMinor(zone.total, zone.currency);
-      paymentFxRate = 1;
-      paymentFxSource = "identity";
+      // `zone.total` est le total de la commande dans la devise de la boutique
+      // (frais de livraison convertis). Le paiement peut être dans une autre
+      // devise : on reconvertit le total complet, livraison incluse.
+      if (zone.currency.toUpperCase() === market.paymentCurrency.toUpperCase()) {
+        paymentAmount = Math.round(zone.total);
+        paymentCurrency = market.paymentCurrency;
+        paymentAmountDecimal = formatMinor(paymentAmount, paymentCurrency);
+        paymentFxRate = 1;
+        paymentFxSource = "identity";
+      } else {
+        const converted = await convertMinor(
+          Math.round(zone.total),
+          zone.currency,
+          market.paymentCurrency,
+        );
+
+        if (!converted) {
+          return { status: "error", messageKey: "checkoutDeliveryUnavailable" };
+        }
+
+        paymentAmount = converted.amountMinor;
+        paymentCurrency = market.paymentCurrency;
+        paymentAmountDecimal = converted.amountDecimal;
+        paymentFxRate = converted.rate;
+        paymentFxSource = converted.source;
+      }
     }
 
     // Les RPC de paiement sont réservées à la clé de service : la clé anonyme

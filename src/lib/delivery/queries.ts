@@ -5,6 +5,7 @@ export type DeliveryZone = {
   name: string;
   feeAmount: number;
   currency: string;
+  countryCode: string;
   isDefault: boolean;
 };
 
@@ -23,6 +24,7 @@ export async function getPublicDeliveryZones(
     name: String(row.name ?? ""),
     feeAmount: Number(row.feeAmount ?? 0),
     currency: String(row.currency ?? ""),
+    countryCode: String(row.countryCode ?? ""),
     isDefault: row.isDefault === true,
   }));
 }

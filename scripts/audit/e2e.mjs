@@ -33,6 +33,7 @@ const anon = createClient(URL, ANON, {
 
 const stamp = Date.now().toString(36);
 const findings = [];
+let courierClientRef = null;
 const cleanupState = {
   storeId: null,
   storeClient: null,
@@ -71,6 +72,36 @@ function errorText(error) {
     message: error.message ?? String(error),
     details: error.details ?? null,
   };
+}
+
+async function geocodeAddress(input) {
+  const query = [input.address, input.extra, input.city].filter(Boolean).join(", ");
+  if (!query) return null;
+
+  const url = new URL("https://nominatim.openstreetmap.org/search");
+  url.searchParams.set("q", query);
+  url.searchParams.set("format", "jsonv2");
+  url.searchParams.set("limit", "1");
+  url.searchParams.set("countrycodes", String(input.country ?? "").toLowerCase());
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "Pashove-Audit/1.0 (support@pashove.com)",
+        Accept: "application/json",
+      },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!response.ok) return null;
+    const rows = await response.json();
+    const first = Array.isArray(rows) ? rows[0] : null;
+    const latitude = Number(first?.lat);
+    const longitude = Number(first?.lon);
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+    return { latitude, longitude };
+  } catch {
+    return null;
+  }
 }
 
 function randomPassword() {
@@ -272,12 +303,13 @@ async function main() {
     note("ERROR", "checkout", "public_delivery_zones", errorText(publicZones.error));
   } else {
     result.pashoveGhanaZones = publicZones.data;
-    if (Array.isArray(publicZones.data)) {
+    const rows = Array.isArray(publicZones.data) ? publicZones.data : [];
+    if (!rows.some((zone) => zone.countryCode === "GH")) {
       note(
         "CRITICAL",
         "checkout",
-        "public_delivery_zones ne renvoie que les zones du pays de la boutique ; la livraison Pashove vers un autre marché du checkout (GH) est impossible.",
-        { zones: publicZones.data },
+        "La zone Ghana n'est pas exposée par public_delivery_zones.",
+        { zones: rows },
       );
     }
   }
@@ -289,14 +321,7 @@ async function main() {
   result.fx = quote.error ? { error: errorText(quote.error) } : quote.data;
   if (quote.error) note("ERROR", "fx", "public_fx_quote XOF→GHS", errorText(quote.error));
 
-  /* ---------------- 4. COD Ghana en livraison autonome ---------------- */
-  const selfDelivery = await rpc(merchant, "save_delivery_settings", {
-    p_store_id: storeId,
-    p_mode: "self",
-    p_countries: ["ML", "GH"],
-  });
-  if (!selfDelivery.ok) note("ERROR", "merchant", "Passage self delivery", selfDelivery.error);
-
+  /* ---------------- 4. COD Ghana avec Pashove Delivery ---------------- */
   const cart = await openCart(slug);
   await addToCart(cart.token, product.id);
   if (!cart.checkoutKey) {
@@ -318,7 +343,7 @@ async function main() {
     p_idempotency_key: cart.checkoutKey,
   });
   if (codOrder.error) {
-    note("ERROR", "checkout", "place_cod_order (self, GH)", errorText(codOrder.error));
+    note("ERROR", "checkout", "place_cod_order (COD, GH)", errorText(codOrder.error));
   } else {
     const token = codOrder.data?.token;
     const { data: order } = await admin
@@ -327,19 +352,42 @@ async function main() {
       .eq("public_token", token)
       .maybeSingle();
     result.cod = { response: codOrder.data, order };
-    if (order && order.shipping_country !== "GH") {
-      note("ERROR", "checkout", "Pays de livraison COD inattendu", order);
+
+    const ghZoneRow = (zones ?? []).find(
+      (zone) => zone.country_code === "GH" && zone.currency === "GHS" && zone.is_active,
+    );
+
+    if (token && ghZoneRow) {
+      const applied = await anon.rpc("apply_delivery_zone", {
+        p_order_token: token,
+        p_zone_id: ghZoneRow.id,
+      });
+      result.cod.zone = applied.error ? errorText(applied.error) : applied.data;
+
+      if (applied.error) {
+        note("CRITICAL", "checkout", "apply_delivery_zone GH", errorText(applied.error));
+      } else {
+        const { data: updated } = await admin
+          .from("orders")
+          .select("id, number, public_token, payment_status, status, currency, subtotal_amount, shipping_amount, total_amount, shipping_country")
+          .eq("public_token", token)
+          .maybeSingle();
+        result.cod.order = updated;
+
+        if (!updated || !updated.shipping_amount) {
+          note("ERROR", "checkout", "La livraison GH n'a pas été ajoutée au total", updated);
+        }
+      }
+    } else {
+      note("ERROR", "checkout", "Zone GH introuvable pour le COD", zones);
+    }
+
+    if (result.cod.order && result.cod.order.shipping_country !== "GH") {
+      note("ERROR", "checkout", "Pays de livraison COD inattendu", result.cod.order);
     }
   }
 
   /* ---------------- 5. Commande en ligne Mali + livraison ---------------- */
-  const pashove = await rpc(merchant, "save_delivery_settings", {
-    p_store_id: storeId,
-    p_mode: "pashove",
-    p_countries: ["ML", "GH"],
-  });
-  if (!pashove.ok) note("ERROR", "merchant", "Retour Pashove delivery", pashove.error);
-
   const mlZone = (zones ?? []).find(
     (zone) => zone.country_code === "ML" && zone.currency === "XOF" && zone.is_active,
   );
@@ -445,6 +493,7 @@ async function main() {
       const courier = await signIn(courierAccount);
       result.courier = { id: courierAccount.id, email: courierAccount.email };
       cleanupState.courierClient = courier;
+      courierClientRef = courier;
       cleanupState.courierEmail = courierAccount.email;
 
       const application = await rpc(courier, "submit_courier_application", {
@@ -526,19 +575,39 @@ async function main() {
           if (tracking.error) note("ERROR", "tracking", "public_tracking", errorText(tracking.error));
         }
 
+        const destination = await geocodeAddress({
+          address: "Hamdallaye ACI 2000",
+          extra: "Immeuble B",
+          city: "Bamako",
+          country: "ML",
+        });
+
+        if (destination) {
+          const place = await rpc(courier, "set_delivery_destination", {
+            p_delivery_id: offer.id,
+            p_latitude: destination.latitude,
+            p_longitude: destination.longitude,
+          });
+          if (!place.ok) note("ERROR", "delivery", "set_delivery_destination", place.error);
+        }
+
         const deliver = await rpc(courier, "deliver_delivery", {
           p_delivery_id: offer.id,
           p_otp: String(otp.data?.code ?? "0000"),
         });
         if (!deliver.ok) {
           note("CRITICAL", "delivery", "deliver_delivery indisponible ou refusé", deliver.error);
+        } else {
+          result.delivery.delivered = true;
         }
 
-        const settle = await admin.rpc("settle_delivery", { p_delivery_id: offer.id });
-        if (settle.error) {
-          note("ERROR", "ledger", "settle_delivery (simulation)", errorText(settle.error));
-        } else {
-          note("WARNING", "ledger", "Règlement exécuté manuellement (OTP indisponible).");
+        if (!deliver.ok) {
+          const settle = await admin.rpc("settle_delivery", { p_delivery_id: offer.id });
+          if (settle.error) {
+            note("ERROR", "ledger", "settle_delivery (simulation)", errorText(settle.error));
+          } else {
+            note("WARNING", "ledger", "Règlement exécuté manuellement (OTP indisponible).");
+          }
         }
 
         result.delivery.final = (
@@ -559,14 +628,22 @@ async function main() {
   /* ---------------- 7. Ledger ---------------- */
   const { data: ledgerRows } = await admin
     .from("ledger_entries")
-    .select("store_id, account_code, direction, amount, currency, created_at, metadata")
+    .select("*")
     .eq("store_id", storeId)
-    .order("created_at", { ascending: true })
     .limit(500);
   result.ledger = { storeEntries: ledgerRows ?? [] };
 
   const balances = await rpc(merchant, "store_balances", { p_store_id: storeId });
   result.ledger.balances = balances.ok ? balances.data : balances.error;
+
+  if (courierClientRef && result.courier?.review?.storeId) {
+    const courierBalances = await rpc(courierClientRef, "store_balances", {
+      p_store_id: result.courier.review.storeId,
+    });
+    result.ledger.courierBalances = courierBalances.ok
+      ? courierBalances.data
+      : courierBalances.error;
+  }
 
   /* ---------------- 8. RLS ---------------- */
   const otherStoreId = "d0c9e315-d340-453d-9297-0e8c259cd9e9";

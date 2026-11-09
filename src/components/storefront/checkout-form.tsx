@@ -135,28 +135,57 @@ export function CheckoutForm({
   const [createAccount, setCreateAccount] = useState(false);
   const pashoveDelivery = deliveryMode === "pashove" && requiresShipping;
   const tag = LOCALE_META[locale].tag;
-  const defaultZone =
-    deliveryZones.find((zone) => zone.isDefault) ?? deliveryZones[0];
 
-  const [zoneId, setZoneId] = useState(defaultZone?.id ?? "");
-  const [marketCode, setMarketCode] = useState(defaultMarket);
-  const initialMarket = markets.find((entry) => entry.code === defaultMarket);
+  const marketsForShipping = markets.filter((market) => market.available);
+  const initialMarket =
+    markets.find((market) => market.code === defaultMarket) ??
+    marketsForShipping[0] ??
+    markets[0];
+
+  const [marketCode, setMarketCode] = useState(initialMarket?.code ?? defaultMarket);
   const [network, setNetwork] = useState(
     initialMarket?.options[0]?.code ?? "cod",
   );
   const [gift, setGift] = useState(false);
 
+  const selectedMarket =
+    markets.find((market) => market.code === marketCode) ?? initialMarket;
+  const shippingCountry = selectedMarket?.countryCode ?? defaultCountry;
+  const zonesForCountry = deliveryZones.filter(
+    (zone) => zone.countryCode === shippingCountry,
+  );
+  const initialZone =
+    zonesForCountry.find((zone) => zone.isDefault) ?? zonesForCountry[0];
+
+  const [zoneId, setZoneId] = useState(initialZone?.id ?? "");
   const selectedZone =
-    deliveryZones.find((zone) => zone.id === zoneId) ?? defaultZone;
-  const selectedMarket = markets.find((entry) => entry.code === marketCode);
+    zonesForCountry.find((zone) => zone.id === zoneId) ?? initialZone;
+
   const options = selectedMarket?.options ?? [];
   const selectedOption = options.find((entry) => entry.code === network);
   const giftVisible = giftEnabled && settings.showGift;
+
+  const zoneFeeMinor =
+    pashoveDelivery &&
+    selectedZone &&
+    selectedMarket &&
+    selectedZone.currency.toUpperCase() ===
+      selectedMarket.paymentCurrency.toUpperCase()
+      ? selectedZone.feeAmount
+      : 0;
+  const payableMinor = selectedMarket
+    ? selectedMarket.paymentAmountMinor + zoneFeeMinor
+    : 0;
 
   function chooseMarket(code: string) {
     setMarketCode(code);
     const next = markets.find((entry) => entry.code === code);
     setNetwork(next?.options[0]?.code ?? "cod");
+
+    const country = next?.countryCode ?? defaultCountry;
+    const zones = deliveryZones.filter((zone) => zone.countryCode === country);
+    const zone = zones.find((entry) => entry.isDefault) ?? zones[0];
+    setZoneId(zone?.id ?? "");
   }
 
   const visibleBlocks = settings.blocks.filter(
@@ -276,52 +305,48 @@ export function CheckoutForm({
         title={labels.checkoutShippingTitle}
         text={labels.checkoutShippingText}
       >
+        <input type="hidden" name="country" value={shippingCountry} />
         <div className="grid gap-4 sm:grid-cols-2">
-          {pashoveDelivery ? (
-            <>
-              <input type="hidden" name="country" value={defaultCountry} />
-              {deliveryZones.length > 0 ? (
-                <SelectField
-                  name="deliveryZone"
-                  label={locale === "en" ? "Delivery zone" : "Zone de livraison"}
-                  value={zoneId}
-                  onChange={(event) => setZoneId(event.target.value)}
-                  error={fieldError("deliveryZone")}
-                >
-                  {deliveryZones.map((zone) => (
-                    <option key={zone.id} value={zone.id}>
-                      {zone.name} —{" "}
-                      {formatMoney(zone.feeAmount, zone.currency, tag)}
-                    </option>
-                  ))}
-                </SelectField>
-              ) : (
-                <p className="rounded-xl border border-amber-400/25 bg-amber-400/[0.06] px-3 py-2.5 text-[0.75rem] leading-relaxed text-amber-700 dark:text-amber-300">
-                  {locale === "en"
-                    ? "Pashove Delivery is not available yet in this country."
-                    : "Pashove Delivery n’est pas encore disponible dans ce pays."}
-                </p>
-              )}
-            </>
-          ) : (
+          {marketsForShipping.length > 0 ? (
             <SelectField
-              name="country"
-              label={labels.checkoutCountryLabel}
-              defaultValue={
-                markets.find((market) => market.code === defaultMarket)?.countryCode ??
-                defaultCountry
-              }
-              error={fieldError("country")}
+              name="shippingMarketUi"
+              label={locale === "en" ? "Delivery country" : "Pays de livraison"}
+              value={marketCode}
+              onChange={(event) => chooseMarket(event.target.value)}
             >
-              {markets
-                .filter((market) => market.available)
-                .map((market) => (
-                  <option key={market.code} value={market.countryCode}>
-                    {market.countryName}
+              {marketsForShipping.map((market) => (
+                <option key={market.code} value={market.code}>
+                  {market.countryName} ({market.currency})
+                </option>
+              ))}
+            </SelectField>
+          ) : null}
+
+          {pashoveDelivery ? (
+            zonesForCountry.length > 0 ? (
+              <SelectField
+                name="deliveryZone"
+                label={locale === "en" ? "Delivery zone" : "Zone de livraison"}
+                value={zoneId}
+                onChange={(event) => setZoneId(event.target.value)}
+                error={fieldError("deliveryZone")}
+              >
+                {zonesForCountry.map((zone) => (
+                  <option key={zone.id} value={zone.id}>
+                    {zone.name} —{" "}
+                    {formatMoney(zone.feeAmount, zone.currency, tag)}
                   </option>
                 ))}
-            </SelectField>
-          )}
+              </SelectField>
+            ) : (
+              <p className="rounded-xl border border-amber-400/25 bg-amber-400/[0.06] px-3 py-2.5 text-[0.75rem] leading-relaxed text-amber-700 dark:text-amber-300">
+                {locale === "en"
+                  ? "Pashove Delivery is not available yet in this country."
+                  : "Pashove Delivery n’est pas encore disponible dans ce pays."}
+              </p>
+            )
+          ) : null}
+
           <TextField
             name="city"
             label={labels.checkoutCityLabel}
@@ -374,8 +399,23 @@ export function CheckoutForm({
       </div>
     );
 
-  const renderSummary = () => (
-    <Step number={numberFor("summary")} title={labels.checkoutSummaryTitle} text="">
+  const renderSummary = () => {
+    const summaryZone = pashoveDelivery ? selectedZone : null;
+    const summaryZoneSame =
+      summaryZone &&
+      summaryZone.currency.toUpperCase() === cart.currency.toUpperCase()
+        ? summaryZone.feeAmount
+        : 0;
+    const summaryZoneForeign =
+      summaryZone &&
+      summaryZone.currency.toUpperCase() !== cart.currency.toUpperCase()
+        ? summaryZone
+        : null;
+    const summaryShipping = cart.shipping + summaryZoneSame;
+    const summaryTotal = cart.total + summaryZoneSame;
+
+    return (
+      <Step number={numberFor("summary")} title={labels.checkoutSummaryTitle} text="">
       <div className="divide-y divide-hairline">
         {cart.items.map((item) => (
           <div key={item.id} className="flex items-start justify-between gap-3 py-3 first:pt-0">
@@ -426,16 +466,34 @@ export function CheckoutForm({
         <div className="flex justify-between gap-3">
           <dt className="text-subtle">{labels.shipping}</dt>
           <dd className="tabular-nums text-body">
-            {cart.shipping === 0 ? labels.freeShipping : cart.shippingLabel}
+            {summaryZoneForeign
+              ? `${summaryZoneForeign.name} — ${formatMoney(
+                  summaryZoneForeign.feeAmount,
+                  summaryZoneForeign.currency,
+                  tag,
+                )}`
+              : summaryShipping === 0
+                ? labels.freeShipping
+                : formatMoney(summaryShipping, cart.currency, tag)}
           </dd>
         </div>
         <div className="flex justify-between gap-3 border-t border-hairline pt-2 text-[1rem] font-medium">
           <dt className="text-fg">{labels.total}</dt>
-          <dd className="tabular-nums text-fg">{cart.totalLabel}</dd>
+          <dd className="tabular-nums text-fg">
+            {formatMoney(summaryTotal, cart.currency, tag)}
+          </dd>
         </div>
       </dl>
+      {summaryZoneForeign ? (
+        <p className="mt-2 text-[0.6875rem] leading-relaxed text-subtle">
+          {locale === "en"
+            ? `Shipping (${formatMoney(summaryZoneForeign.feeAmount, summaryZoneForeign.currency, tag)}) is added in the payment currency.`
+            : `La livraison (${formatMoney(summaryZoneForeign.feeAmount, summaryZoneForeign.currency, tag)}) s’ajoute dans la devise de paiement.`}
+        </p>
+      ) : null}
     </Step>
-  );
+    );
+  };
 
   const renderGift = () =>
     giftVisible ? (
@@ -541,7 +599,8 @@ export function CheckoutForm({
         <p className="mb-3 rounded-xl border border-brand-500/20 bg-brand-500/[0.05] px-3 py-2.5 text-[0.75rem] leading-relaxed text-subtle">
           Total à payer :{" "}
           <span className="font-medium text-fg">
-            {selectedMarket.paymentAmountDecimal} {selectedMarket.paymentCurrency}
+            {formatMinor(payableMinor, selectedMarket.paymentCurrency)}{" "}
+            {selectedMarket.paymentCurrency}
           </span>
           {" · "}1 {cart.currency} ≈{" "}
           {new Intl.NumberFormat(LOCALE_META[locale].tag, {
@@ -569,7 +628,7 @@ export function CheckoutForm({
             <span>Total à payer</span>
             <span className="tabular-nums">
               {formatMinor(
-                selectedMarket.paymentAmountMinor + selectedOption.clientFeeMinor,
+                payableMinor + selectedOption.clientFeeMinor,
                 selectedMarket.paymentCurrency,
               )}{" "}
               {selectedMarket.paymentCurrency}
