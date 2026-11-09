@@ -15,19 +15,19 @@
 import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 
-const URL = process.env.SB_URL;
+const SUPABASE_URL = process.env.SB_URL;
 const ANON = process.env.SB_ANON;
 const SERVICE = process.env.SB_SERVICE;
 
-if (!URL || !ANON || !SERVICE) {
+if (!SUPABASE_URL || !ANON || !SERVICE) {
   console.error("SB_URL, SB_ANON et SB_SERVICE sont requis.");
   process.exit(1);
 }
 
-const admin = createClient(URL, SERVICE, {
+const admin = createClient(SUPABASE_URL, SERVICE, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
-const anon = createClient(URL, ANON, {
+const anon = createClient(SUPABASE_URL, ANON, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
@@ -122,7 +122,7 @@ async function createUser(label, fullName) {
 }
 
 async function signIn(account) {
-  const client = createClient(URL, ANON, {
+  const client = createClient(SUPABASE_URL, ANON, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
   const { error } = await client.auth.signInWithPassword({
