@@ -123,6 +123,103 @@ async function geocodeAddress(input) {
   return null;
 }
 
+function randomPassword() {
+  return `Audit-${randomUUID()}-aA1!`;
+}
+
+async function createUser(label, fullName) {
+  const email = `audit-${label}-${stamp}@example.com`;
+  const password = randomPassword();
+  const { data, error } = await admin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: { full_name: fullName },
+  });
+  if (error) throw new Error(`createUser ${label}: ${error.message}`);
+  return { id: data.user.id, email, password };
+}
+
+async function signIn(account) {
+  const client = createClient(SUPABASE_URL, ANON, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { error } = await client.auth.signInWithPassword({
+    email: account.email,
+    password: account.password,
+  });
+  if (error) throw new Error(`signIn ${account.email}: ${error.message}`);
+  return client;
+}
+
+async function rpc(client, name, args) {
+  const { data, error } = await client.rpc(name, args);
+  if (error) return { ok: false, error: errorText(error), data: null };
+  return { ok: true, error: null, data };
+}
+
+async function openCart(slug) {
+  const { data, error } = await anon.rpc("cart_open", {
+    p_slug: slug,
+    p_token: null,
+  });
+  if (error) throw new Error(`cart_open: ${error.message}`);
+  return data;
+}
+
+async function addToCart(token, productId) {
+  const { error } = await anon.rpc("cart_add", {
+    p_token: token,
+    p_product_id: productId,
+    p_variant_id: null,
+    p_quantity: 1,
+  });
+  if (error) throw new Error(`cart_add: ${error.message}`);
+}
+
+/** Vérifie le HTML réel du checkout : l’option COD doit être absente en Pashove. */
+async function checkoutHasCod(slug, cartToken) {
+  try {
+    const response = await fetch(`${APP_URL}/fr/store/${slug}/checkout`, {
+      headers: { cookie: `pashove_cart=${cartToken}` },
+      redirect: "manual",
+    });
+    const html = await response.text();
+    return { status: response.status, hasCod: html.includes('"code":"cod"') };
+  } catch (error) {
+    return { status: 0, hasCod: false, error: errorText(error) };
+  }
+}
+
+async function cleanup() {
+  try {
+    if (cleanupState.courierClient) {
+      await cleanupState.courierClient.rpc("set_courier_online", { p_online: false });
+    }
+    if (cleanupState.storeClient && cleanupState.storeId) {
+      const { error } = await cleanupState.storeClient
+        .from("stores")
+        .update({ status: "suspended" })
+        .eq("id", cleanupState.storeId);
+      if (error) note("ERROR", "cleanup", "Suspension boutique de test", errorText(error));
+    }
+    if (cleanupState.adminUserId) {
+      await admin.from("platform_admins").delete().eq("user_id", cleanupState.adminUserId);
+      await admin.auth.admin.deleteUser(cleanupState.adminUserId);
+    }
+    result.cleanup = {
+      testStoreSlug: result.store?.slug ?? null,
+      testStoreId: cleanupState.storeId,
+      merchantEmail: cleanupState.merchantEmail,
+      courierEmail: cleanupState.courierEmail,
+      adminRemoved: Boolean(cleanupState.adminUserId),
+      note: "Boutique suspendue ; utilisateurs/commandes/ledger de test conservés pour inspection.",
+    };
+  } catch (error) {
+    note("ERROR", "cleanup", "Nettoyage incomplet", errorText(error));
+  }
+}
+
 async function main() {
   /* ---------------- 1. Marchand ---------------- */
   const merchantAccount = await createUser("merchant", "Audit Marchand");
