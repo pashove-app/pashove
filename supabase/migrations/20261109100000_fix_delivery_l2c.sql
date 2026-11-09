@@ -30,10 +30,11 @@ alter table public.ledger_accounts drop constraint if exists ledger_accounts_cod
 alter table public.ledger_accounts
   add constraint ledger_accounts_code_check
   check (code in (
-    'pending', 'available', 'reserved', 'cod_cash',
-    'commission_due', 'sales', 'shipping_income', 'fees', 'payouts',
-    'saspay_fees_absorbed', 'affiliate_commission', 'affiliate_income',
-    'delivery_income', 'delivery_commission_income'
+    'affiliate_commission', 'affiliate_income', 'available', 'cod_cash',
+    'commission_due', 'delivery_commission_income', 'delivery_income',
+    'discounts', 'fees', 'partner_payable', 'partner_receivable',
+    'payouts', 'pending', 'reserved', 'sales', 'shipping_income',
+    'saspay_fees_absorbed'
   ));
 
 /* ------------------------------------------------------------------ *
