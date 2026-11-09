@@ -54,7 +54,7 @@ const fr = {
       "Crée ta boutique, vends tes produits physiques, numériques ou tes services, et encaisse en Mobile Money ou à la livraison. Pensé pour les marchands d’Afrique de l’Ouest et centrale.",
     primary: "Créer ma boutique",
     secondary: "Voir la démo",
-    demoHref: "/store/maboutie",
+    demoHref: "/store/demo",
     miniStats: [
       { value: "22", label: "pays disponibles" },
       { value: "0 FCFA", label: "pour commencer" },
@@ -64,7 +64,7 @@ const fr = {
     videoTitle: "Pashove en 6 secondes",
     videoCaption: "Boutique, thèmes, commandes et messagerie.",
     mock: {
-      store: "maboutie.pashove.com",
+      store: "demo.pashove.com",
       eyebrow: "Nouveautés",
       title: "Des objets qui racontent ton quartier.",
       text: "Une vitrine qui te ressemble, un checkout qui convertit.",
@@ -485,7 +485,7 @@ const en: SiteContent = {
       "Create your store, sell physical products, digital files or services, and collect payments with mobile money or on delivery. Built for merchants across West and Central Africa.",
     primary: "Create my store",
     secondary: "See the demo",
-    demoHref: "/store/maboutie",
+    demoHref: "/store/demo",
     miniStats: [
       { value: "22", label: "countries available" },
       { value: "0 FCFA", label: "to get started" },
@@ -495,7 +495,7 @@ const en: SiteContent = {
     videoTitle: "Pashove in 6 seconds",
     videoCaption: "Store, themes, orders and messaging.",
     mock: {
-      store: "maboutie.pashove.com",
+      store: "demo.pashove.com",
       eyebrow: "New arrivals",
       title: "Objects that tell your neighbourhood’s story.",
       text: "A storefront that feels like you, a checkout that converts.",
