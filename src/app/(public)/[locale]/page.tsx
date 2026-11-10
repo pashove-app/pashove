@@ -21,6 +21,14 @@ import { cn } from "@/lib/cn";
 import { resolveLocale } from "@/i18n/config";
 import { getSiteContent } from "@/lib/marketing/content";
 import { getAboutContent } from "@/lib/marketing/about";
+import {
+  getTopMerchantsOfMonth,
+  initialsFor,
+} from "@/lib/marketing/top-merchants";
+
+// Le classement du mois est recalculé côté base ; on rafraîchit la page
+// d'accueil au plus une fois par demi-heure.
+export const revalidate = 1800;
 
 export async function generateMetadata({
   params,
@@ -53,6 +61,7 @@ export default async function PublicHomePage({
   const locale = resolveLocale(raw);
   const c = getSiteContent(locale);
   const about = getAboutContent(locale);
+  const topMerchants = await getTopMerchantsOfMonth();
   const miniIcons = [icons.globe, icons.wallet, icons.box, icons.store];
 
   return (
@@ -260,10 +269,41 @@ export default async function PublicHomePage({
           </MarketingReveal>
 
           <div className="mt-8 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, index) => (
-              <MarketingReveal key={index} delay={index * 0.03}>
-                <div className="flex h-20 items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white text-[0.625rem] font-medium uppercase tracking-[0.12em] text-slate-300 transition-colors hover:border-brand-300 hover:text-brand-400">
-                  {locale === "en" ? "Your logo" : "Votre logo"}
+            {topMerchants.map((merchant, index) => (
+              <MarketingReveal key={merchant.id} delay={index * 0.03}>
+                <Link
+                  href={publicHref(locale, `/store/${merchant.slug}`)}
+                  className="group flex h-24 flex-col items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 transition-colors hover:border-brand-300 hover:shadow-[0_18px_40px_-30px_rgba(47,92,255,0.45)]"
+                >
+                  {merchant.logoUrl ? (
+                    <Image
+                      src={merchant.logoUrl}
+                      alt=""
+                      width={160}
+                      height={48}
+                      className="h-9 w-auto max-w-[80%] object-contain"
+                    />
+                  ) : (
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-500/10 text-[0.6875rem] font-semibold text-brand-600">
+                      {initialsFor(merchant.name)}
+                    </span>
+                  )}
+                  <span className="w-full truncate text-center text-[0.6875rem] font-semibold text-[#0A0E1A]">
+                    {merchant.name}
+                  </span>
+                </Link>
+              </MarketingReveal>
+            ))}
+
+            {Array.from({
+              length: Math.max(0, 8 - topMerchants.length),
+            }).map((_, index) => (
+              <MarketingReveal
+                key={`empty-${index}`}
+                delay={(topMerchants.length + index) * 0.03}
+              >
+                <div className="flex h-24 items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white px-3 text-center text-[0.625rem] font-medium uppercase tracking-[0.12em] text-slate-300 transition-colors hover:border-brand-300 hover:text-brand-400">
+                  {c.trustLogos.placeholder}
                 </div>
               </MarketingReveal>
             ))}

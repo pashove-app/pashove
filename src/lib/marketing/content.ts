@@ -130,12 +130,13 @@ const fr = {
     ],
   },
   trustLogos: {
-    eyebrow: "Ils nous font confiance",
-    titleA: "Les premières marques",
-    titleB: "arrivent bientôt.",
+    eyebrow: "Le mur de la réussite",
+    titleA: "Les marchands qui",
+    titleB: "font bouger Pashove.",
     description:
-      "Cet espace est prêt à accueillir les logos des boutiques et partenaires qui nous font confiance.",
-    note: "Votre marque ici ? Écrivez-nous à hello@pashove.com.",
+      "Chaque mois, les boutiques qui ont généré le plus de ventes sur Pashove sont mises à l’honneur.",
+    note: "Votre boutique peut figurer ici le mois prochain. Créez-la dès aujourd’hui.",
+    placeholder: "Votre logo ici",
   },
   newsletter: {
     eyebrow: "Newsletter",
@@ -158,8 +159,8 @@ const fr = {
         icon: "store" as IconKey,
         title: "Ta boutique, ton catalogue.",
         text: "Produits physiques, numériques ou services, variantes et stock. Plusieurs boutiques, un seul compte, chacun avec son thème et ses clients.",
-        image: "/marketing/storefront.png",
-        imageAlt: "Vitrine Pashove sur mobile",
+        image: "/home/hero-catalog.jpg",
+        imageAlt: "Commerçante présentant le catalogue Pashove sur son téléphone",
         cta: "Créer ma boutique",
         linkLabel: "En savoir plus",
         quote: {
@@ -173,8 +174,8 @@ const fr = {
         icon: "bag" as IconKey,
         title: "Du panier à la livraison.",
         text: "Checkout, paiement à la livraison, préparation, suivi et remboursement. Le stock et les statuts se mettent à jour côté serveur.",
-        image: "/marketing/orders.png",
-        imageAlt: "Détail d’une commande Pashove",
+        image: "/home/hero-delivery.jpg",
+        imageAlt: "Livreur Pashove et suivi de la course sur téléphone",
         cta: "Créer ma boutique",
         linkLabel: "En savoir plus",
         quote: {
@@ -188,8 +189,8 @@ const fr = {
         icon: "palette" as IconKey,
         title: "Un thème qui te ressemble.",
         text: "Cinq modèles, couleurs, typographies et ordre des sections. Aperçu en direct, puis publication sur ta vitrine.",
-        image: "/marketing/editor.png",
-        imageAlt: "Éditeur de thèmes Pashove",
+        image: "/home/hero-theme.jpg",
+        imageAlt: "Tableau de bord et thème Pashove sur téléphone",
         cta: "Créer ma boutique",
         linkLabel: "En savoir plus",
         quote: {
@@ -203,8 +204,8 @@ const fr = {
         icon: "chat" as IconKey,
         title: "La relation client, intégrée.",
         text: "Un client écrit depuis ta vitrine, tu réponds depuis ton dashboard. Images, vidéos et PDF restent dans la conversation.",
-        image: "/marketing/messages.png",
-        imageAlt: "Messagerie Pashove avec les clients",
+        image: "/home/hero-client.jpg",
+        imageAlt: "Cliente recevant un message de confirmation de commande",
         cta: "Créer ma boutique",
         linkLabel: "En savoir plus",
         quote: {
@@ -543,11 +544,13 @@ const en: SiteContent = {
     ],
   },
   trustLogos: {
-    eyebrow: "Trusted by",
-    titleA: "The first brands",
-    titleB: "are coming soon.",
-    description: "This space is ready for the stores and partners who trust us.",
-    note: "Your brand here? Write to hello@pashove.com.",
+    eyebrow: "The success wall",
+    titleA: "The merchants who",
+    titleB: "move Pashove forward.",
+    description:
+      "Every month, the stores that generated the most sales on Pashove are featured here.",
+    note: "Your store could be here next month. Create it today.",
+    placeholder: "Your logo here",
   },
   newsletter: {
     eyebrow: "Newsletter",
