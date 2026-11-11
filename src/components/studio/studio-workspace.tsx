@@ -1,13 +1,20 @@
 "use client";
 
-import { useState, type FormEvent, type ReactNode } from "react";
+import {
+  useActionState,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
+import { AutoRefresh } from "@/components/ui/auto-refresh";
 import { Icon, icons, Spinner } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
 import {
-  requestStudioRecharge,
   requestStudioVideo,
   sendStudioMessage,
+  startStudioRechargeAction,
   type StudioActionResult,
+  type StudioRechargeState,
 } from "@/lib/studio/actions";
 
 export type VideoOption = {
@@ -20,18 +27,24 @@ export type VideoOption = {
 
 type Props = {
   ready: boolean;
+  locale: string;
   balanceLabel: string;
   chatPriceLabel: string;
   videoOptions: VideoOption[];
+  networks: { code: string; name: string }[];
+  pendingTopupLabel: string | null;
 };
 
 type ChatMessage = { role: "user" | "assistant"; text: string };
 
 export function StudioWorkspace({
   ready,
+  locale,
   balanceLabel,
   chatPriceLabel,
   videoOptions,
+  networks,
+  pendingTopupLabel,
 }: Props) {
   const [tab, setTab] = useState<"chat" | "video">("chat");
   const [rechargeOpen, setRechargeOpen] = useState(false);
@@ -62,8 +75,17 @@ export function StudioWorkspace({
           </button>
         </div>
 
-        {rechargeOpen ? <RechargePanel ready={ready} /> : null}
+        {rechargeOpen ? (
+          <RechargePanel ready={ready} locale={locale} networks={networks} />
+        ) : null}
       </section>
+
+      {pendingTopupLabel ? (
+        <div className="rounded-2xl border border-brand-500/30 bg-brand-500/[0.06] px-4 py-3 text-[0.8125rem] leading-relaxed text-body">
+          {pendingTopupLabel}
+          <AutoRefresh intervalMs={5000} />
+        </div>
+      ) : null}
 
       {!ready ? (
         <p className="rounded-2xl border border-amber-400/30 bg-amber-400/[0.07] px-4 py-3 text-[0.8125rem] leading-relaxed text-amber-700 dark:text-amber-300">
@@ -153,45 +175,49 @@ function ResultNotice({ result }: { result: StudioActionResult | null }) {
  *  Recharge
  * ------------------------------------------------------------------ */
 
-function RechargePanel({ ready }: { ready: boolean }) {
+function RechargePanel({
+  ready,
+  locale,
+  networks,
+}: {
+  ready: boolean;
+  locale: string;
+  networks: { code: string; name: string }[];
+}) {
   const [amount, setAmount] = useState("500");
-  const [pending, setPending] = useState(false);
-  const [result, setResult] = useState<StudioActionResult | null>(null);
+  const [state, formAction, pending] = useActionState<
+    StudioRechargeState,
+    FormData
+  >(startStudioRechargeAction, { status: "idle" });
 
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    if (!ready || pending) return;
-
-    const value = Number(amount);
-    if (!Number.isInteger(value) || value < 500) {
-      setResult({
-        status: "error",
-        message: "Le montant minimum est de 500 FCFA.",
-      });
-      return;
-    }
-
-    setPending(true);
-    const response = await requestStudioRecharge(value);
-    setPending(false);
-    setResult(response);
+  if (networks.length === 0) {
+    return (
+      <p className="mt-5 rounded-2xl border border-amber-400/30 bg-amber-400/[0.07] px-4 py-3 text-[0.8125rem] leading-relaxed text-amber-700 dark:text-amber-300">
+        Aucun réseau Mobile Money n’est disponible pour le pays de ta boutique.
+        La recharge sera activée dès qu’un réseau sera disponible.
+      </p>
+    );
   }
 
   return (
     <form
-      onSubmit={submit}
+      action={formAction}
       className="mt-5 rounded-2xl border border-border bg-bg-soft p-4"
     >
-      <div className="flex flex-wrap items-end gap-3">
-        <label className="min-w-[10rem] flex-1">
+      <input type="hidden" name="locale" value={locale} />
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label>
           <span className="block text-[0.75rem] font-medium text-body">
             Montant à recharger
           </span>
           <div className="relative mt-1.5">
             <input
+              name="amount"
               type="number"
               inputMode="numeric"
               min={500}
+              max={500000}
               step={50}
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
@@ -204,14 +230,39 @@ function RechargePanel({ ready }: { ready: boolean }) {
           </div>
         </label>
 
-        <button
-          type="submit"
-          disabled={!ready || pending}
-          className="inline-flex h-11 items-center gap-2 rounded-full bg-brand-500 px-5 text-[0.8125rem] font-medium text-white disabled:opacity-60"
-        >
-          {pending ? <Spinner /> : null}
-          {pending ? "Ouverture…" : "Payer avec Mobile Money"}
-        </button>
+        <label>
+          <span className="block text-[0.75rem] font-medium text-body">
+            Moyen de paiement
+          </span>
+          <select
+            name="network"
+            defaultValue={networks[0]?.code}
+            disabled={!ready || pending}
+            className="mt-1.5 h-11 w-full rounded-xl border border-border bg-surface px-3 text-[0.8125rem] text-fg disabled:opacity-60"
+          >
+            {networks.map((network) => (
+              <option key={network.code} value={network.code}>
+                {network.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="sm:col-span-2">
+          <span className="block text-[0.75rem] font-medium text-body">
+            Numéro Mobile Money
+          </span>
+          <input
+            name="phone"
+            type="tel"
+            dir="ltr"
+            autoComplete="tel"
+            placeholder="+223 70 00 00 00"
+            maxLength={40}
+            disabled={!ready || pending}
+            className="mt-1.5 h-11 w-full rounded-xl border border-border bg-surface px-3 text-[0.9375rem] text-fg placeholder:text-faint focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/12 disabled:opacity-60"
+          />
+        </label>
       </div>
 
       <div className="mt-3 flex flex-wrap gap-2">
@@ -220,7 +271,7 @@ function RechargePanel({ ready }: { ready: boolean }) {
             key={value}
             type="button"
             onClick={() => setAmount(String(value))}
-            disabled={!ready}
+            disabled={!ready || pending}
             className="rounded-full border border-border bg-surface px-3 py-1.5 text-[0.75rem] font-medium text-subtle hover:border-brand-300 hover:text-brand-600 disabled:opacity-60"
           >
             {value.toLocaleString("fr-FR")} FCFA
@@ -229,15 +280,36 @@ function RechargePanel({ ready }: { ready: boolean }) {
       </div>
 
       <p className="mt-3 text-[0.6875rem] leading-relaxed text-faint">
-        Minimum 500 FCFA. Le paiement Mobile Money sera branché à l’étape
-        SasPay ; aucun montant n’est débité pour l’instant.
+        Minimum 500 FCFA. Les frais SasPay sont ajoutés au montant. Ton solde
+        est crédité dès la confirmation du paiement.
       </p>
 
-      {result ? (
-        <div className="mt-3">
-          <ResultNotice result={result} />
-        </div>
+      {state.message ? (
+        <p
+          role="status"
+          className={cn(
+            "mt-3 rounded-xl border px-3 py-2 text-[0.75rem] leading-relaxed",
+            state.status === "pending"
+              ? "border-emerald-400/30 bg-emerald-400/[0.07] text-emerald-700 dark:text-emerald-300"
+              : "border-red-500/30 bg-red-500/[0.06] text-red-600 dark:text-red-400",
+          )}
+        >
+          {state.message}
+        </p>
       ) : null}
+
+      {state.status === "pending" ? (
+        <AutoRefresh intervalMs={5000} />
+      ) : null}
+
+      <button
+        type="submit"
+        disabled={!ready || pending}
+        className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-[0.8125rem] font-medium text-white disabled:opacity-60"
+      >
+        {pending ? <Spinner /> : <Icon path={icons.wallet} className="h-4 w-4" strokeWidth={1.8} />}
+        {pending ? "Ouverture…" : "Payer avec Mobile Money"}
+      </button>
     </form>
   );
 }

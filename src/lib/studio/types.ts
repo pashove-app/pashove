@@ -29,10 +29,27 @@ export type StudioGeneration = {
   completedAt: string | null;
 };
 
+export type StudioPendingTopup = {
+  id: string;
+  amountFcfa: number;
+  createdAt: string;
+};
+
+export type StudioTopup = {
+  id: string;
+  amountFcfa: number;
+  status: "pending" | "paid" | "failed";
+  provider: "saspay" | "manual" | "welcome";
+  note: string | null;
+  createdAt: string;
+  paidAt: string | null;
+};
+
 export type StudioSnapshot = {
   /** Faux tant que la migration Studio n'est pas appliquée. */
   ready: boolean;
   balance: StudioBalance;
   prices: StudioPrice[];
   generations: StudioGeneration[];
+  pendingTopup: StudioPendingTopup | null;
 };

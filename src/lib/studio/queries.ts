@@ -18,7 +18,8 @@ export async function getStudioSnapshot(
 ): Promise<StudioSnapshot> {
   const supabase = await createClient();
 
-  const [balanceResult, pricingResult, generationsResult] = await Promise.all([
+  const [balanceResult, pricingResult, generationsResult, pendingResult] =
+    await Promise.all([
     supabase
       .from("store_studio_balance")
       .select("balance_fcfa, total_recharged, total_spent")
@@ -37,12 +38,22 @@ export async function getStudioSnapshot(
       .eq("store_id", storeId)
       .order("created_at", { ascending: false })
       .limit(30),
+    supabase
+      .from("studio_topups")
+      .select("id, amount_fcfa, created_at")
+      .eq("store_id", storeId)
+      .eq("provider", "saspay")
+      .eq("status", "pending")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   const ready = Boolean(
     !balanceResult.error &&
       !pricingResult.error &&
-      !generationsResult.error,
+      !generationsResult.error &&
+      !pendingResult.error,
   );
 
   const balance: StudioBalance = balanceResult.data
@@ -74,5 +85,13 @@ export async function getStudioSnapshot(
     }),
   );
 
-  return { ready, balance, prices, generations };
+  const pendingTopup = pendingResult.data
+    ? {
+        id: pendingResult.data.id,
+        amountFcfa: pendingResult.data.amount_fcfa,
+        createdAt: pendingResult.data.created_at,
+      }
+    : null;
+
+  return { ready, balance, prices, generations, pendingTopup };
 }

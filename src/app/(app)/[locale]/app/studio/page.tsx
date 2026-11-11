@@ -6,6 +6,7 @@ import {
 } from "@/components/studio/studio-workspace";
 import { resolveLocale } from "@/i18n/config";
 import { formatMoney } from "@/lib/money";
+import { listPayinRates } from "@/lib/payments/saspay/client";
 import { getStudioSnapshot } from "@/lib/studio/queries";
 import type {
   StudioGeneration,
@@ -65,8 +66,19 @@ export default async function StudioPage({
   const store = await currentStore();
   if (!store) redirect(`/${locale}/onboarding/store`);
 
-  const snapshot = await getStudioSnapshot(store.id);
+  const [snapshot, rates] = await Promise.all([
+    getStudioSnapshot(store.id),
+    listPayinRates().catch(() => []),
+  ]);
   const money = (amount: number) => formatMoney(amount, "XOF", "fr-FR");
+
+  const networks = rates
+    .filter(
+      (rate) =>
+        rate.country_code?.toUpperCase() === store.country.toUpperCase() &&
+        rate.payin?.available !== false,
+    )
+    .map((rate) => ({ code: rate.network_code, name: rate.network_name }));
 
   const videoOptions: VideoOption[] = snapshot.prices
     .filter((price) => VIDEO_TYPES.has(price.actionType))
@@ -104,9 +116,16 @@ export default async function StudioPage({
       <div className="mt-6">
         <StudioWorkspace
           ready={snapshot.ready}
+          locale={locale}
           balanceLabel={money(snapshot.balance.balanceFcfa)}
           chatPriceLabel={money(chatPrice)}
           videoOptions={videoOptions}
+          networks={networks}
+          pendingTopupLabel={
+            snapshot.pendingTopup
+              ? `Recharge de ${money(snapshot.pendingTopup.amountFcfa)} en attente de confirmation. Ton solde se met à jour automatiquement.`
+              : null
+          }
         />
       </div>
 

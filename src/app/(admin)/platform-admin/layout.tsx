@@ -21,6 +21,7 @@ const NAV = [
   { href: "/platform-admin/delivery-pricing", label: "Tarifs livraison", icon: icons.wallet },
   { href: "/platform-admin/payouts", label: "Retraits", icon: icons.wallet },
   { href: "/platform-admin/payments", label: "Paiements", icon: icons.wallet },
+  { href: "/platform-admin/studio", label: "Studio", icon: icons.sparkle },
   { href: "/platform-admin/payment-providers", label: "Fournisseurs", icon: icons.code },
   { href: "/platform-admin/emails", label: "E-mails", icon: icons.mail },
   { href: "/platform-admin/settings", label: "Réglages", icon: icons.settings },

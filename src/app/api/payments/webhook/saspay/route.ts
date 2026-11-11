@@ -159,6 +159,33 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "plan_confirm_failed" }, { status: 500 });
       }
 
+      const planOutcome = planResult as {
+        status?: string;
+        reason?: string;
+      } | null;
+
+      // Ni commande ni abonnement : peut-être une recharge Studio.
+      if (planOutcome?.status === "ignored") {
+        const { data: studioResult, error: studioError } = await service.rpc(
+          "confirm_studio_topup",
+          {
+            p_reference: reference,
+            p_amount: amount,
+            p_currency: currency,
+          },
+        );
+
+        if (studioError) {
+          console.error("[saspay] studio confirm failed", studioError.message);
+          return NextResponse.json(
+            { error: "studio_confirm_failed" },
+            { status: 500 },
+          );
+        }
+
+        return NextResponse.json({ received: true, studio: studioResult });
+      }
+
       return NextResponse.json({ received: true, plan: planResult });
     }
 
@@ -167,6 +194,7 @@ export async function POST(request: Request) {
 
   if (event === "transaction.failed" || event === "transaction.cancelled") {
     await service.rpc("fail_plan_payment", { p_reference: reference });
+    await service.rpc("fail_studio_topup", { p_reference: reference });
 
     const { error } = await service.rpc("fail_saspay_payment", {
       p_reference: reference,
