@@ -1176,6 +1176,7 @@ const ar: Dictionary = {
       collections: "المجموعات",
       bundles: "الباقات",
       marketing: "التسويق",
+      studio: "استوديو",
       discounts: "التخفيضات",
       onlineStore: "المتجر الإلكتروني",
       salesChannels: "قنوات البيع",

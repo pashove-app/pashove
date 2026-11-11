@@ -1231,6 +1231,7 @@ const fr = {
       collections: "Collections",
       bundles: "Paquets",
       marketing: "Marketing",
+      studio: "Studio",
       discounts: "Réductions",
       onlineStore: "Boutique en ligne",
       salesChannels: "Canaux de vente",

@@ -1190,6 +1190,7 @@ const bm: Dictionary = {
       collections: "Kolɛksiyɔnw",
       bundles: "Pakɛtiw",
       marketing: "Marketing",
+      studio: "Studio",
       discounts: "Rabɛw",
       onlineStore: "Ɛntɛrinɛti butiki",
       salesChannels: "Feere siraw",

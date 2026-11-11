@@ -1191,6 +1191,7 @@ const ln: Dictionary = {
       collections: "Ba collections",
       bundles: "Ba paquets",
       marketing: "Marketing",
+      studio: "Studio",
       discounts: "Kokitisa ntalo",
       onlineStore: "Magazini na ɛntɛrnɛ́tɛ",
       salesChannels: "Nzela ya kotɛ́kɛ",

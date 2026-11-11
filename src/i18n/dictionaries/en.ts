@@ -1181,6 +1181,7 @@ const en: Dictionary = {
       collections: "Collections",
       bundles: "Bundles",
       marketing: "Marketing",
+      studio: "Studio",
       discounts: "Discounts",
       onlineStore: "Online store",
       salesChannels: "Sales channels",
