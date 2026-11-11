@@ -6,6 +6,7 @@ import {
   type FormEvent,
   type ReactNode,
 } from "react";
+import { useRouter } from "next/navigation";
 import { AutoRefresh } from "@/components/ui/auto-refresh";
 import { Icon, icons, Spinner } from "@/components/ui/primitives";
 import { cn } from "@/lib/cn";
@@ -336,21 +337,34 @@ function ChatPanel({
   ]);
   const [value, setValue] = useState("");
   const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   async function submit(event: FormEvent) {
     event.preventDefault();
     const prompt = value.trim();
     if (!prompt || pending || !ready) return;
 
+    const history = messages
+      .slice(-12)
+      .map((message) => ({ role: message.role, content: message.text }));
+
     setValue("");
+    setError(null);
     setMessages((current) => [...current, { role: "user", text: prompt }]);
     setPending(true);
-    const result = await sendStudioMessage(prompt);
+    const result = await sendStudioMessage(prompt, history);
     setPending(false);
-    setMessages((current) => [
-      ...current,
-      { role: "assistant", text: result.message },
-    ]);
+
+    if (result.status === "ok") {
+      setMessages((current) => [
+        ...current,
+        { role: "assistant", text: result.message },
+      ]);
+      router.refresh();
+    } else {
+      setError(result.message);
+    }
   }
 
   return (
@@ -395,6 +409,12 @@ function ChatPanel({
           </div>
         ) : null}
       </div>
+
+      {error ? (
+        <p className="mx-5 mb-3 rounded-xl border border-red-500/30 bg-red-500/[0.06] px-3 py-2 text-[0.75rem] leading-relaxed text-red-600 dark:text-red-400 sm:mx-6">
+          {error}
+        </p>
+      ) : null}
 
       <form
         onSubmit={submit}
@@ -446,6 +466,8 @@ function VideoPanel({
   const [prompt, setPrompt] = useState("");
   const [pending, setPending] = useState(false);
   const [result, setResult] = useState<StudioActionResult | null>(null);
+  const [script, setScript] = useState<string | null>(null);
+  const router = useRouter();
 
   const option = options.find((entry) => entry.actionType === selected);
 
@@ -454,12 +476,18 @@ function VideoPanel({
     if (!ready || pending || !option) return;
 
     setPending(true);
+    setScript(null);
     const response = await requestStudioVideo({
       actionType: option.actionType,
       prompt,
     });
     setPending(false);
     setResult(response);
+
+    if (response.status === "ok") {
+      setScript(response.resultText ?? null);
+      router.refresh();
+    }
   }
 
   if (options.length === 0) {
@@ -541,11 +569,12 @@ function VideoPanel({
       </label>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-bg-soft px-4 py-3">
-        <p className="text-[0.8125rem] text-body">
+        <p className="max-w-md text-[0.8125rem] leading-relaxed text-body">
           Cette vidéo coûte{" "}
           <span className="font-semibold text-fg">
             {option?.priceLabel ?? "—"}
-          </span>
+          </span>{" "}
+          — script inclus. Le rendu vidéo sera ajouté à l’étape suivante.
         </p>
         <button
           type="submit"
@@ -556,6 +585,17 @@ function VideoPanel({
           {pending ? "Préparation…" : "Générer"}
         </button>
       </div>
+
+      {script ? (
+        <div className="mt-3 rounded-2xl border border-border bg-bg-soft p-4">
+          <p className="text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-brand-600 dark:text-brand-300">
+            Script généré
+          </p>
+          <pre className="mt-2 whitespace-pre-wrap font-sans text-[0.8125rem] leading-relaxed text-body">
+            {script}
+          </pre>
+        </div>
+      ) : null}
 
       {result ? (
         <div className="mt-3">

@@ -9,15 +9,36 @@ import {
   listPayinRates,
   SasPayError,
 } from "@/lib/payments/saspay/client";
+import {
+  deepSeekChat,
+  deepSeekCostFcfa,
+  DeepSeekError,
+  isDeepSeekConfigured,
+  usdToXofRate,
+  type DeepSeekMessage,
+} from "@/lib/studio/deepseek";
 import { currentStore } from "@/lib/stores/queries";
 import { createClient } from "@/lib/supabase/server";
 
 export type StudioActionResult = {
   status: "ok" | "error" | "unavailable";
   message: string;
+  /** Script ou texte produit par le modèle. */
+  resultText?: string;
+  /** Nouveau solde après débit, pour l'affichage immédiat. */
+  balanceFcfa?: number;
 };
 
 const promptSchema = z.string().trim().min(1).max(2000);
+const historySchema = z
+  .array(
+    z.object({
+      role: z.enum(["user", "assistant"]),
+      content: z.string().trim().min(1).max(4000),
+    }),
+  )
+  .max(20)
+  .default([]);
 const videoSchema = z.object({
   actionType: z.string().trim().min(1).max(64),
   prompt: z.string().trim().max(2000).default(""),
@@ -28,56 +49,226 @@ const rechargeSchema = z.coerce
   .min(500, "Le montant minimum est de 500 FCFA.")
   .max(500000, "Le montant maximum est de 500 000 FCFA.");
 
-async function activePrice(actionType: string) {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("studio_pricing")
-    .select("action_type, price_fcfa")
-    .eq("action_type", actionType)
-    .eq("is_active", true)
-    .maybeSingle();
+const VIDEO_BRIEFS: Record<string, { duration: number; style: string }> = {
+  video_15s_simple: {
+    duration: 15,
+    style: "court, texte animé, sans voix off",
+  },
+  video_30s_standard: {
+    duration: 30,
+    style: "standard, avec voix off",
+  },
+  video_60s_premium: {
+    duration: 60,
+    style: "premium, voix off et musique",
+  },
+  video_110s_ultra: {
+    duration: 110,
+    style: "ultra, motion design complet",
+  },
+};
 
-  return data;
+function chatSystemPrompt(store: {
+  name: string;
+  country: string;
+  product_types: string[];
+}): string {
+  return [
+    "Tu es l’assistant de Pashove Studio, pour un marchand d’Afrique de l’Ouest.",
+    "Tu l’aides à écrire des textes pour sa boutique en ligne : descriptions de produits, messages clients, publications, idées.",
+    `Boutique : ${store.name} (${store.country}). Types de produits : ${store.product_types.join(", ") || "non précisés"}.`,
+    "Réponds en français, de façon concrète, professionnelle et concise.",
+    "N’invente pas de caractéristiques produit qui ne figurent pas dans la demande ; pose une question si une information essentielle manque.",
+    "Ne mentionne pas que tu es un modèle de langage.",
+  ].join("\n");
 }
 
-/**
- * Chat & textes.
- *
- * Le moteur DeepSeek sera branché à l'étape suivante. Tant qu'il ne l'est
- * pas, aucun crédit n'est débité : on préfère un message honnête à une
- * génération factice facturée.
- */
+function videoSystemPrompt(
+  store: { name: string; country: string; product_types: string[] },
+  brief: { duration: number; style: string },
+): string {
+  return [
+    "Tu écris des scripts de vidéos publicitaires pour des boutiques d’Afrique de l’Ouest.",
+    `Boutique : ${store.name} (${store.country}). Types de produits : ${store.product_types.join(", ") || "non précisés"}.`,
+    `Durée demandée : ${brief.duration} secondes. Style : ${brief.style}.`,
+    "Structure : accroche (0-3 s), deux ou trois plans avec le texte à l’écran, voix off, appel à l’action.",
+    "Réponds uniquement avec le script, en français, sans introduction ni commentaire.",
+  ].join("\n");
+}
+
+function keepRecentHistory(
+  history: { role: "user" | "assistant"; content: string }[],
+  maxCharacters: number,
+): { role: "user" | "assistant"; content: string }[] {
+  const recent = history.slice(-12);
+  let total = recent.reduce((sum, message) => sum + message.content.length, 0);
+
+  while (recent.length > 0 && total > maxCharacters) {
+    const removed = recent.shift();
+    total -= removed?.content.length ?? 0;
+  }
+
+  return recent;
+}
+
+function deepSeekErrorMessage(error: DeepSeekError): string {
+  if (error.code === "timeout") {
+    return "L’assistant a mis trop de temps à répondre. Réessaie dans un instant.";
+  }
+  if (error.code === "not_configured") {
+    return "L’assistant IA n’est pas encore configuré sur cette installation.";
+  }
+  return "L’assistant est momentanément indisponible. Réessaie dans un instant.";
+}
+
+async function studioPricing(storeId: string, actionType: string) {
+  const supabase = await createClient();
+  const [pricingResult, balanceResult] = await Promise.all([
+    supabase
+      .from("studio_pricing")
+      .select("price_fcfa")
+      .eq("action_type", actionType)
+      .eq("is_active", true)
+      .maybeSingle(),
+    supabase
+      .from("store_studio_balance")
+      .select("balance_fcfa")
+      .eq("store_id", storeId)
+      .maybeSingle(),
+  ]);
+
+  return {
+    supabase,
+    price: pricingResult.data?.price_fcfa ?? null,
+    balance: balanceResult.data?.balance_fcfa ?? 0,
+  };
+}
+
+/* ------------------------------------------------------------------ *
+ *  Chat & textes
+ * ------------------------------------------------------------------ */
+
 export async function sendStudioMessage(
   prompt: string,
+  historyInput: { role: "user" | "assistant"; content: string }[] = [],
 ): Promise<StudioActionResult> {
   const store = await currentStore();
   if (!store) {
     return { status: "error", message: "Boutique introuvable." };
   }
 
-  const parsed = promptSchema.safeParse(prompt);
-  if (!parsed.success) {
+  const parsedPrompt = promptSchema.safeParse(prompt);
+  if (!parsedPrompt.success) {
     return {
       status: "error",
       message: "Écris un message entre 1 et 2 000 caractères.",
     };
   }
 
-  const price = await activePrice("chat_message");
-  if (!price) {
+  const parsedHistory = historySchema.safeParse(historyInput);
+  if (!parsedHistory.success) {
+    return { status: "error", message: "La conversation est invalide." };
+  }
+
+  if (!isDeepSeekConfigured()) {
     return {
       status: "error",
-      message: "Le Studio n'est pas encore activé pour cette boutique.",
+      message:
+        "L’assistant IA n’est pas encore configuré. La clé DEEPSEEK_API_KEY manque côté serveur.",
     };
   }
 
+  const { supabase, price, balance } = await studioPricing(
+    store.id,
+    "chat_message",
+  );
+
+  if (price == null) {
+    return {
+      status: "error",
+      message: "Le Studio n’est pas encore activé pour cette boutique.",
+    };
+  }
+
+  if (balance < price) {
+    return {
+      status: "error",
+      message: `Solde insuffisant : un message coûte ${price} FCFA. Recharge ton Studio.`,
+    };
+  }
+
+  const history = keepRecentHistory(parsedHistory.data, 10000);
+  const messages: DeepSeekMessage[] = [
+    { role: "system", content: chatSystemPrompt(store) },
+    ...history,
+    { role: "user", content: parsedPrompt.data },
+  ];
+
+  let completion;
+  try {
+    completion = await deepSeekChat(messages, { maxTokens: 900 });
+  } catch (error) {
+    if (error instanceof DeepSeekError) {
+      console.error("[studio] deepseek chat failed", error.code, error.message);
+      return { status: "error", message: deepSeekErrorMessage(error) };
+    }
+    console.error("[studio] deepseek chat failed", error);
+    return { status: "error", message: "L’assistant est momentanément indisponible." };
+  }
+
+  const rate = await usdToXofRate();
+  const costReal = deepSeekCostFcfa(completion.usage, rate);
+
+  const { data: charged, error: chargeError } = await supabase.rpc(
+    "charge_studio_generation",
+    {
+      p_store_id: store.id,
+      p_action_type: "chat_message",
+      p_prompt: parsedPrompt.data,
+      p_result_text: completion.content,
+      p_status: "completed",
+      p_cost_real_fcfa: costReal,
+      p_metadata: {
+        model: completion.model,
+        prompt_tokens: completion.usage.promptTokens,
+        completion_tokens: completion.usage.completionTokens,
+        prompt_cache_miss_tokens: completion.usage.promptCacheMissTokens,
+        prompt_cache_hit_tokens: completion.usage.promptCacheHitTokens,
+        usd_xof: rate,
+      },
+    },
+  );
+
+  if (chargeError) {
+    console.error("[studio] charge failed", chargeError.message);
+    if (chargeError.message.includes("studio_insufficient_balance")) {
+      return {
+        status: "error",
+        message: `Solde insuffisant : un message coûte ${price} FCFA. Recharge ton Studio.`,
+      };
+    }
+    return {
+      status: "error",
+      message: "La génération n’a pas pu être facturée. Réessaie.",
+    };
+  }
+
+  const charge = charged as { balance?: number } | null;
+
+  revalidatePath("/", "layout");
+
   return {
-    status: "unavailable",
-    message: `Le moteur de génération sera connecté à l'étape suivante. Ton solde n'a pas été débité : un message coûtera ${price.price_fcfa} FCFA.`,
+    status: "ok",
+    message: completion.content,
+    resultText: completion.content,
+    balanceFcfa: charge?.balance,
   };
 }
 
-/** Générateur vidéo. Le rendu TTS/Remotion arrive après l'intégration. */
+/* ------------------------------------------------------------------ *
+ *  Générateur vidéo — script
+ * ------------------------------------------------------------------ */
+
 export async function requestStudioVideo(input: {
   actionType: string;
   prompt: string;
@@ -92,23 +283,115 @@ export async function requestStudioVideo(input: {
     return { status: "error", message: "Choisis un format de vidéo valide." };
   }
 
-  if (!parsed.data.actionType.startsWith("video_")) {
+  const brief = VIDEO_BRIEFS[parsed.data.actionType];
+  if (!brief) {
     return { status: "error", message: "Choisis un format de vidéo valide." };
   }
 
-  const price = await activePrice(parsed.data.actionType);
-  if (!price) {
+  if (!isDeepSeekConfigured()) {
     return {
       status: "error",
-      message: "Ce format de vidéo n'est plus disponible.",
+      message:
+        "L’assistant IA n’est pas encore configuré. La clé DEEPSEEK_API_KEY manque côté serveur.",
     };
   }
 
+  const { supabase, price, balance } = await studioPricing(
+    store.id,
+    parsed.data.actionType,
+  );
+
+  if (price == null) {
+    return {
+      status: "error",
+      message: "Ce format de vidéo n’est plus disponible.",
+    };
+  }
+
+  if (balance < price) {
+    return {
+      status: "error",
+      message: `Solde insuffisant : cette vidéo coûte ${price} FCFA. Recharge ton Studio.`,
+    };
+  }
+
+  let completion;
+  try {
+    completion = await deepSeekChat(
+      [
+        { role: "system", content: videoSystemPrompt(store, brief) },
+        {
+          role: "user",
+          content:
+            parsed.data.prompt ||
+            "Présente la boutique et ses produits avec un ton chaleureux.",
+        },
+      ],
+      { maxTokens: 1100, temperature: 0.8 },
+    );
+  } catch (error) {
+    if (error instanceof DeepSeekError) {
+      console.error("[studio] deepseek video failed", error.code, error.message);
+      return { status: "error", message: deepSeekErrorMessage(error) };
+    }
+    console.error("[studio] deepseek video failed", error);
+    return { status: "error", message: "L’assistant est momentanément indisponible." };
+  }
+
+  const rate = await usdToXofRate();
+  const costReal = deepSeekCostFcfa(completion.usage, rate);
+
+  const { data: charged, error: chargeError } = await supabase.rpc(
+    "charge_studio_generation",
+    {
+      p_store_id: store.id,
+      p_action_type: parsed.data.actionType,
+      p_prompt: parsed.data.prompt,
+      p_result_text: completion.content,
+      p_status: "processing",
+      p_cost_real_fcfa: costReal,
+      p_metadata: {
+        model: completion.model,
+        prompt_tokens: completion.usage.promptTokens,
+        completion_tokens: completion.usage.completionTokens,
+        prompt_cache_miss_tokens: completion.usage.promptCacheMissTokens,
+        prompt_cache_hit_tokens: completion.usage.promptCacheHitTokens,
+        usd_xof: rate,
+        duration_seconds: brief.duration,
+      },
+    },
+  );
+
+  if (chargeError) {
+    console.error("[studio] video charge failed", chargeError.message);
+    if (chargeError.message.includes("studio_insufficient_balance")) {
+      return {
+        status: "error",
+        message: `Solde insuffisant : cette vidéo coûte ${price} FCFA. Recharge ton Studio.`,
+      };
+    }
+    return {
+      status: "error",
+      message: "La génération n’a pas pu être facturée. Réessaie.",
+    };
+  }
+
+  const charge = charged as { balance?: number } | null;
+
+  revalidatePath("/", "layout");
+
   return {
-    status: "unavailable",
-    message: `Le générateur vidéo sera connecté à l'étape suivante. Aucun montant n'a été débité : cette vidéo coûtera ${price.price_fcfa} FCFA.`,
+    status: "ok",
+    message:
+      "Script généré. Le rendu vidéo sera ajouté à la prochaine étape.",
+    resultText: completion.content,
+    balanceFcfa: charge?.balance,
   };
 }
+
+/* ------------------------------------------------------------------ *
+ *  Recharge SasPay
+ * ------------------------------------------------------------------ */
 
 export type StudioRechargeState = {
   status: "idle" | "pending" | "error";
@@ -133,13 +416,6 @@ function splitName(name: string): { first: string; last: string } {
   return { first: parts[0], last: parts.slice(1).join(" ") || parts[0] };
 }
 
-/**
- * Recharge du portefeuille par softpay SasPay.
- *
- * Le montant est créé côté base (`create_studio_topup`), puis la référence
- * SasPay est enregistrée sur la recharge. Le crédit n'a lieu qu'à la
- * confirmation du webhook, de façon idempotente.
- */
 export async function startStudioRechargeAction(
   _previous: StudioRechargeState,
   formData: FormData,
