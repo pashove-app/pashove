@@ -289,7 +289,7 @@ const fr = {
     paymentStatus:
       "Les paiements en ligne sont actifs : mobile money dans 22 pays et 64 réseaux via SasPay, carte bancaire dès 25 000 FCFA de panier. Le paiement à la livraison reste disponible.",
     note:
-      "Montants en FCFA (XOF), hors taxes. Free : les frais SasPay sont inclus dans la commission de 10 %. Standard et Pro : les frais SasPay s’ajoutent, payés par le client ou par le marchand selon son réglage. La commission Pashove porte sur le sous-total après remise. Pays de vente illimités ; retraits sans frais Pashove.",
+      "Montants en FCFA (XOF), hors taxes. Free : 6 % de commission Pashove, frais SasPay ajoutés et payés par le client (ou absorbés par le marchand s’il le choisit). Standard et Pro : 2 % et 0 %, frais SasPay selon le même réglage. La commission Pashove porte sur le sous-total après remise. Pays de vente illimités ; retraits sans frais Pashove.",
     plans: [
       {
         code: "free",
@@ -297,13 +297,13 @@ const fr = {
         price: "0",
         period: "pour toujours",
         description: "Pour lancer ta première boutique et vendre dès cette semaine.",
-        commission: "10 %",
+        commission: "6 %",
         stores: "2 boutiques",
         team: "5 membres",
         features: [
           "Produits physiques, numériques et services",
           "Mobile money dans 22 pays (64 réseaux)",
-          "Frais SasPay inclus dans les 10 %",
+          "Frais SasPay payés par le client (ou par le marchand)",
           "Carte bancaire dès 25 000 FCFA",
           "Thèmes officiels et éditeur",
           "Messagerie et téléchargements protégés",
@@ -646,9 +646,9 @@ const en: SiteContent = {
     paymentStatus:
       "Online payments are live: mobile money in 22 countries and 64 networks via SasPay, card from 25,000 FCFA carts. Cash on delivery remains available.",
     note:
-      "Amounts in FCFA (XOF), excluding taxes. Free: SasPay fees are included in the 10% commission. Standard and Pro: SasPay fees are added, paid by the customer or the merchant depending on their setting. Pashove commission applies to the subtotal after discount. Unlimited sales countries; withdrawals with no Pashove fee.",
+      "Amounts in FCFA (XOF), excluding taxes. Free: 6% Pashove commission, SasPay fees added and paid by the customer (or absorbed by the merchant if chosen). Standard and Pro: 2% and 0%, SasPay fees under the same setting. Pashove commission applies to the subtotal after discount. Unlimited sales countries; withdrawals with no Pashove fee.",
     plans: [
-      { code: "free", name: "Free", price: "0", period: "forever", description: "Launch your first store and sell this week.", commission: "10 %", stores: "2 stores", team: "5 members", features: ["Physical, digital and service products", "Mobile money in 22 countries (64 networks)", "SasPay fees included in the 10%", "Card from 25,000 FCFA carts", "Official themes and editor", "Messaging and protected downloads"], cta: "Start for free" },
+      { code: "free", name: "Free", price: "0", period: "forever", description: "Launch your first store and sell this week.", commission: "6 %", stores: "2 stores", team: "5 members", features: ["Physical, digital and service products", "Mobile money in 22 countries (64 networks)", "SasPay fees paid by the customer (or by the merchant)", "Card from 25,000 FCFA carts", "Official themes and editor", "Messaging and protected downloads"], cta: "Start for free" },
       { code: "standard", name: "Standard", price: "25,000", period: "FCFA / month", description: "For merchants selling every week.", commission: "2 %", stores: "5 stores", team: "15 members", popular: true, features: ["Everything in Free", "5 stores and 15 members", "Commission reduced to 2%", "SasPay fees on top, customer or merchant", "Partners, affiliation and shared catalog", "Priority support"], cta: "Start for free" },
       { code: "pro", name: "Pro", price: "45,000", period: "FCFA / month", description: "For teams and high volumes.", commission: "0 %", stores: "10 stores", team: "50 members", features: ["Everything in Standard", "10 stores and 50 members", "0% Pashove commission", "SasPay fees on top", "Advanced roles and permissions", "Dedicated support"], cta: "Start for free" },
     ] as MarketingPlan[],

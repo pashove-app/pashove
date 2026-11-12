@@ -479,7 +479,7 @@ const bm: Dictionary = {
         price: "0",
         period: "waati bɛɛ",
         description: "Ka kɛlɛ, ka i feerenw fɔlɔ feere, ka wari sɔrɔ.",
-        commission: "10 %",
+        commission: "6 %",
         features: [
           "Butiki 1",
           "Feerenw hakɛ tɛ",
@@ -1210,7 +1210,7 @@ const bm: Dictionary = {
     sidebar: {
       profileCta: "N profil ye",
       planTitle: "Version gratis",
-      planText: "10 % sara bɛɛ la",
+      planText: "6 % sara bɛɛ la",
       adminSection: "Sistɛmu",
       adminConsole: "Console Admin",
       collapse: "Menu dogo",

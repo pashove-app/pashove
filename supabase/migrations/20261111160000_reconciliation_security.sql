@@ -55,6 +55,7 @@ begin
   if (new.commission_bps is distinct from old.commission_bps)
      and not public.is_platform_admin()
      and coalesce(current_setting('request.jwt.claim.role', true), '') <> 'service_role'
+     and coalesce(current_setting('pashove.allow_commission_update', true), '') <> 'on'
   then
     raise exception 'store_field_protected' using errcode = '42501';
   end if;

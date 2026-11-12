@@ -44,7 +44,18 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://pashove.com"),
   applicationName: "Pashove",
   authors: [{ name: "Pashove", url: "https://pashove.com" }],
+  title: {
+    default: "Pashove — Le commerce en ligne, sans frontières",
+    template: "%s · Pashove",
+  },
   robots: { index: true, follow: true },
+  icons: {
+    icon: [
+      { url: "/brand/pashove-mark.png", type: "image/png" },
+    ],
+    shortcut: "/brand/pashove-mark.png",
+    apple: "/brand/pashove-mark.png",
+  },
   description:
     "Crée ta boutique, vends tes produits physiques, numériques ou tes services et encaisse en Mobile Money dans 22 pays.",
   openGraph: {
@@ -58,10 +69,10 @@ export const metadata: Metadata = {
       "Crée ta boutique, vends tes produits et encaisse en Mobile Money dans 22 pays. Pensé pour les marchands d’Afrique.",
     images: [
       {
-        url: "/marketing/storefront.png",
-        width: 1400,
-        height: 972,
-        alt: "Pashove — vitrine, commandes et paiements",
+        url: "/brand/og-pashove.png",
+        width: 1200,
+        height: 630,
+        alt: "Pashove — le commerce en ligne, sans frontières",
       },
     ],
   },
@@ -70,7 +81,7 @@ export const metadata: Metadata = {
     title: "Pashove — Le commerce en ligne, sans frontières",
     description:
       "Crée ta boutique, vends tes produits et encaisse en Mobile Money dans 22 pays.",
-    images: ["/marketing/storefront.png"],
+    images: ["/brand/og-pashove.png"],
   },
 };
 

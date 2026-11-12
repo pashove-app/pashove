@@ -95,7 +95,7 @@ export default async function PlanSettingsPage({
           <div>
             <dt className="text-subtle">Commission</dt>
             <dd className="font-medium text-fg">
-              {(plan?.commissionBps ?? 1000) / 100} %
+              {(plan?.commissionBps ?? 600) / 100} %
             </dd>
           </div>
           <div>

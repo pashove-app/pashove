@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 /**
  * Downgrade quotidien des abonnements expirés.
  *
- * Le retour au Free réapplique la commission de 10 % et repasse en brouillon
+ * Le retour au Free réapplique la commission de 6 % et repasse en brouillon
  * les boutiques au-delà de la limite. Les données restent intactes.
  */
 export async function GET(request: Request) {

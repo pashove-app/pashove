@@ -481,7 +481,7 @@ const fr = {
         price: "0",
         period: "pour toujours",
         description: "Pour tester, vendre tes premiers produits et encaisser.",
-        commission: "10 %",
+        commission: "6 %",
         features: [
           "1 boutique",
           "Produits illimités",
@@ -1251,7 +1251,7 @@ const fr = {
     sidebar: {
       profileCta: "Voir mon profil",
       planTitle: "Version gratuite",
-      planText: "10 % par vente",
+      planText: "6 % par vente",
       adminSection: "Système",
       adminConsole: "Console Admin",
       collapse: "Réduire le menu",

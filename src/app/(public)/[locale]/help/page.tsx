@@ -37,7 +37,7 @@ const COPY = {
       },
       {
         q: "Combien coûte Pashove ?",
-        a: "Free : 0 FCFA et 10 % de commission, frais SasPay inclus. Standard : 25 000 FCFA/mois et 2 %. Pro : 45 000 FCFA/mois et 0 %. Aucun frais sur les retraits.",
+        a: "Free : 0 FCFA et 6 % de commission, frais SasPay payés par le client (ou absorbés par le marchand s’il le choisit). Standard : 25 000 FCFA/mois et 2 %. Pro : 45 000 FCFA/mois et 0 %. Aucun frais sur les retraits.",
       },
       {
         q: "Comment recevoir mon argent ?",
@@ -89,7 +89,7 @@ const COPY = {
       },
       {
         q: "How much does Pashove cost?",
-        a: "Free: 0 FCFA and 10% commission, SasPay fees included. Standard: 25,000 FCFA/month and 2%. Pro: 45,000 FCFA/month and 0%. No fees on payouts.",
+        a: "Free: 0 FCFA and 6% commission, SasPay fees paid by the customer (or absorbed by the merchant if chosen). Standard: 25,000 FCFA/month and 2%. Pro: 45,000 FCFA/month and 0%. No fees on payouts.",
       },
       {
         q: "How do I get paid?",

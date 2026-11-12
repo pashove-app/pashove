@@ -473,7 +473,7 @@ const en: Dictionary = {
         price: "0",
         period: "forever",
         description: "To test, sell your first products and get paid.",
-        commission: "10%",
+        commission: "6%",
         features: [
           "1 store",
           "Unlimited products",
@@ -1201,7 +1201,7 @@ const en: Dictionary = {
     sidebar: {
       profileCta: "View my profile",
       planTitle: "Free plan",
-      planText: "10% per sale",
+      planText: "6% per sale",
       adminSection: "System",
       adminConsole: "Admin console",
       collapse: "Collapse menu",

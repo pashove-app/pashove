@@ -7,7 +7,7 @@
  */
 export const COURIER_HOME = "/app/courier";
 
-const ALLOWED = new Set(["/app", COURIER_HOME]);
+const ALLOWED = new Set(["/app", COURIER_HOME, "/partner/delivery"]);
 
 export function safeAppPath(value: unknown): string | null {
   return typeof value === "string" && ALLOWED.has(value) ? value : null;

@@ -116,7 +116,7 @@ export async function getCheckoutPaymentMethods(
     methods,
     provider: activeOnlineProvider(),
     feeIncluded:
-      typeof raw.feeIncluded === "boolean" ? raw.feeIncluded : planCode === "free",
+      typeof raw.feeIncluded === "boolean" ? raw.feeIncluded : false,
     feeChargeMode: raw.feeChargeMode === "client" ? "client" : "merchant",
   };
 }

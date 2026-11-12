@@ -60,7 +60,7 @@ const COPY = {
         points: [
           "Mobile money dans 22 pays et 64 réseaux ; carte à partir de 25 000 FCFA.",
           "Chaque marché a sa devise. La conversion FX est en préparation.",
-          "Free : frais SasPay inclus dans les 10 %. Standard et Pro : frais en plus, payés par le client ou par toi.",
+          "Free : 6 % de commission, frais SasPay payés par le client (ou par toi si tu choisis de les absorber). Standard et Pro : 2 % et 0 %, mêmes règles de frais.",
           "Retraits après KYC et PIN ; seuls les frais SasPay de décaissement s’appliquent.",
         ],
       },
@@ -154,7 +154,7 @@ const COPY = {
         points: [
           "Mobile money in 22 countries and 64 networks; card from 25,000 FCFA.",
           "Each market has its currency. FX conversion is in preparation.",
-          "Free: SasPay fees included in the 10%. Standard and Pro: fees on top, paid by the customer or by you.",
+          "Free: 6% commission, SasPay fees paid by the customer (or by you if you choose to absorb them). Standard and Pro: 2% and 0%, same fee rules.",
           "Payouts after KYC and PIN; only SasPay disbursement fees apply.",
         ],
       },

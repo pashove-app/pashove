@@ -478,7 +478,7 @@ const ar: Dictionary = {
         price: "0",
         period: "إلى الأبد",
         description: "للتجربة وبيع منتجاتك الأولى والتحصيل.",
-        commission: "10%",
+        commission: "6%",
         features: [
           "متجر واحد",
           "منتجات بلا حدود",
@@ -1196,7 +1196,7 @@ const ar: Dictionary = {
     sidebar: {
       profileCta: "عرض ملفي",
       planTitle: "النسخة المجانية",
-      planText: "10% لكل عملية بيع",
+      planText: "6% لكل عملية بيع",
       adminSection: "النظام",
       adminConsole: "وحدة الإدارة",
       collapse: "تصغير القائمة",

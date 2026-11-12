@@ -31,7 +31,6 @@ export function MarketsForm({
   selected,
   storeCurrency,
   codEnabled,
-  planCode,
   feeChargeMode,
 }: {
   locale: string;
@@ -39,7 +38,6 @@ export function MarketsForm({
   selected: string[];
   storeCurrency: string;
   codEnabled: boolean;
-  planCode: string;
   feeChargeMode: "client" | "merchant";
 }) {
   const [state, formAction, pending] = useActionState<MarketsState, FormData>(
@@ -190,13 +188,7 @@ export function MarketsForm({
           </span>
         </label>
 
-        {planCode === "free" ? (
-          <p className="mt-3 rounded-xl border border-border bg-bg px-3 py-2.5 text-[0.6875rem] leading-relaxed text-subtle">
-            Les frais SasPay sont inclus dans la commission de 10 % du plan Free.
-            Ce réglage est réservé aux plans Standard et Pro.
-          </p>
-        ) : (
-          <div className="mt-4">
+        <div className="mt-4">
             <p className="text-[0.75rem] font-medium text-fg">
               Frais SasPay
             </p>
@@ -239,8 +231,7 @@ export function MarketsForm({
               })}
             </div>
             <input type="hidden" name="feeChargeMode" value={feeMode} />
-          </div>
-        )}
+        </div>
 
         <div className="mt-4 space-y-1.5 text-[0.6875rem] leading-relaxed text-subtle">
           <p>

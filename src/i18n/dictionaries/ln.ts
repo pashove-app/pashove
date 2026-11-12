@@ -479,7 +479,7 @@ const ln: Dictionary = {
         price: "0",
         period: "libela",
         description: "Mpo na komeka, kotɛ́kɛ bilɔ́kɔ ya liboso mpe kozwa mbongo.",
-        commission: "10 %",
+        commission: "6 %",
         features: [
           "Magazini 1",
           "Bilɔ́kɔ kozanga mokano",
@@ -1211,7 +1211,7 @@ const ln: Dictionary = {
     sidebar: {
       profileCta: "Talá profil na ngai",
       planTitle: "Version ya ofɛ́lɛ",
-      planText: "10 % na motɛ́kɛ",
+      planText: "6 % na motɛ́kɛ",
       adminSection: "Système",
       adminConsole: "Console Admin",
       collapse: "Kokitisa menu",

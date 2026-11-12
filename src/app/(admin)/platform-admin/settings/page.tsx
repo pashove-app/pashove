@@ -39,7 +39,7 @@ export default async function AdminSettingsPage() {
           <div>
             <h2 className="text-[1rem] font-medium text-fg">Plans</h2>
             <p className="mt-1 text-[0.75rem] text-subtle">
-              Commission en points de base : 1000 = 10 %, 200 = 2 %, 0 = 0 %.
+              Commission en points de base : 600 = 6 %, 200 = 2 %, 0 = 0 %.
             </p>
           </div>
         </div>

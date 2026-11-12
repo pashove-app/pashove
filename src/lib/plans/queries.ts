@@ -24,7 +24,7 @@ export async function getCurrentPlan(): Promise<CurrentPlan | null> {
   return {
     code: String(raw.code ?? "free"),
     name: String(raw.name ?? "Free"),
-    commissionBps: Number(raw.commissionBps ?? 1000),
+    commissionBps: Number(raw.commissionBps ?? 600),
     maxStores: Number(raw.maxStores ?? 2),
     maxMembers: Number(raw.maxMembers ?? 5),
     priceAmount: Number(raw.priceAmount ?? 0),

@@ -17,6 +17,7 @@ const NAV = [
   { href: "/platform-admin/users", label: "Utilisateurs", icon: icons.user },
   { href: "/platform-admin/kyc", label: "KYC", icon: icons.shield },
   { href: "/platform-admin/couriers", label: "Livreurs", icon: icons.route },
+  { href: "/platform-admin/delivery-partners", label: "Livreurs partenaires", icon: icons.users },
   { href: "/platform-admin/deliveries", label: "Livraisons", icon: icons.box },
   { href: "/platform-admin/delivery-pricing", label: "Tarifs livraison", icon: icons.wallet },
   { href: "/platform-admin/payouts", label: "Retraits", icon: icons.wallet },
