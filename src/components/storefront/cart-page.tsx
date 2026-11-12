@@ -32,8 +32,10 @@ export function CartPage() {
       (item) =>
         item.productType === "digital" || item.productType === "service",
     );
-  const canCheckout =
-    items.length > 0 && Boolean(cart?.codEligible) && !hasUnavailable;
+  // Le COD est une option de paiement, pas une condition pour ouvrir le
+  // checkout : une boutique en Pashove Delivery n'a jamais de COD et doit
+  // pourtant pouvoir encaisser en ligne.
+  const canCheckout = items.length > 0 && !hasUnavailable;
 
   if (items.length === 0) {
     return (
@@ -216,12 +218,6 @@ export function CartPage() {
           {hasUnavailable ? (
             <p className="mt-4 rounded-lg border border-red-400/25 bg-red-400/[0.07] px-3 py-2 text-[0.75rem] leading-relaxed text-red-600 dark:text-red-400">
               {labels.cartUnavailable}
-            </p>
-          ) : null}
-
-          {cart && !cart.codEligible ? (
-            <p className="mt-4 rounded-lg border border-amber-400/25 bg-amber-400/[0.07] px-3 py-2 text-[0.75rem] leading-relaxed text-amber-700 dark:text-amber-300">
-              {labels.cartCodUnavailable}
             </p>
           ) : null}
 

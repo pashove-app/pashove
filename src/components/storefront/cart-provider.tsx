@@ -442,25 +442,13 @@ function CartDrawer() {
                 </div>
               </dl>
 
-              {cart && !cart.codEligible ? (
-                <p className="mt-3 rounded-lg border border-amber-400/25 bg-amber-400/[0.07] px-3 py-2 text-[0.75rem] leading-relaxed text-amber-700 dark:text-amber-300">
-                  {labels.cartCodUnavailable}
-                </p>
-              ) : null}
-
-              {cart?.codEligible ? (
-                <Link
-                  href={path(locale, `/store/${slug}/checkout`)}
-                  onClick={() => setOpen(false)}
-                  className="mt-4 flex h-11 w-full items-center justify-center rounded-xl bg-brand-500 text-[0.875rem] font-medium text-white transition-colors hover:bg-brand-600"
-                >
-                  {labels.checkout}
-                </Link>
-              ) : (
-                <span className="mt-4 flex h-11 w-full cursor-not-allowed items-center justify-center rounded-xl bg-hairline text-[0.875rem] font-medium text-faint">
-                  {labels.checkout}
-                </span>
-              )}
+              <Link
+                href={path(locale, `/store/${slug}/checkout`)}
+                onClick={() => setOpen(false)}
+                className="mt-4 flex h-11 w-full items-center justify-center rounded-xl bg-brand-500 text-[0.875rem] font-medium text-white transition-colors hover:bg-brand-600"
+              >
+                {labels.checkout}
+              </Link>
 
               <Link
                 href={path(locale, `/store/${slug}/cart`)}
