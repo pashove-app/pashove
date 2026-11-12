@@ -38,7 +38,7 @@ export type StudioPendingTopup = {
 export type StudioTopup = {
   id: string;
   amountFcfa: number;
-  status: "pending" | "paid" | "failed";
+  status: "pending" | "initiated" | "paid" | "failed";
   provider: "saspay" | "manual" | "welcome";
   note: string | null;
   createdAt: string;

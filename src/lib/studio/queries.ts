@@ -43,7 +43,7 @@ export async function getStudioSnapshot(
       .select("id, amount_fcfa, created_at")
       .eq("store_id", storeId)
       .eq("provider", "saspay")
-      .eq("status", "pending")
+      .in("status", ["pending", "initiated"])
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle(),

@@ -416,6 +416,29 @@ function splitName(name: string): { first: string; last: string } {
   return { first: parts[0], last: parts.slice(1).join(" ") || parts[0] };
 }
 
+/** Message marchand à partir du refus SasPay, sans exposer de détail interne. */
+function saspayUserMessage(error: SasPayError): string {
+  const text = `${error.code} ${error.message}`.toLowerCase();
+
+  if (/idempot|duplicate|conflict|409/.test(text)) {
+    return "Une recharge précédente est encore en cours. Attends quelques minutes puis réessaie.";
+  }
+  if (/phone|msisdn|num[eé]ro|invalid/.test(text)) {
+    return "Le numéro Mobile Money est invalide ou n’est pas reconnu par l’opérateur.";
+  }
+  if (/insufficient|balance|solde|funds/.test(text)) {
+    return "Solde insuffisant sur ce compte Mobile Money.";
+  }
+  if (/unavailable|network|operator|op[eé]rateur|down/.test(text)) {
+    return "Ce réseau Mobile Money est momentanément indisponible. Essaie un autre opérateur.";
+  }
+
+  const detail = error.message.trim();
+  return detail
+    ? `SasPay a refusé le paiement : ${detail.slice(0, 180)}`
+    : "SasPay a refusé le paiement. Essaie un autre opérateur.";
+}
+
 export async function startStudioRechargeAction(
   _previous: StudioRechargeState,
   formData: FormData,
@@ -528,10 +551,35 @@ export async function startStudioRechargeAction(
       idempotencyKey: topup.id,
     });
   } catch (error) {
+    await supabase.rpc("fail_studio_topup_by_id", { p_id: topup.id });
+
     if (error instanceof SasPayError) {
-      console.error("[studio] softpay failed", error.code, error.message);
+      console.error(
+        "[studio] softpay failed",
+        error.code,
+        error.status,
+        error.message,
+      );
+      return { status: "error", message: saspayUserMessage(error) };
     }
-    return { status: "error", message: "SasPay a refusé le paiement." };
+
+    return {
+      status: "error",
+      message: "Impossible de joindre SasPay. Vérifie ta connexion et réessaie.",
+    };
+  }
+
+  const providerStatus = String(
+    (intent as { status?: string }).status ?? "",
+  ).toUpperCase();
+
+  if (["FAILED", "CANCELLED", "REJECTED"].includes(providerStatus)) {
+    await supabase.rpc("fail_studio_topup_by_id", { p_id: topup.id });
+    return {
+      status: "error",
+      message:
+        "SasPay a refusé le paiement. Vérifie le numéro et le solde du compte Mobile Money, ou essaie un autre opérateur.",
+    };
   }
 
   const { error: intentError } = await supabase.rpc(

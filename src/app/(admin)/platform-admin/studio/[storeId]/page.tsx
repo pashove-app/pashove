@@ -25,7 +25,8 @@ const TOPUP_PROVIDERS: Record<StudioTopup["provider"], string> = {
 };
 
 const TOPUP_STATUS: Record<StudioTopup["status"], string> = {
-  pending: "En attente",
+  pending: "Préparée",
+  initiated: "Initiée",
   paid: "Payée",
   failed: "Échouée",
 };
