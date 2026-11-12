@@ -10,6 +10,7 @@ import type { StoreOption } from "@/components/dashboard/store-switcher";
 import type { Merchant } from "@/components/dashboard/types";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/get-dictionary";
+import type { AppNotification } from "@/lib/notifications/queries";
 
 /**
  * Coquille de l'espace marchand.
@@ -26,6 +27,8 @@ export function DashboardShell({
   isSuperAdmin,
   stores,
   activeStoreId,
+  notifications,
+  unreadNotifications,
   children,
 }: {
   t: Dictionary;
@@ -35,6 +38,8 @@ export function DashboardShell({
   isSuperAdmin: boolean;
   stores: StoreOption[];
   activeStoreId: string;
+  notifications: AppNotification[];
+  unreadNotifications: number;
   children: ReactNode;
 }) {
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
@@ -69,7 +74,12 @@ export function DashboardShell({
         />
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <DashboardTopbar t={t} locale={locale} />
+          <DashboardTopbar
+            t={t}
+            locale={locale}
+            notifications={notifications}
+            unreadNotifications={unreadNotifications}
+          />
 
           <main className="flex-1 px-5 pb-28 pt-8 sm:px-8 lg:pb-10">
             {children}

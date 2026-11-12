@@ -9,6 +9,10 @@ import { requireSecondFactor } from "@/lib/auth/mfa";
 import { currentOnboardingStep, onboardingPath } from "@/lib/onboarding/steps";
 import { readProfile } from "@/lib/profile/queries";
 import {
+  countUnreadNotifications,
+  listNotifications,
+} from "@/lib/notifications/queries";
+import {
   ACTIVE_STORE_COOKIE,
   listStoreMemberships,
 } from "@/lib/stores/queries";
@@ -65,6 +69,10 @@ export default async function DashboardLayout({
     .maybeSingle();
 
   const profile = await readProfile();
+  const [notifications, unreadNotifications] = await Promise.all([
+    listNotifications(5),
+    countUnreadNotifications(),
+  ]);
   const t = await getDictionary(locale);
 
   // Le repli de la sidebar est un choix d'affichage, pas une donnée métier :
@@ -88,6 +96,8 @@ export default async function DashboardLayout({
       isSuperAdmin={platformAdmin?.role === "super_admin"}
       stores={stores}
       activeStoreId={membership.store.id}
+      notifications={notifications}
+      unreadNotifications={unreadNotifications}
     >
       {children}
     </DashboardShell>
