@@ -14,7 +14,10 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { toFieldErrors } from "@/lib/validation";
 import { rememberOrderToken } from "@/lib/customer/order-cookie";
 import { paymentSchema } from "@/lib/payments/schema";
-import { activeOnlineProvider, getPaymentProvider } from "@/lib/payments/registry";
+import {
+  activeOnlineProvider,
+  onlineProviderRouter,
+} from "@/lib/payments/registry";
 import { normalizePaymentPhone } from "@/lib/payments/phone";
 import { getCheckoutOptions } from "@/lib/payments/queries";
 import { formatMinor } from "@/lib/fx/currency";
@@ -458,7 +461,7 @@ export async function placeOrderAction(
     }
 
     try {
-      const provider = getPaymentProvider(providerCode);
+      const router = onlineProviderRouter();
       // Taux et montant figés pour ce marché avant toute intention.
       if (providerCode === "saspay" && market.paymentCurrency) {
         await payments.rpc("set_order_fx", {
@@ -475,7 +478,7 @@ export async function placeOrderAction(
         ? `/checkout/success/${online.token}`
         : `/${locale}/store/${storefront.store.slug}/checkout/success/${online.token}`;
 
-      const intent = await provider.createIntent({
+      const intent = await router.createIntent({
         orderId: online.orderId,
         amount: paymentAmount,
         currency: paymentCurrency,
@@ -493,6 +496,16 @@ export async function placeOrderAction(
           phone: paymentPhone,
         },
       });
+
+      // Tant que les fournisseurs de secours ne sont pas implémentés, une
+      // bascule réelle ne doit jamais être comptabilisée sous SasPay.
+      if (intent.provider !== providerCode) {
+        console.error("[checkout] provider fallback recorded", {
+          expected: providerCode,
+          actual: intent.provider,
+        });
+        return { status: "error", messageKey: "checkoutPaymentFailed" };
+      }
 
       if (providerCode === "saspay") {
         // SasPay confirme par webhook : on enregistre l'intention et on laisse
@@ -515,7 +528,7 @@ export async function placeOrderAction(
           p_method: method,
         });
 
-        const confirmation = await provider.confirm(intent);
+        const confirmation = await router.confirm(intent);
 
         if (confirmation.status !== "succeeded") {
           return { status: "error", messageKey: "checkoutPaymentFailed" };
