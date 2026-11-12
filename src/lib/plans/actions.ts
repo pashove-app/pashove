@@ -9,6 +9,7 @@ import {
   listPayinRates,
   SasPayError,
 } from "@/lib/payments/saspay/client";
+import { saspayUserMessage } from "@/lib/payments/saspay/messages";
 import type { Locale } from "@/i18n/config";
 
 export type PlanPaymentState = {
@@ -136,10 +137,17 @@ export async function startPlanPaymentAction(
       idempotencyKey: payment.id,
     });
   } catch (error) {
+    await supabase.rpc("fail_plan_payment_by_id", { p_id: payment.id });
+
     if (error instanceof SasPayError) {
       console.error("[plans] softpay failed", error.code, error.message);
+      return { status: "error", message: saspayUserMessage(error) };
     }
-    return { status: "error", message: "SasPay a refusé le paiement." };
+
+    return {
+      status: "error",
+      message: "Impossible de joindre SasPay. Vérifie ta connexion et réessaie.",
+    };
   }
 
   await supabase.rpc("record_plan_payment_intent", {
@@ -149,6 +157,17 @@ export async function startPlanPaymentAction(
     p_redirect_url: intent.checkout_url?.trim() || null,
     p_country: store.country,
   });
+
+  const providerStatus = String(intent.status ?? "").toUpperCase();
+
+  if (["FAILED", "CANCELLED", "REJECTED"].includes(providerStatus)) {
+    await supabase.rpc("fail_plan_payment", { p_reference: intent.id });
+    return {
+      status: "error",
+      message:
+        "SasPay a refusé le paiement. Vérifie le numéro et le solde du compte Mobile Money, ou essaie un autre opérateur.",
+    };
+  }
 
   revalidatePath("/", "layout");
 

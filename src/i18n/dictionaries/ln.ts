@@ -2690,7 +2690,9 @@ const ln: Dictionary = {
     checkoutPaymentUnavailable: "Moyen oyo ezali te mpo na panier oyo.",
     checkoutDeliveryUnavailable: "Livraison Pashove ezali te mpo na commande oyo.",
     checkoutPaymentFailed: "Kofuta esalemi te. Meka lisusu.",
-    checkoutPaymentInvalid: "Pona moyen ya kofuta.",
+
+    checkoutPaymentFailedTitle: "Paiement non abouti",
+    checkoutPaymentFailedText: "La demande de paiement n’a pas été confirmée. Aucun montant n’a été débité. Tu peux réessayer.",    checkoutPaymentInvalid: "Pona moyen ya kofuta.",
     checkoutCardInvalid: "Tala makambo ya carte.",
     checkoutNameLabel: "Nkómbó mobimba",
     checkoutEmailLabel: "E-mail",

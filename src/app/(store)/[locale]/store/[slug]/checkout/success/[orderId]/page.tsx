@@ -70,7 +70,46 @@ export default async function CheckoutSuccessPage({
   });
 
   const order = data as PublicOrder | null;
-  if (!order || order.paymentStatus === "failed") notFound();
+  if (!order) notFound();
+
+  // Paiement refusé : on affiche une page claire au client, avec un retour
+  // vers la boutique, au lieu d'une 404.
+  if (order.paymentStatus === "failed") {
+    return (
+      <StorefrontShell store={store} locale={locale} t={t}>
+        <StorefrontHeader store={store} locale={locale} t={t} />
+        <main>
+          <Container className="py-12 sm:py-16">
+            <div className="mx-auto w-full max-w-2xl">
+              <div className="rounded-3xl border border-border bg-surface p-6 text-center sm:p-9">
+                <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-500/12 text-red-600 dark:text-red-400">
+                  <Icon path={icons.close} className="h-8 w-8" strokeWidth={2.1} />
+                </span>
+                <h1 className="mt-5 text-[1.75rem] font-medium tracking-[-0.03em] text-fg sm:text-[2rem]">
+                  {t.storefront.checkoutPaymentFailedTitle}
+                </h1>
+                <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
+                  {t.storefront.checkoutPaymentFailedText}
+                </p>
+                <p className="mt-4 inline-flex rounded-full bg-hairline px-4 py-1.5 text-[0.8125rem] font-medium text-body">
+                  {t.storefront.checkoutOrderNumber.replace(
+                    "{number}",
+                    String(order.number),
+                  )}
+                </p>
+                <Link
+                  href={path(locale, `/store/${slug}`)}
+                  className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-brand-500 px-6 text-[0.8125rem] font-semibold text-white transition-colors hover:bg-brand-600"
+                >
+                  {t.storefront.backToShop}
+                </Link>
+              </div>
+            </div>
+          </Container>
+        </main>
+      </StorefrontShell>
+    );
+  }
 
   // Paiement Mobile Money en attente : la page se rafraîchit jusqu'à ce que le
   // webhook SasPay confirme la capture.

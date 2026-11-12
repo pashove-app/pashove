@@ -2757,7 +2757,9 @@ const fr = {
     checkoutPaymentUnavailable: "Ce moyen de paiement n’est pas disponible pour ce panier.",
     checkoutDeliveryUnavailable: "La livraison Pashove n’est pas disponible pour cette commande.",
     checkoutPaymentFailed: "Le paiement n’a pas abouti. Réessaie.",
-    checkoutPaymentInvalid: "Choisis un moyen de paiement.",
+
+    checkoutPaymentFailedTitle: "Paiement non abouti",
+    checkoutPaymentFailedText: "La demande de paiement n’a pas été confirmée. Aucun montant n’a été débité. Tu peux réessayer.",    checkoutPaymentInvalid: "Choisis un moyen de paiement.",
     checkoutCardInvalid: "Vérifie les informations de la carte.",
     checkoutNameLabel: "Nom complet",
     checkoutEmailLabel: "E-mail",

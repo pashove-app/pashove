@@ -2682,7 +2682,9 @@ const bm: Dictionary = {
     checkoutPaymentUnavailable: "Nin sara fɛɛrɛ man available nin paniyɛrɛ ye.",
     checkoutDeliveryUnavailable: "Pashove Delivery tɛ se ka kɛ nin komandi ye.",
     checkoutPaymentFailed: "Sara man tɛmɛ. Aw baara.",
-    checkoutPaymentInvalid: "Sara fɛɛrɛ sugandi.",
+
+    checkoutPaymentFailedTitle: "Paiement non abouti",
+    checkoutPaymentFailedText: "La demande de paiement n’a pas été confirmée. Aucun montant n’a été débité. Tu peux réessayer.",    checkoutPaymentInvalid: "Sara fɛɛrɛ sugandi.",
     checkoutCardInvalid: "Karti kunnafoniw lajɛ.",
     checkoutNameLabel: "Tɔgɔ bɛɛ",
     checkoutEmailLabel: "E-mail",

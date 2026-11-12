@@ -2662,7 +2662,9 @@ const ar: Dictionary = {
     checkoutPaymentUnavailable: "طريقة الدفع هذه غير متاحة لهذه السلة.",
     checkoutDeliveryUnavailable: "توصيل Pashove غير متاح لهذا الطلب.",
     checkoutPaymentFailed: "لم يتم الدفع. أعد المحاولة.",
-    checkoutPaymentInvalid: "اختر طريقة دفع.",
+
+    checkoutPaymentFailedTitle: "فشل الدفع",
+    checkoutPaymentFailedText: "لم يتم تأكيد طلب الدفع. لم يتم خصم أي مبلغ. يمكنك المحاولة مرة أخرى.",    checkoutPaymentInvalid: "اختر طريقة دفع.",
     checkoutCardInvalid: "تحقق من بيانات البطاقة.",
     checkoutNameLabel: "الاسم الكامل",
     checkoutEmailLabel: "البريد الإلكتروني",

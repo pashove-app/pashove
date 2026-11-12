@@ -69,6 +69,14 @@ export function methodForNetwork(code: string): PaymentMethod {
   return ruleFor(code)?.method ?? "mobile_money";
 }
 
+/**
+ * PayDunya est un agrégateur, pas un opérateur : son compte est proposé par
+ * SasPay mais ne doit pas apparaître comme un moyen de paiement au client.
+ */
+export function isGatewayNetwork(code: string | null | undefined): boolean {
+  return Boolean(code && code.toLowerCase().startsWith("paydunya"));
+}
+
 /** Frais du réseau pour un montant donné, en unité mineure. */
 export function networkFeeMinor(
   amountMinor: number,

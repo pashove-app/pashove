@@ -7,6 +7,7 @@ import { resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { getCurrentPlan } from "@/lib/plans/queries";
 import { currentStore } from "@/lib/stores/queries";
+import { isGatewayNetwork } from "@/lib/payments/catalog";
 import { listPayinRates } from "@/lib/payments/saspay/client";
 
 export async function generateMetadata({
@@ -41,7 +42,8 @@ export default async function PlanSettingsPage({
     .filter(
       (rate) =>
         rate.country_code?.toUpperCase() === store.country.toUpperCase() &&
-        rate.payin?.available !== false,
+        rate.payin?.available !== false &&
+        !isGatewayNetwork(rate.network_code),
     )
     .map((rate) => ({ code: rate.network_code, name: rate.network_name }));
 

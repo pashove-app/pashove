@@ -6,6 +6,7 @@ import {
 } from "@/components/studio/studio-workspace";
 import { resolveLocale } from "@/i18n/config";
 import { formatMoney } from "@/lib/money";
+import { isGatewayNetwork } from "@/lib/payments/catalog";
 import { listPayinRates } from "@/lib/payments/saspay/client";
 import { getStudioSnapshot } from "@/lib/studio/queries";
 import type {
@@ -76,7 +77,8 @@ export default async function StudioPage({
     .filter(
       (rate) =>
         rate.country_code?.toUpperCase() === store.country.toUpperCase() &&
-        rate.payin?.available !== false,
+        rate.payin?.available !== false &&
+        !isGatewayNetwork(rate.network_code),
     )
     .map((rate) => ({ code: rate.network_code, name: rate.network_name }));
 

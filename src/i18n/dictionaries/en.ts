@@ -2688,7 +2688,9 @@ const en: Dictionary = {
     checkoutPaymentUnavailable: "This payment method is not available for this cart.",
     checkoutDeliveryUnavailable: "Pashove delivery is not available for this order.",
     checkoutPaymentFailed: "Payment did not go through. Try again.",
-    checkoutPaymentInvalid: "Choose a payment method.",
+
+    checkoutPaymentFailedTitle: "Payment failed",
+    checkoutPaymentFailedText: "The payment request was not confirmed. No amount was charged. You can try again.",    checkoutPaymentInvalid: "Choose a payment method.",
     checkoutCardInvalid: "Check the card details.",
     checkoutNameLabel: "Full name",
     checkoutEmailLabel: "Email",

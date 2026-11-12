@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { AutoRefresh } from "@/components/ui/auto-refresh";
 import { Spinner } from "@/components/ui/primitives";
 import { SelectField, TextField } from "@/components/ui/field";
 import {
@@ -126,6 +127,8 @@ export function PlanUpgradeForm({
         automatique : tu renouvelles toi-même chaque mois. Les frais SasPay du
         paiement d’abonnement sont ajoutés au montant.
       </p>
+
+      {state.status === "pending" ? <AutoRefresh intervalMs={8000} /> : null}
 
       {state.message ? (
         <p

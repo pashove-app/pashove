@@ -2,7 +2,12 @@ import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import { activeOnlineProvider } from "@/lib/payments/registry";
 import { getPublicStoreMarkets } from "@/lib/markets/queries";
-import { codOption, fallbackOption, optionFromRate } from "@/lib/payments/catalog";
+import {
+  codOption,
+  fallbackOption,
+  isGatewayNetwork,
+  optionFromRate,
+} from "@/lib/payments/catalog";
 import { listPayinRates } from "@/lib/payments/saspay/client";
 import { convertMinor } from "@/lib/fx/rates";
 import { formatMinor } from "@/lib/fx/currency";
@@ -243,7 +248,13 @@ export async function getCheckoutOptions(
       if (countryRates.length > 0) {
         const seen = new Set<string>();
         for (const rate of countryRates) {
-          if (!rate.network_code || seen.has(rate.network_code)) continue;
+          if (
+            !rate.network_code ||
+            isGatewayNetwork(rate.network_code) ||
+            seen.has(rate.network_code)
+          ) {
+            continue;
+          }
           seen.add(rate.network_code);
           options.push(
             optionFromRate(rate, provider, quote.amountMinor, chargeClientFee),
