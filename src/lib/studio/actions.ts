@@ -9,6 +9,7 @@ import {
   listPayinRates,
   SasPayError,
 } from "@/lib/payments/saspay/client";
+import { normalizePaymentPhone } from "@/lib/payments/phone";
 import { saspayUserMessage } from "@/lib/payments/saspay/messages";
 import {
   deepSeekChat,
@@ -447,7 +448,9 @@ export async function startStudioRechargeAction(
     };
   }
 
-  if (phone.replace(/\D/g, "").length < 8) {
+  const paymentPhone = normalizePaymentPhone(phone, store.country);
+
+  if (!paymentPhone || paymentPhone.replace(/\D/g, "").length < 8) {
     return { status: "error", message: "Numéro de téléphone invalide." };
   }
 
@@ -521,7 +524,7 @@ export async function startStudioRechargeAction(
         email: user.email ?? store.contact_email ?? "marchand@pashove.com",
         first_name: name.first,
         last_name: name.last,
-        phone,
+        phone: paymentPhone,
       },
       metadata: { studio_topup_id: topup.id },
       returnUrl: `${siteUrl()}/${locale}/app/studio`,

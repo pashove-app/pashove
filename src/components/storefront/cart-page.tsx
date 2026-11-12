@@ -235,9 +235,11 @@ export function CartPage() {
             </span>
           )}
 
-          <p className="mt-3 text-center text-[0.6875rem] leading-relaxed text-faint">
-            {instantOnly ? labels.cartInstantInfo : labels.codInfo}
-          </p>
+          {instantOnly || cart?.codEligible ? (
+            <p className="mt-3 text-center text-[0.6875rem] leading-relaxed text-faint">
+              {instantOnly ? labels.cartInstantInfo : labels.codInfo}
+            </p>
+          ) : null}
         </aside>
       </div>
     </div>

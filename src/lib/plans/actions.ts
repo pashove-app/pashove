@@ -9,6 +9,7 @@ import {
   listPayinRates,
   SasPayError,
 } from "@/lib/payments/saspay/client";
+import { normalizePaymentPhone } from "@/lib/payments/phone";
 import { saspayUserMessage } from "@/lib/payments/saspay/messages";
 import type { Locale } from "@/i18n/config";
 
@@ -49,7 +50,9 @@ export async function startPlanPaymentAction(
     return { status: "error", message: "Choisis un plan." };
   }
 
-  if (phone.replace(/\D/g, "").length < 8) {
+  const paymentPhone = normalizePaymentPhone(phone, store.country);
+
+  if (!paymentPhone || paymentPhone.replace(/\D/g, "").length < 8) {
     return { status: "error", message: "Numéro de téléphone invalide." };
   }
 
@@ -129,7 +132,7 @@ export async function startPlanPaymentAction(
         email: user.email ?? store.contact_email ?? "marchand@pashove.com",
         first_name: name.first,
         last_name: name.last,
-        phone,
+        phone: paymentPhone,
       },
       metadata: { plan_payment_id: payment.id },
       returnUrl: `${siteUrl()}/${locale}/app/settings/plan`,

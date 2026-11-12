@@ -15,6 +15,7 @@ import { toFieldErrors } from "@/lib/validation";
 import { rememberOrderToken } from "@/lib/customer/order-cookie";
 import { paymentSchema } from "@/lib/payments/schema";
 import { activeOnlineProvider, getPaymentProvider } from "@/lib/payments/registry";
+import { normalizePaymentPhone } from "@/lib/payments/phone";
 import { getCheckoutOptions } from "@/lib/payments/queries";
 import { formatMinor } from "@/lib/fx/currency";
 import { convertMinor } from "@/lib/fx/rates";
@@ -431,6 +432,15 @@ export async function placeOrderAction(
         ? `/checkout/success/${online.token}`
         : `/${locale}/store/${storefront.store.slug}/checkout/success/${online.token}`;
 
+      // Le numéro qui reçoit la demande de paiement est celui saisi dans le
+      // bloc Paiement, pas le téléphone de contact. On le normalise avec
+      // l'indicatif du pays payé.
+      const paymentPhone =
+        normalizePaymentPhone(
+          payment.data.paymentPhone || parsed.data.phone,
+          market.countryCode,
+        ) ?? parsed.data.phone;
+
       const intent = await provider.createIntent({
         orderId: online.orderId,
         amount: paymentAmount,
@@ -446,7 +456,7 @@ export async function placeOrderAction(
         customer: {
           name: parsed.data.name,
           email: parsed.data.email,
-          phone: parsed.data.phone,
+          phone: paymentPhone,
         },
       });
 
