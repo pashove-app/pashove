@@ -112,15 +112,17 @@ export function LoginForm({
         </button>
       </form>
 
-      <p className="mt-7 text-center text-[0.875rem] text-muted">
-        {t.auth.noAccount}{" "}
-        <Link
-          href={authLink(path(locale, "/auth/register"), redirectTo)}
-          className="font-medium text-accent transition-colors hover:text-accent-soft"
-        >
-          {t.auth.switchToRegister}
-        </Link>
-      </p>
+      {!partner ? (
+        <p className="mt-7 text-center text-[0.875rem] text-muted">
+          {t.auth.noAccount}{" "}
+          <Link
+            href={authLink(path(locale, "/auth/register"), redirectTo)}
+            className="font-medium text-accent transition-colors hover:text-accent-soft"
+          >
+            {t.auth.switchToRegister}
+          </Link>
+        </p>
+      ) : null}
     </div>
   );
 }
