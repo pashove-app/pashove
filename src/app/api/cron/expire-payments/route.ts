@@ -11,10 +11,10 @@ export const dynamic = "force-dynamic";
 /**
  * Expiration des paiements en ligne restés en attente.
  *
- * Toutes les dix minutes, on interroge SasPay avant de décider :
+ * Toutes les cinq minutes, on interroge SasPay avant de décider :
  *   * SUCCESS  -> confirmation (le webhook a pu être perdu) ;
  *   * FAILED   -> compensation (commande failed, stock restauré, panier rouvert) ;
- *   * PENDING  -> expiration + compensation après le délai.
+ *   * PENDING  -> expiration + compensation après 15 minutes.
  *
  * Les abonnements et les recharges Studio suivent la même règle.
  */
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
     );
   }
 
-  const cutoff = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+  const cutoff = new Date(Date.now() - 15 * 60 * 1000).toISOString();
   const counts = {
     orders: 0,
     plans: 0,
