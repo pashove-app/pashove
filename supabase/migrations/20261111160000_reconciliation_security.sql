@@ -51,32 +51,41 @@ language plpgsql
 security definer
 set search_path = ''
 as $$
+declare
+  v_uid  uuid := auth.uid();
+  v_role text := lower(coalesce(
+    current_setting('request.jwt.claim.role', true),
+    nullif(current_setting('request.jwt.claims', true), '')::jsonb->>'role',
+    ''
+  ));
 begin
-  if (new.commission_bps is distinct from old.commission_bps)
-     and not public.is_platform_admin()
-     and coalesce(current_setting('request.jwt.claim.role', true), '') <> 'service_role'
-     and coalesce(current_setting('pashove.allow_commission_update', true), '') <> 'on'
+  -- SQL Editor, migrations, service_role et tâches internes n'ont pas
+  -- d'utilisateur JWT : ils doivent pouvoir modifier les colonnes financières.
+  if v_uid is null
+     or v_role = 'service_role'
+     or public.is_platform_admin()
+     or coalesce(current_setting('pashove.allow_commission_update', true), '') = 'on'
   then
+    return new;
+  end if;
+
+  if new.commission_bps is distinct from old.commission_bps then
     raise exception 'store_field_protected' using errcode = '42501';
   end if;
 
-  -- Le slug et la devise restent modifiables pendant la création (draft),
-  -- mais plus une fois la boutique publiée.
-  if (new.currency is distinct from old.currency
-      or new.slug is distinct from old.slug)
-     and old.status <> 'draft'
-     and not public.is_platform_admin()
-     and coalesce(current_setting('request.jwt.claim.role', true), '') <> 'service_role'
+  -- Slug et devise restent modifiables pendant la création (draft), plus
+  -- après publication.
+  if old.status <> 'draft'
+     and (new.currency is distinct from old.currency
+          or new.slug is distinct from old.slug)
   then
     raise exception 'store_field_protected' using errcode = '42501';
   end if;
 
   -- Un marchand ne peut pas réactiver une boutique suspendue par la
-  -- plateforme. Le passage draft -> active (publication) reste autorisé.
+  -- plateforme. Le passage draft -> active reste autorisé.
   if old.status = 'suspended'
      and new.status is distinct from old.status
-     and not public.is_platform_admin()
-     and coalesce(current_setting('request.jwt.claim.role', true), '') <> 'service_role'
   then
     raise exception 'store_suspended' using errcode = '42501';
   end if;
