@@ -32,6 +32,14 @@ export async function generateMetadata({
       description: content.meta.pricingDescription,
       type: "website",
       url: `/${locale}/pricing`,
+      images: [
+        {
+          url: "/brand/og-pashove.png",
+          width: 1200,
+          height: 630,
+          alt: "Pashove — le commerce en ligne, sans frontières",
+        },
+      ],
     },
   };
 }

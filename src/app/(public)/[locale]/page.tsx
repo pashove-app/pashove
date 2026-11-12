@@ -48,6 +48,14 @@ export async function generateMetadata({
       description: content.meta.homeDescription,
       type: "website",
       url: `/${locale}`,
+      images: [
+        {
+          url: "/brand/og-pashove.png",
+          width: 1200,
+          height: 630,
+          alt: "Pashove — le commerce en ligne, sans frontières",
+        },
+      ],
     },
   };
 }
