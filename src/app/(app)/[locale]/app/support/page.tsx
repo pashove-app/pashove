@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { MessagesWorkspace } from "@/components/messages/chat-widget";
 import { LOCALE_META, resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
@@ -30,6 +31,21 @@ export default async function SupportPage({
 
   return (
     <div className="mx-auto w-full max-w-6xl">
+      <div className="mb-4 flex flex-wrap gap-2">
+        <Link
+          href={`/${locale}/app/support/tickets`}
+          className="inline-flex h-9 items-center rounded-full bg-brand-500 px-4 text-[0.75rem] font-medium text-white hover:bg-brand-600"
+        >
+          Tickets support
+        </Link>
+        <Link
+          href={`/${locale}/app/support/kb`}
+          className="inline-flex h-9 items-center rounded-full border border-border bg-surface px-4 text-[0.75rem] font-medium text-body hover:border-border-strong"
+        >
+          Centre d’aide
+        </Link>
+      </div>
+
       <MessagesWorkspace
         conversations={conversations}
         scope="merchant"

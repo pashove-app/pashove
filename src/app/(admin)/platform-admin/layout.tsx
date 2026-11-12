@@ -30,6 +30,7 @@ const NAV = [
   { href: "/platform-admin/reconciliation", label: "Réconciliation", icon: icons.chart },
   { href: "/platform-admin/audit", label: "Audit", icon: icons.list },
   { href: "/platform-admin/messages", label: "Messages", icon: icons.chat },
+  { href: "/platform-admin/support", label: "Support", icon: icons.shield },
 ];
 
 /** Coquille interne de l'administration plateforme. */
