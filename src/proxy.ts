@@ -172,6 +172,26 @@ export async function proxy(request: NextRequest) {
     const headers = new Headers(request.headers);
     headers.set("x-pashove-locale", first);
 
+    // Espace partenaire : sans cookie de session, on renvoie vers la connexion
+    // partenaire. Le contrôle du rôle (delivery_partners) est fait par le
+    // layout serveur, qui a accès à la base.
+    const afterLocale = pathname.slice(first.length + 1);
+    const isPartnerArea =
+      afterLocale === "/partner/delivery" ||
+      afterLocale.startsWith("/partner/delivery/");
+
+    if (isPartnerArea) {
+      const hasSession = request.cookies
+        .getAll()
+        .some((cookie) => /-auth-token(?:\.\d+)?$/.test(cookie.name));
+
+      if (!hasSession) {
+        const url = request.nextUrl.clone();
+        url.pathname = `/${first}/partner/login`;
+        return withRef(NextResponse.redirect(url));
+      }
+    }
+
     // L'inscription et la connexion livreur masquent le volet marchand. Le
     // layout d'authentification lit cet en-tête ; sans lui, il faudrait
     // convertir tout le volet en composant client.

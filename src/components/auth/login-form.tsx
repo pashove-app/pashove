@@ -11,6 +11,7 @@ import { INITIAL_AUTH_STATE } from "@/lib/auth/types";
 
 type Props = SectionProps & {
   courier?: boolean;
+  partner?: boolean;
   redirectTo?: string | null;
 };
 
@@ -18,6 +19,7 @@ export function LoginForm({
   t,
   locale,
   courier = false,
+  partner = false,
   redirectTo = null,
 }: Props) {
   const [state, formAction, pending] = useActionState(signInAction, INITIAL_AUTH_STATE);
@@ -32,12 +34,18 @@ export function LoginForm({
   return (
     <div>
       <h1 className="text-[1.75rem] font-medium tracking-[-0.03em] text-fg sm:text-[2rem]">
-        {courier ? "Connexion livreur" : t.auth.loginTitle}
+        {courier
+          ? "Connexion livreur"
+          : partner
+            ? "Connexion Partenaire"
+            : t.auth.loginTitle}
       </h1>
       <p className="mt-2 text-[0.9375rem] text-muted">
         {courier
           ? "Retrouve tes courses, ta disponibilité et ton espace Pashove Delivery."
-          : t.auth.loginSubtitle}
+          : partner
+            ? "Accède à ton espace de livraison : flotte, courses et revenus."
+            : t.auth.loginSubtitle}
       </p>
 
       {/* `noValidate` : on garde la main sur les messages, dans la bonne langue */}

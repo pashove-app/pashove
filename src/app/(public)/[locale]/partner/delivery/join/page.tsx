@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { PartnerJoinForm } from "@/components/delivery-partners/join-forms";
 import { joinDeliveryPartnerAction } from "@/lib/delivery-partners/actions";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -9,11 +10,13 @@ export const metadata: Metadata = {
 };
 
 export default async function PartnerJoinPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{ token?: string }>;
 }) {
-  const { token } = await searchParams;
+  const [{ locale }, { token }] = await Promise.all([params, searchParams]);
   const service = createServiceClient();
 
   const { data: partner } = service && token
@@ -58,6 +61,15 @@ export default async function PartnerJoinPage({
           company={partner.company_name}
           action={joinDeliveryPartnerAction}
         />
+        <p className="mt-6 text-center text-[0.8125rem] text-subtle">
+          Déjà partenaire ?{" "}
+          <Link
+            href={`/${locale}/partner/login`}
+            className="font-medium text-accent hover:text-accent-soft"
+          >
+            Connecte-toi
+          </Link>
+        </p>
       </div>
     </main>
   );

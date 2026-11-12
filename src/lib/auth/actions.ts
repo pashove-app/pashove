@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { after } from "next/server";
 import { emailWelcome } from "@/lib/email/events";
 import { loginSchema, registerSchema, emailOnlySchema, resetPasswordSchema, changePasswordSchema, totpCodeSchema, verifyEmailSchema, toFieldErrors } from "@/lib/validation";
@@ -74,15 +75,43 @@ export async function signInAction(
   if (!isSupabaseConfigured()) return { status: "unconfigured" };
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  const { data: authData, error } = await supabase.auth.signInWithPassword(
+    parsed.data,
+  );
 
   if (error) return { status: "error", messageKey: messageKeyFor(error) };
+
+  // Un partenaire de livraison et un livreur partenaire n'ont pas d'onboarding
+  // marchand : sans destination explicite, ils retournent dans leur espace.
+  const { data: partner } = await supabase
+    .from("delivery_partners")
+    .select("id")
+    .eq("user_id", authData.user?.id ?? "")
+    .eq("status", "active")
+    .maybeSingle();
+
+  let fallback = partner ? "/partner/delivery" : "/app";
+
+  if (!partner) {
+    const { data: driver } = await supabase
+      .from("partner_drivers")
+      .select("id")
+      .eq("user_id", authData.user?.id ?? "")
+      .eq("status", "active")
+      .maybeSingle();
+
+    if (driver) fallback = COURIER_HOME;
+  }
 
   // L'intention livreur arrive soit du formulaire, soit du cookie posé à
   // l'inscription quand la confirmation d'e-mail est passée par un autre écran.
   const requested = safeAppPath(field(formData, "redirect"));
-  const stored = requested ? null : await readPostAuth();
-  const next = requested ?? stored ?? "/app";
+  // Un marchand qui passe par la page de connexion partenaire ne doit pas
+  // être renvoyé vers un espace auquel il n'a pas accès.
+  const requestedNext =
+    requested === "/partner/delivery" && !partner ? null : requested;
+  const stored = requestedNext ? null : await readPostAuth();
+  const next = requestedNext ?? stored ?? fallback;
   if (stored) await clearPostAuth();
 
   revalidatePath("/", "layout");
@@ -111,6 +140,38 @@ export async function signUpAction(
   }
 
   if (!isSupabaseConfigured()) return { status: "unconfigured" };
+
+  // Une adresse déjà invitée comme partenaire ou livreur partenaire ne doit
+  // pas créer un compte marchand : on la renvoie vers son parcours dédié.
+  const service = createServiceClient();
+  if (service) {
+    const email = parsed.data.email.toLowerCase();
+    const { data: partner } = await service
+      .from("delivery_partners")
+      .select("status, invite_token")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (partner) {
+      if (partner.status === "invited" && partner.invite_token) {
+        redirect(`/${locale}/partner/delivery/join?token=${partner.invite_token}`);
+      }
+      redirect(`/${locale}/partner/login`);
+    }
+
+    const { data: driver } = await service
+      .from("partner_drivers")
+      .select("status, invite_code")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (driver) {
+      if (driver.status === "invited" && driver.invite_code) {
+        redirect(`/${locale}/delivery-partner/join?code=${driver.invite_code}`);
+      }
+      redirect(`/${locale}/auth/login?redirect=%2Fapp%2Fcourier`);
+    }
+  }
 
   // Intention livreur : l'inscription ne doit pas déboucher sur l'onboarding
   // marchand. On ne retient que les destinations connues.
