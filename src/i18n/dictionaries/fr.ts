@@ -2760,8 +2760,10 @@ const fr = {
 
     checkoutPaymentFailedTitle: "Paiement non abouti",
     checkoutPaymentFailedText: "La demande de paiement n’a pas été confirmée. Aucun montant n’a été débité. Tu peux réessayer.",    checkoutPaymentInvalid: "Choisis un moyen de paiement.",
-    checkoutCardInvalid: "Vérifie les informations de la carte.",
-    checkoutNameLabel: "Nom complet",
+
+    checkoutPaymentInProgress: "Une demande de paiement est déjà en cours pour ce numéro. Attends la confirmation ou 5 minutes avant de réessayer.",    checkoutCardInvalid: "Vérifie les informations de la carte.",
+
+    checkoutRetryPayment: "Réessayer le paiement",    checkoutNameLabel: "Nom complet",
     checkoutEmailLabel: "E-mail",
     checkoutPhoneLabel: "Téléphone",
     checkoutCountryLabel: "Pays",

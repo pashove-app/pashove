@@ -2691,8 +2691,10 @@ const en: Dictionary = {
 
     checkoutPaymentFailedTitle: "Payment failed",
     checkoutPaymentFailedText: "The payment request was not confirmed. No amount was charged. You can try again.",    checkoutPaymentInvalid: "Choose a payment method.",
-    checkoutCardInvalid: "Check the card details.",
-    checkoutNameLabel: "Full name",
+
+    checkoutPaymentInProgress: "A payment request is already in progress for this number. Wait for confirmation or 5 minutes before trying again.",    checkoutCardInvalid: "Check the card details.",
+
+    checkoutRetryPayment: "Try payment again",    checkoutNameLabel: "Full name",
     checkoutEmailLabel: "Email",
     checkoutPhoneLabel: "Phone",
     checkoutCountryLabel: "Country",

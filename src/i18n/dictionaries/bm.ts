@@ -2685,8 +2685,10 @@ const bm: Dictionary = {
 
     checkoutPaymentFailedTitle: "Paiement non abouti",
     checkoutPaymentFailedText: "La demande de paiement n’a pas été confirmée. Aucun montant n’a été débité. Tu peux réessayer.",    checkoutPaymentInvalid: "Sara fɛɛrɛ sugandi.",
-    checkoutCardInvalid: "Karti kunnafoniw lajɛ.",
-    checkoutNameLabel: "Tɔgɔ bɛɛ",
+
+    checkoutPaymentInProgress: "Une demande de paiement est déjà en cours pour ce numéro. Attends la confirmation ou 5 minutes avant de réessayer.",    checkoutCardInvalid: "Karti kunnafoniw lajɛ.",
+
+    checkoutRetryPayment: "Réessayer le paiement",    checkoutNameLabel: "Tɔgɔ bɛɛ",
     checkoutEmailLabel: "E-mail",
     checkoutPhoneLabel: "Telefɔni",
     checkoutCountryLabel: "Jamana",

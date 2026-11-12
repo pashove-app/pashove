@@ -2665,8 +2665,10 @@ const ar: Dictionary = {
 
     checkoutPaymentFailedTitle: "فشل الدفع",
     checkoutPaymentFailedText: "لم يتم تأكيد طلب الدفع. لم يتم خصم أي مبلغ. يمكنك المحاولة مرة أخرى.",    checkoutPaymentInvalid: "اختر طريقة دفع.",
-    checkoutCardInvalid: "تحقق من بيانات البطاقة.",
-    checkoutNameLabel: "الاسم الكامل",
+
+    checkoutPaymentInProgress: "طلب دفع قيد المعالجة لهذا الرقم. انتظر التأكيد أو 5 دقائق قبل المحاولة مرة أخرى.",    checkoutCardInvalid: "تحقق من بيانات البطاقة.",
+
+    checkoutRetryPayment: "أعد محاولة الدفع",    checkoutNameLabel: "الاسم الكامل",
     checkoutEmailLabel: "البريد الإلكتروني",
     checkoutPhoneLabel: "الهاتف",
     checkoutCountryLabel: "البلد",

@@ -331,6 +331,43 @@ export async function placeOrderAction(
   } else {
     const providerCode = activeOnlineProvider();
 
+    // Le numéro qui reçoit la demande de paiement est celui saisi dans le
+    // bloc Paiement, pas le téléphone de contact. On le normalise avec
+    // l'indicatif du pays payé.
+    const paymentPhone =
+      normalizePaymentPhone(
+        payment.data.paymentPhone || parsed.data.phone,
+        market.countryCode,
+      ) ?? parsed.data.phone;
+
+    // Les RPC de paiement sont réservées à la clé de service : la clé anonyme
+    // est publique et permettrait sinon de confirmer une commande sans argent.
+    const payments = createServiceClient();
+
+    if (!payments) {
+      return { status: "error", messageKey: "checkoutPaymentFailed" };
+    }
+
+    // Un même numéro ne doit pas lancer deux demandes à moins de 5 minutes
+    // d'intervalle : la première demande peut encore être en attente chez
+    // l'opérateur et bloquer la seconde.
+    if (providerCode === "saspay") {
+      const { data: recentPending, error: guardError } = await payments.rpc(
+        "has_recent_pending_payment",
+        {
+          p_store_id: storefront.store.id,
+          p_phone: paymentPhone,
+          p_minutes: 5,
+        },
+      );
+
+      if (guardError) {
+        console.error("[checkout] pending payment guard failed", guardError.message);
+      } else if (recentPending === true) {
+        return { status: "error", messageKey: "checkoutPaymentInProgress" };
+      }
+    }
+
     const { data, error } = await supabase.rpc("place_online_order", {
       p_token: cartToken,
       p_customer: customer,
@@ -352,6 +389,20 @@ export async function placeOrderAction(
 
     if (!online?.orderId || !online.token || typeof online.total !== "number") {
       return { status: "error", messageKey: "checkoutGeneric" };
+    }
+
+    if (providerCode === "saspay") {
+      const { error: phoneError } = await payments.rpc(
+        "set_order_payment_phone",
+        {
+          p_order_token: online.token,
+          p_phone: paymentPhone,
+        },
+      );
+
+      if (phoneError) {
+        console.error("[checkout] payment phone failed", phoneError.message);
+      }
     }
 
     let paymentAmount = market.paymentAmountMinor;
@@ -406,14 +457,6 @@ export async function placeOrderAction(
       }
     }
 
-    // Les RPC de paiement sont réservées à la clé de service : la clé anonyme
-    // est publique et permettrait sinon de confirmer une commande sans argent.
-    const payments = createServiceClient();
-
-    if (!payments) {
-      return { status: "error", messageKey: "checkoutPaymentFailed" };
-    }
-
     try {
       const provider = getPaymentProvider(providerCode);
       // Taux et montant figés pour ce marché avant toute intention.
@@ -431,15 +474,6 @@ export async function placeOrderAction(
       const successPath = destination.branded
         ? `/checkout/success/${online.token}`
         : `/${locale}/store/${storefront.store.slug}/checkout/success/${online.token}`;
-
-      // Le numéro qui reçoit la demande de paiement est celui saisi dans le
-      // bloc Paiement, pas le téléphone de contact. On le normalise avec
-      // l'indicatif du pays payé.
-      const paymentPhone =
-        normalizePaymentPhone(
-          payment.data.paymentPhone || parsed.data.phone,
-          market.countryCode,
-        ) ?? parsed.data.phone;
 
       const intent = await provider.createIntent({
         orderId: online.orderId,
@@ -508,6 +542,26 @@ export async function placeOrderAction(
           message: paymentError.message,
         });
       }
+
+      // La commande a déjà consommé le stock et converti le panier : on
+      // compense immédiatement pour ne pas bloquer le client.
+      if (providerCode === "saspay") {
+        const { error: compensateError } = await payments.rpc(
+          "fail_online_order",
+          {
+            p_order_token: online.token,
+            p_reason: "checkout_failed",
+          },
+        );
+
+        if (compensateError) {
+          console.error(
+            "[checkout] compensation failed",
+            compensateError.message,
+          );
+        }
+      }
+
       return { status: "error", messageKey: "checkoutPaymentFailed" };
     }
   }

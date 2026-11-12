@@ -2693,8 +2693,10 @@ const ln: Dictionary = {
 
     checkoutPaymentFailedTitle: "Paiement non abouti",
     checkoutPaymentFailedText: "La demande de paiement n’a pas été confirmée. Aucun montant n’a été débité. Tu peux réessayer.",    checkoutPaymentInvalid: "Pona moyen ya kofuta.",
-    checkoutCardInvalid: "Tala makambo ya carte.",
-    checkoutNameLabel: "Nkómbó mobimba",
+
+    checkoutPaymentInProgress: "Une demande de paiement est déjà en cours pour ce numéro. Attends la confirmation ou 5 minutes avant de réessayer.",    checkoutCardInvalid: "Tala makambo ya carte.",
+
+    checkoutRetryPayment: "Réessayer le paiement",    checkoutNameLabel: "Nkómbó mobimba",
     checkoutEmailLabel: "E-mail",
     checkoutPhoneLabel: "Telefone",
     checkoutCountryLabel: "Mboka",

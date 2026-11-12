@@ -12,6 +12,7 @@ import { LOCALE_META, isLocale, resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { formatMoney } from "@/lib/money";
 import { loadStorefront } from "@/lib/storefront/queries";
+import { retryOrderPaymentAction } from "@/lib/storefront/retry-actions";
 import { createPublicClient } from "@/lib/supabase/public";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -97,9 +98,21 @@ export default async function CheckoutSuccessPage({
                     String(order.number),
                   )}
                 </p>
+                <form action={retryOrderPaymentAction} className="mt-6">
+                  <input type="hidden" name="orderId" value={orderId} />
+                  <input type="hidden" name="locale" value={locale} />
+                  <input type="hidden" name="slug" value={slug} />
+                  <button
+                    type="submit"
+                    className="inline-flex h-11 items-center justify-center rounded-full bg-brand-500 px-6 text-[0.8125rem] font-semibold text-white transition-colors hover:bg-brand-600"
+                  >
+                    {t.storefront.checkoutRetryPayment}
+                  </button>
+                </form>
+
                 <Link
                   href={path(locale, `/store/${slug}`)}
-                  className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-brand-500 px-6 text-[0.8125rem] font-semibold text-white transition-colors hover:bg-brand-600"
+                  className="mt-3 inline-flex h-11 items-center justify-center rounded-full border border-border px-6 text-[0.8125rem] font-semibold text-body transition-colors hover:border-border-strong"
                 >
                   {t.storefront.backToShop}
                 </Link>
