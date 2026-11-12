@@ -9,6 +9,7 @@ import type {
 } from "@/lib/payments/provider";
 import {
   createSoftpay,
+  isPayinNetworkAvailable,
   resolveNetwork,
   SasPayError,
   verifyPayment,
@@ -38,8 +39,19 @@ export class SasPayProvider implements PaymentProvider {
   readonly code = "saspay" as const;
 
   async createIntent(input: CreateIntentInput): Promise<PaymentIntent> {
-    const network =
-      input.network?.trim() || (await resolveNetwork(input.method, input.country));
+    // Un code famille (« orange_money ») n'est pas un code réseau SasPay :
+    // on ne l'envoie jamais tel quel. On vérifie le code demandé, sinon on
+    // résout un réseau réel pour le pays.
+    const requested = input.network?.trim() ?? "";
+    const validRequested =
+      requested.length > 0 &&
+      (input.method === "card"
+        ? requested === "card"
+        : await isPayinNetworkAvailable(requested, input.country));
+
+    const network = validRequested
+      ? requested
+      : await resolveNetwork(input.method, input.country);
 
     const payment = await createSoftpay({
       amount: input.amount,

@@ -2339,6 +2339,7 @@ const fr = {
       paymentCollected: "Paiement encaissé.",
       orderCancelled: "Commande annulée et articles remis en stock.",
       refundDone: "Commande remboursée. Les écritures compensatoires sont au journal.",
+      refundRequested: "Demande de remboursement enregistrée. L’équipe Pashove la traite après le remboursement chez SasPay.",
       errorInvalidTransition: "Cette transition n'est pas autorisée.",
       errorPaymentNotPending: "Le paiement n'est pas en attente.",
       errorCancelNotAllowed: "Cette commande ne peut plus être annulée.",

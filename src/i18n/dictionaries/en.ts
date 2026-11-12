@@ -2273,6 +2273,7 @@ const en: Dictionary = {
       paymentCollected: "Payment collected.",
       orderCancelled: "Order cancelled and items returned to stock.",
       refundDone: "Order refunded. Compensating entries are in the journal.",
+      refundRequested: "Refund request recorded. The Pashove team will process it after the SasPay refund.",
       errorInvalidTransition: "This transition is not allowed.",
       errorPaymentNotPending: "The payment is not pending.",
       errorCancelNotAllowed: "This order can no longer be cancelled.",

@@ -2251,6 +2251,7 @@ const ar: Dictionary = {
       paymentCollected: "تم تحصيل الدفع.",
       orderCancelled: "تم إلغاء الطلب وإعادة العناصر إلى المخزون.",
       refundDone: "تم استرداد الطلب. القيود التعويضية في السجل.",
+      refundRequested: "تم تسجيل طلب الاسترداد. ستعالجه فرقة Pashove بعد الاسترداد لدى SasPay.",
       errorInvalidTransition: "هذا الانتقال غير مسموح.",
       errorPaymentNotPending: "الدفع ليس قيد الانتظار.",
       errorCancelNotAllowed: "لم يعد بالإمكان إلغاء هذا الطلب.",

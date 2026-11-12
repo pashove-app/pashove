@@ -13,6 +13,11 @@ const UUID_PATTERN =
  * comme le fera le webhook Flutterwave. La confirmation est idempotente.
  */
 export async function POST(request: Request) {
+  // Le Mock ne doit jamais confirmer un paiement en production.
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+
   const raw = await request.text();
   const signature = request.headers.get("x-pashove-signature");
   const provider = new MockProvider();

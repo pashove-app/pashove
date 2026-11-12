@@ -225,7 +225,7 @@ export async function refundOrderAction(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.rpc("refund_cod_order", {
+  const { data, error } = await supabase.rpc("request_refund", {
     p_order_id: orderId,
     p_reason: null,
   });
@@ -234,19 +234,27 @@ export async function refundOrderAction(
     return { status: "error", messageKey: messageKeyFor(error) };
   }
 
-  try {
-    const snapshot = await orderSnapshot(orderId);
-    if (snapshot) {
-      after(async () => {
-        await emailOrderRefunded(snapshot.context, "fr");
-      });
+  const outcome = data as { status?: string } | null;
+
+  if (outcome?.status === "refunded") {
+    try {
+      const snapshot = await orderSnapshot(orderId);
+      if (snapshot) {
+        after(async () => {
+          await emailOrderRefunded(snapshot.context, "fr");
+        });
+      }
+    } catch (notifyError) {
+      console.error("[email] refund notification failed", notifyError);
     }
-  } catch (notifyError) {
-    console.error("[email] refund notification failed", notifyError);
   }
 
   refresh();
-  return { status: "saved", messageKey: "refundDone" };
+  return {
+    status: "saved",
+    messageKey:
+      outcome?.status === "requested" ? "refundRequested" : "refundDone",
+  };
 }
 
 /** Action rapide depuis la liste : avance d'une étape, sans suivi. */

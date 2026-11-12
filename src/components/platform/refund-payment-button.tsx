@@ -15,6 +15,7 @@ export function RefundPaymentButton({
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
 
   async function refund() {
     if (pending || disabled) return;
@@ -25,6 +26,7 @@ export function RefundPaymentButton({
 
     setPending(true);
     setError(false);
+    setNotice(null);
     const result = await refundAdminPaymentAction(orderId);
     setPending(false);
 
@@ -32,6 +34,11 @@ export function RefundPaymentButton({
       setError(true);
       return;
     }
+
+    if (result.messageKey === "paymentRefundRequested") {
+      setNotice("Demande enregistrée — à confirmer dans Remboursements.");
+    }
+
     router.refresh();
   }
 
@@ -49,6 +56,11 @@ export function RefundPaymentButton({
       {error ? (
         <span role="alert" className="text-[0.625rem] text-red-500">
           Remboursement impossible.
+        </span>
+      ) : null}
+      {notice ? (
+        <span className="text-[0.625rem] text-emerald-600 dark:text-emerald-400">
+          {notice}
         </span>
       ) : null}
     </div>

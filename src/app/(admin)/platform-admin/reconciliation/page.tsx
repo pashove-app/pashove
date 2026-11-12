@@ -3,8 +3,26 @@ import { BackLink } from "@/components/ui/back-link";
 import { Icon, icons } from "@/components/ui/primitives";
 import { getReconciliation } from "@/lib/platform/queries";
 import { formatMoney } from "@/lib/money";
+import { createClient } from "@/lib/supabase/server";
+
+const ALERT_LABELS: Record<string, string> = {
+  late_success: "Succès SasPay tardif",
+  amount_mismatch: "Montant incohérent",
+  orphan_payment: "Paiement orphelin",
+  unknown: "À vérifier",
+};
 
 export default async function ReconciliationPage() {
+  const supabase = await createClient();
+  const { data: alerts } = await supabase
+    .from("payment_reconciliation_alerts")
+    .select(
+      "id, kind, reference, amount, currency, created_at, store:stores(name, slug)",
+    )
+    .eq("status", "open")
+    .order("created_at", { ascending: false })
+    .limit(20);
+
   const rows = await getReconciliation();
   const currencies = [...new Set(rows.map((row) => row.currency))];
 
@@ -13,8 +31,63 @@ export default async function ReconciliationPage() {
       <BackLink href="/platform-admin" label="Retour à l'administration" />
 
       <div className="mt-4">
-        <AdminHero subtitle="Vue théorique construite à partir du ledger : fonds marchands non retirés, montants réservés et commissions restant à régler. Aucun relevé PSP n’est encore branché." />
+        <AdminHero subtitle="Alertes de paiement et vue théorique construite à partir du ledger : fonds marchands non retirés, montants réservés et commissions restant à régler." />
       </div>
+
+      <section className="mt-6 rounded-3xl border border-border bg-surface p-5 sm:p-6">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-[0.9375rem] font-medium text-fg">
+            Alertes de réconciliation
+          </h2>
+          <span className="text-[0.6875rem] text-faint">
+            {alerts?.length ?? 0}
+          </span>
+        </div>
+
+        {!alerts || alerts.length === 0 ? (
+          <p className="mt-3 text-[0.8125rem] text-subtle">
+            Aucune alerte ouverte. Les succès tardifs détectés par le cron
+            apparaîtront ici.
+          </p>
+        ) : (
+          <ul className="mt-3 divide-y divide-hairline">
+            {alerts.map((alert) => {
+              const store = alert.store as
+                | { name?: string; slug?: string }
+                | null;
+              return (
+                <li
+                  key={alert.id}
+                  className="flex flex-wrap items-start justify-between gap-3 py-3"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[0.8125rem] font-medium text-fg">
+                      {ALERT_LABELS[alert.kind] ?? alert.kind}
+                    </p>
+                    <p className="mt-0.5 truncate text-[0.6875rem] text-faint">
+                      {store?.name ? `${store.name} · ` : ""}
+                      {alert.reference ?? "sans référence"}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    {alert.amount != null && alert.currency ? (
+                      <p className="text-[0.8125rem] font-medium text-fg">
+                        {formatMoney(alert.amount, alert.currency, "fr-FR")}
+                      </p>
+                    ) : null}
+                    <p className="mt-0.5 text-[0.625rem] text-faint">
+                      {new Intl.DateTimeFormat("fr-FR", {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      }).format(new Date(alert.created_at))}
+                    </p>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
 
       {rows.length === 0 ? (
         <div className="mt-7 rounded-3xl border border-border bg-surface px-6 py-14 text-center">

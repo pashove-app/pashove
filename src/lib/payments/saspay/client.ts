@@ -122,7 +122,16 @@ function listOf<T>(payload: unknown): T[] {
   return [];
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
+const RETRY_DELAYS_MS = [300, 900];
+
+function canRetry(init?: RequestInit): boolean {
+  const method = (init?.method ?? "GET").toUpperCase();
+  if (method === "GET") return true;
+  return new Headers(init?.headers).has("Idempotency-Key");
+}
+
+async function requestOnce<T>(path: string, init?: RequestInit): Promise<T> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
@@ -171,6 +180,37 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   } finally {
     clearTimeout(timer);
   }
+}
+
+/**
+ * Appel SasPay avec backoff sur 429/5xx/timeout.
+ *
+ * On ne rejoue que les GET et les POST portant une Idempotency-Key : un POST
+ * sans clé (OTP, décaissement) ne doit jamais être dupliqué.
+ */
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const attempts = canRetry(init) ? RETRY_DELAYS_MS.length + 1 : 1;
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      return await requestOnce<T>(path, init);
+    } catch (error) {
+      lastError = error;
+
+      const retryable =
+        error instanceof SasPayError &&
+        (error.status === 0 || RETRYABLE_STATUS.has(error.status));
+
+      if (!retryable || attempt === attempts - 1) throw error;
+
+      await new Promise((resolve) =>
+        setTimeout(resolve, RETRY_DELAYS_MS[attempt]),
+      );
+    }
+  }
+
+  throw lastError;
 }
 
 /* ------------------------------------------------------------------ *
@@ -325,9 +365,37 @@ export async function confirmOtp(paymentId: string, otp: string): Promise<SasPay
 }
 
 /** Tarifs et disponibilité réels, par pays et par réseau (inclut l'OTP). */
+let payinRatesCache: { at: number; value: SasPayPayinRate[] } | null = null;
+
+/**
+ * Tarifs et disponibilité, mis en cache 60 secondes : le checkout les lit à
+ * chaque rendu et à chaque validation, et SasPay limite à 300 req/min.
+ */
 export async function listPayinRates(): Promise<SasPayPayinRate[]> {
+  const now = Date.now();
+  if (payinRatesCache && now - payinRatesCache.at < 60_000) {
+    return payinRatesCache.value;
+  }
+
   const value = await request<SasPayPayinRate[]>("/pricing/my-rates/");
-  return Array.isArray(value) ? value : [];
+  const rows = Array.isArray(value) ? value : [];
+  payinRatesCache = { at: now, value: rows };
+  return rows;
+}
+
+/** Vérifie qu'un code réseau est réellement proposé pour ce pays. */
+export async function isPayinNetworkAvailable(
+  code: string,
+  country: string,
+): Promise<boolean> {
+  const iso = country.trim().toUpperCase();
+  const rates = await listPayinRates();
+  return rates.some(
+    (rate) =>
+      rate.network_code === code &&
+      rate.country_code?.toUpperCase() === iso &&
+      rate.payin?.available !== false,
+  );
 }
 
 let exchangeCache: { at: number; value: SasPayExchangeRate[] } | null = null;

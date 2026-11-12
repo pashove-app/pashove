@@ -2278,6 +2278,7 @@ const ln: Dictionary = {
       paymentCollected: "Kofuta esalemi.",
       orderCancelled: "Commande elongolami mpe bilɔ́kɔ esengini na stock.",
       refundDone: "Mbongo ya commande ezongisamí. Ba écritures ezali na journal.",
+      refundRequested: "Demande de remboursement enregistrée. L’équipe Pashove la traite après le remboursement chez SasPay.",
       errorInvalidTransition: "Mobongisi oyo epesami te.",
       errorPaymentNotPending: "Kofuta ezali kozela te.",
       errorCancelNotAllowed: "Commande oyo ekoki kolongolama te.",

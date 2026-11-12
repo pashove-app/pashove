@@ -40,12 +40,30 @@ export async function refundAdminPaymentAction(
         .maybeSingle()
     : { data: null };
 
+  const supabase = await createClient();
+
+  // SasPay n'expose pas d'endpoint de remboursement : on crée une demande
+  // que l'administration exécute chez SasPay puis confirme dans
+  // /platform-admin/refunds.
   if (payment?.provider === "saspay") {
-    console.warn("[saspay] refund requested for a SasPay payment", orderId);
-    return { ok: false, messageKey: "paymentRefundFailed" };
+    const { error: requestError } = await supabase.rpc("request_refund", {
+      p_order_id: orderId,
+      p_reason: null,
+    });
+
+    if (requestError) {
+      return {
+        ok: false,
+        messageKey: requestError.message.includes("already")
+          ? "paymentAlreadyRefunded"
+          : "paymentRefundFailed",
+      };
+    }
+
+    revalidatePath("/", "layout");
+    return { ok: true, messageKey: "paymentRefundRequested" };
   }
 
-  const supabase = await createClient();
   const { error } = await supabase.rpc("refund_payment", {
     p_order_id: orderId,
     p_reason: null,

@@ -2270,6 +2270,7 @@ const bm: Dictionary = {
       paymentCollected: "Sɔngɔ damana.",
       orderCancelled: "Komande bɔra, ja seginna stock la.",
       refundDone: "Komande sɔngɔ seginna. Sɛbɛnw bɛ journal kɔnɔ.",
+      refundRequested: "Demande de remboursement enregistrée. L’équipe Pashove la traite après le remboursement chez SasPay.",
       errorInvalidTransition: "Nin tɛmɛnni man bɛn.",
       errorPaymentNotPending: "Sɔngɔ tɛ kɔnɔ.",
       errorCancelNotAllowed: "Nin komande tɛ se ka bɔ.",
