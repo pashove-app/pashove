@@ -52,9 +52,18 @@ security definer
 set search_path = ''
 as $$
 begin
-  if (new.commission_bps is distinct from old.commission_bps
-      or new.currency is distinct from old.currency
+  if (new.commission_bps is distinct from old.commission_bps)
+     and not public.is_platform_admin()
+     and coalesce(current_setting('request.jwt.claim.role', true), '') <> 'service_role'
+  then
+    raise exception 'store_field_protected' using errcode = '42501';
+  end if;
+
+  -- Le slug et la devise restent modifiables pendant la création (draft),
+  -- mais plus une fois la boutique publiée.
+  if (new.currency is distinct from old.currency
       or new.slug is distinct from old.slug)
+     and old.status <> 'draft'
      and not public.is_platform_admin()
      and coalesce(current_setting('request.jwt.claim.role', true), '') <> 'service_role'
   then
