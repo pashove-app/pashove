@@ -6,6 +6,7 @@ import {
   PaymentStatus,
 } from "@/components/orders/order-status-badge";
 import { OrderActions } from "@/components/orders/order-actions";
+import { PartialRefundForm } from "@/components/orders/partial-refund-form";
 import { Icon, icons } from "@/components/ui/primitives";
 import { path } from "@/components/ui/types";
 import { LOCALE_META, type Locale } from "@/i18n/config";
@@ -13,6 +14,7 @@ import type { Dictionary } from "@/i18n/get-dictionary";
 import { formatMoney } from "@/lib/money";
 import type {
   OrderDetail as OrderDetailData,
+  OrderRefund,
   OrderStatus,
 } from "@/lib/orders/queries";
 import { publicUrl } from "@/lib/r2/media";
@@ -35,10 +37,12 @@ export function OrderDetail({
   t,
   locale,
   order,
+  refunds,
 }: {
   t: Dictionary;
   locale: Locale;
   order: OrderDetailData;
+  refunds: OrderRefund[];
 }) {
   const labels = t.dashboard.orders;
   const partnerLabels = t.dashboard.partners;
@@ -64,6 +68,47 @@ export function OrderDetail({
       return `${labels.eventStatus} · ${fromLabel} → ${toLabel}`;
     }
     return event.type;
+  };
+
+  const refundedByItem: Record<string, number> = {};
+  for (const refund of refunds) {
+    if (!["requested", "processing", "completed"].includes(refund.status)) {
+      continue;
+    }
+    for (const line of refund.items) {
+      refundedByItem[line.order_item_id] =
+        (refundedByItem[line.order_item_id] ?? 0) + line.quantity;
+    }
+  }
+
+  const refundableItems = order.items
+    .map((item) => ({
+      id: item.id,
+      product_name: item.product_name,
+      variant_label: item.variant_label,
+      quantity: item.quantity,
+      remaining: item.quantity - (refundedByItem[item.id] ?? 0),
+    }))
+    .filter((item) => item.remaining > 0);
+
+  const refundPending = refunds.some(
+    (refund) => refund.status === "requested" || refund.status === "processing",
+  );
+
+  const canPartialRefund =
+    order.payment_status === "paid" &&
+    order.payment?.provider === "saspay" &&
+    order.payment.status === "captured" &&
+    !refundPending &&
+    refundableItems.length > 0;
+
+  const refundStatusLabel = (status: string): string => {
+    if (status === "requested") return labels.refundStatusRequested;
+    if (status === "processing") return labels.refundStatusProcessing;
+    if (status === "completed") return labels.refundStatusCompleted;
+    if (status === "failed") return labels.refundStatusFailed;
+    if (status === "rejected") return labels.refundStatusRejected;
+    return status;
   };
 
   const country =
@@ -100,6 +145,14 @@ export function OrderDetail({
         hasPhysical={order.has_physical}
         labels={labels}
       />
+
+      {canPartialRefund ? (
+        <PartialRefundForm
+          orderId={order.id}
+          items={refundableItems}
+          labels={labels}
+        />
+      ) : null}
 
       <div className="mt-7 grid gap-6 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start">
         <div className="space-y-6">
@@ -220,6 +273,59 @@ export function OrderDetail({
               ))}
             </ul>
           </section>
+
+          {refunds.length > 0 ? (
+            <section className="overflow-hidden rounded-2xl border border-border bg-surface">
+              <div className="border-b border-hairline px-5 py-4">
+                <h2 className="text-[0.9375rem] font-medium text-fg">
+                  {labels.refundsTitle}
+                </h2>
+              </div>
+              <ul className="divide-y divide-hairline">
+                {refunds.map((refund) => (
+                  <li key={refund.id} className="px-5 py-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-[0.8125rem] font-medium text-fg">
+                        {money(refund.amount)}
+                        <span className="ms-2 rounded-full bg-hairline px-2 py-0.5 text-[0.625rem] font-medium text-subtle">
+                          {refund.items.length > 0
+                            ? labels.refundPartial
+                            : labels.refundFull}
+                        </span>
+                      </p>
+                      <span className="text-[0.6875rem] text-faint">
+                        {refundStatusLabel(refund.status)}
+                      </span>
+                    </div>
+                    {refund.items.length > 0 ? (
+                      <ul className="mt-2 space-y-1">
+                        {refund.items.map((line) => (
+                          <li
+                            key={line.order_item_id}
+                            className="flex items-start justify-between gap-3 text-[0.75rem] text-subtle"
+                          >
+                            <span className="min-w-0">
+                              {line.product_name}
+                              {line.variant_label ? ` · ${line.variant_label}` : ""}
+                              <span className="text-faint"> × {line.quantity}</span>
+                            </span>
+                            <span className="shrink-0 tabular-nums">
+                              {money(line.amount)}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                    {refund.reason ? (
+                      <p className="mt-1.5 text-[0.6875rem] text-faint">
+                        {refund.reason}
+                      </p>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
 
           <section className="rounded-2xl border border-border bg-surface p-5">
             <h2 className="text-[0.9375rem] font-medium text-fg">{labels.summaryTitle}</h2>

@@ -31,18 +31,21 @@ export function FinanceOverview({
   locale,
   currency,
   balances,
+  reserve,
   movements,
 }: {
   t: Dictionary;
   locale: Locale;
   currency: string;
   balances: StoreBalances;
+  reserve: number;
   movements: LedgerMovement[];
 }) {
   const labels = t.dashboard.finance;
   const localeTag = LOCALE_META[locale].tag;
 
   const money = (amount: number) => formatMoney(amount, currency, localeTag);
+  const withdrawable = Math.max(balances.available - reserve, 0);
 
   const date = (value: string) =>
     new Intl.DateTimeFormat(localeTag, {
@@ -126,6 +129,42 @@ export function FinanceOverview({
           </section>
         ))}
       </div>
+
+      <section className="mt-4 grid gap-4 sm:grid-cols-2">
+        <div className="rounded-3xl border border-border bg-surface p-5 sm:p-6">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-faint">
+              {labels.withdrawableLabel}
+            </p>
+            <span className="text-accent">
+              <Icon path={icons.wallet} className="h-4 w-4" strokeWidth={1.8} />
+            </span>
+          </div>
+          <p className="mt-2.5 truncate text-[1.5rem] font-semibold tabular-nums tracking-[-0.03em] text-fg sm:text-[1.75rem]">
+            {money(withdrawable)}
+          </p>
+          <p className="mt-1.5 text-[0.75rem] leading-relaxed text-subtle">
+            {labels.withdrawableHelp}
+          </p>
+        </div>
+
+        <div className="rounded-3xl border border-border bg-surface p-5 sm:p-6">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-faint">
+              {labels.reserveLabel}
+            </p>
+            <span className="text-amber-600 dark:text-amber-400">
+              <Icon path={icons.lock} className="h-4 w-4" strokeWidth={1.8} />
+            </span>
+          </div>
+          <p className="mt-2.5 truncate text-[1.5rem] font-semibold tabular-nums tracking-[-0.03em] text-fg sm:text-[1.75rem]">
+            {money(reserve)}
+          </p>
+          <p className="mt-1.5 text-[0.75rem] leading-relaxed text-subtle">
+            {labels.reserveHelp}
+          </p>
+        </div>
+      </section>
 
       <section className="mt-4 flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-border bg-surface p-5 sm:p-6">
         <div className="flex min-w-0 items-start gap-3.5">

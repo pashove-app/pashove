@@ -27,23 +27,63 @@ function statusTone(status: string): string {
   return "bg-amber-500/12 text-amber-600 dark:text-amber-400";
 }
 
+const FILTERS = [
+  { value: "all", label: "Toutes" },
+  { value: "requested", label: "Demandées" },
+  { value: "completed", label: "Remboursées" },
+  { value: "failed", label: "Échouées" },
+] as const;
+
 export default async function AdminRefundsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ ok?: string; error?: string }>;
+  searchParams: Promise<{ ok?: string; error?: string; status?: string }>;
 }) {
-  const { ok, error } = await searchParams;
+  const { ok, error, status } = await searchParams;
+  const filter = FILTERS.some((item) => item.value === status)
+    ? (status as string)
+    : "all";
   const supabase = await createClient();
 
-  const { data: refunds } = await supabase
+  const query = supabase
     .from("refunds")
     .select(
-      "id, amount, currency, status, reason, provider_reference, created_at, completed_at, order:orders(number), store:stores(name, slug)",
+      "id, amount, currency, status, reason, provider_reference, created_at, completed_at, metadata, order:orders(number), store:stores(name, slug), refund_items(quantity, amount, order_item:order_items(product_name, variant_label))",
     )
     .order("created_at", { ascending: false })
     .limit(50);
 
-  const rows = refunds ?? [];
+  const { data: refunds } =
+    filter === "all" ? await query : await query.eq("status", filter);
+
+  type RefundLine = {
+    quantity: number;
+    amount: number;
+    order_item:
+      | { product_name: string; variant_label: string | null }
+      | { product_name: string; variant_label: string | null }[]
+      | null;
+  };
+
+  type RefundRow = {
+    id: string;
+    amount: number;
+    currency: string;
+    status: string;
+    reason: string | null;
+    provider_reference: string | null;
+    created_at: string;
+    completed_at: string | null;
+    metadata: Record<string, unknown> | null;
+    order: { number: number } | { number: number }[] | null;
+    store:
+      | { name: string; slug: string }
+      | { name: string; slug: string }[]
+      | null;
+    refund_items: RefundLine[] | null;
+  };
+
+  const rows = (refunds ?? []) as unknown as RefundRow[];
 
   return (
     <div className="mx-auto w-full max-w-5xl">
@@ -72,6 +112,22 @@ export default async function AdminRefundsPage({
         </p>
       ) : null}
 
+      <div className="mt-5 flex flex-wrap gap-2">
+        {FILTERS.map((item) => (
+          <a
+            key={item.value}
+            href={`/platform-admin/refunds?status=${item.value}`}
+            className={`inline-flex h-8 items-center rounded-full border px-3.5 text-[0.75rem] font-medium transition-colors ${
+              filter === item.value
+                ? "border-brand-500 bg-brand-500 text-white"
+                : "border-border bg-surface text-body hover:border-border-strong"
+            }`}
+          >
+            {item.label}
+          </a>
+        ))}
+      </div>
+
       {rows.length === 0 ? (
         <div className="mt-6 rounded-3xl border border-border bg-surface px-6 py-14 text-center">
           <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-500/[0.1] text-accent">
@@ -87,10 +143,12 @@ export default async function AdminRefundsPage({
       ) : (
         <div className="mt-6 divide-y divide-hairline overflow-hidden rounded-3xl border border-border bg-surface">
           {rows.map((refund) => {
-            const store = refund.store as
-              | { name?: string; slug?: string }
-              | null;
-            const order = refund.order as { number?: number } | null;
+            const store = (
+              Array.isArray(refund.store) ? refund.store[0] : refund.store
+            ) as { name?: string; slug?: string } | null;
+            const order = (
+              Array.isArray(refund.order) ? refund.order[0] : refund.order
+            ) as { number?: number } | null;
             const pending =
               refund.status === "requested" || refund.status === "processing";
 
@@ -118,6 +176,56 @@ export default async function AdminRefundsPage({
                         Réf. SasPay : {refund.provider_reference}
                       </p>
                     ) : null}
+                    {(
+                      refund.refund_items as
+                        | {
+                            quantity: number;
+                            amount: number;
+                            order_item:
+                              | { product_name: string; variant_label: string | null }
+                              | { product_name: string; variant_label: string | null }[]
+                              | null;
+                          }[]
+                        | null
+                    )?.length ? (
+                      <ul className="mt-2 space-y-1">
+                        {(
+                          refund.refund_items as {
+                            quantity: number;
+                            amount: number;
+                            order_item:
+                              | { product_name: string; variant_label: string | null }
+                              | { product_name: string; variant_label: string | null }[]
+                              | null;
+                          }[]
+                        ).map((line, index) => {
+                          const product = Array.isArray(line.order_item)
+                            ? line.order_item[0]
+                            : line.order_item;
+                          return (
+                            <li
+                              key={`${refund.id}-${index}`}
+                              className="flex items-start justify-between gap-3 text-[0.75rem] text-subtle"
+                            >
+                              <span>
+                                {product?.product_name ?? "Article"}
+                                {product?.variant_label
+                                  ? ` · ${product.variant_label}`
+                                  : ""}
+                                <span className="text-faint"> × {line.quantity}</span>
+                              </span>
+                              <span className="shrink-0 tabular-nums">
+                                {formatMoney(line.amount, refund.currency, "fr-FR")}
+                              </span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    ) : (
+                      <p className="mt-1 text-[0.6875rem] text-faint">
+                        Remboursement total
+                      </p>
+                    )}
                   </div>
                   <div className="text-right">
                     <p className="text-[0.9375rem] font-medium text-fg">

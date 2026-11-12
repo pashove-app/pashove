@@ -1943,6 +1943,12 @@ const fr = {
       codHelp: "Espèces reçues directement par toi. Non retirables.",
       commissionLabel: "Commission à régler",
       commissionHelp: "Déduite de tes futurs paiements en ligne.",
+      reserveLabel: "Réserve de remboursement",
+      reserveHelp:
+        "5 % du chiffre d’affaires des 30 derniers jours, immobilisés pour couvrir les retours.",
+      withdrawableLabel: "Montant retirable",
+      withdrawableHelp:
+        "Solde disponible moins la réserve de remboursement.",
       methodsLink: "Méthodes de retrait",
       securityLink: "Sécurité des retraits",
       methodsTitle: "Méthodes de retrait",
@@ -2154,6 +2160,8 @@ const fr = {
         kycPending: "Un dossier est déjà en cours de vérification.",
         kycAlreadyApproved: "Ton identité est déjà vérifiée.",
         kycRequired: "Vérifie ton identité avant de demander un retrait.",
+        reserveLocked:
+          "Une partie de ton solde est réservée aux remboursements possibles. Réduis le montant du retrait.",
         twoFactorRequired: "Valide ta double authentification pour continuer.",
       },
       viewJournal: "Voir le journal",
@@ -2316,6 +2324,30 @@ const fr = {
       markPaid: "Marquer le paiement encaissé",
       cancelButton: "Annuler la commande",
       refundButton: "Rembourser la commande",
+      refundsTitle: "Remboursements",
+      refundPartial: "Partiel",
+      refundFull: "Total",
+      refundStatusRequested: "requested",
+      refundStatusProcessing: "processing",
+      refundStatusCompleted: "completed",
+      refundStatusFailed: "failed",
+      refundStatusRejected: "rejected",
+      partialRefundTitle: "Rembourser des articles",
+      partialRefundHelp:
+        "Choisis les lignes et les quantités. Le montant est calculé côté serveur, puis l’équipe Pashove exécute le remboursement chez SasPay.",
+      partialRefundButton: "Choisir des articles",
+      partialRefundRemaining: "Reste remboursable : {count}",
+      partialRefundQuantity: "Qté",
+      partialRefundReason: "Motif (facultatif)",
+      partialRefundReasonPlaceholder: "Ex. article abîmé, erreur de taille…",
+      partialRefundSubmit: "Demander le remboursement",
+      partialRefundCancel: "Annuler",
+      partialRefundRequested:
+        "Demande de remboursement partiel enregistrée. Le montant est réservé jusqu’à la confirmation SasPay.",
+      errorRefundQuantity:
+        "Vérifie les quantités : elles dépassent ce qui reste remboursable.",
+      errorRefundNotSupported:
+        "Le remboursement partiel n’est disponible que pour les paiements SasPay encaissés.",
       refundConfirmTitle: "Rembourser cette commande ?",
       refundConfirmText:
         "La vente et la commission seront annulées par des écritures compensatoires. Le journal reste intact.",

@@ -35,6 +35,15 @@ function messageKeyFor(error: { message?: string }): string {
   if (message.includes("cancel_not_allowed")) return "errorCancelNotAllowed";
   if (message.includes("refund_required")) return "errorRefundRequired";
   if (message.includes("refund_not_allowed")) return "errorRefundNotAllowed";
+  if (message.includes("refund_not_supported")) return "errorRefundNotSupported";
+  if (
+    message.includes("refund_quantity") ||
+    message.includes("refund_items_empty") ||
+    message.includes("refund_item_unknown") ||
+    message.includes("refund_amount_invalid")
+  ) {
+    return "errorRefundQuantity";
+  }
   if (message.includes("tracking_too_long")) return "errorTrackingTooLong";
   if (message.includes("order_unavailable")) return "errorOrderNotFound";
 
@@ -255,6 +264,54 @@ export async function refundOrderAction(
     messageKey:
       outcome?.status === "requested" ? "refundRequested" : "refundDone",
   };
+}
+
+/** Remboursement partiel par ligne, en attente de la confirmation SasPay. */
+export async function requestPartialRefundAction(
+  _previous: OrderActionState,
+  formData: FormData,
+): Promise<OrderActionState> {
+  const orderId = field(formData, "orderId");
+  const reason = field(formData, "reason");
+
+  if (!orderId || !UUID_PATTERN.test(orderId)) {
+    return { status: "error", messageKey: "errorOrderNotFound" };
+  }
+
+  if (!isSupabaseConfigured()) {
+    return { status: "error", messageKey: "errorActionFailed" };
+  }
+
+  const items: { order_item_id: string; quantity: number }[] = [];
+
+  for (const [key, value] of formData.entries()) {
+    if (!key.startsWith("qty:")) continue;
+    const itemId = key.slice(4);
+    if (!UUID_PATTERN.test(itemId)) continue;
+
+    const quantity = Number(value);
+    if (!Number.isInteger(quantity) || quantity <= 0 || quantity > 9999) continue;
+
+    items.push({ order_item_id: itemId, quantity });
+  }
+
+  if (items.length === 0 || items.length > 50) {
+    return { status: "error", messageKey: "errorRefundQuantity" };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("request_partial_refund", {
+    p_order_id: orderId,
+    p_items: items,
+    p_reason: reason || null,
+  });
+
+  if (error) {
+    return { status: "error", messageKey: messageKeyFor(error) };
+  }
+
+  refresh();
+  return { status: "saved", messageKey: "partialRefundRequested" };
 }
 
 /** Action rapide depuis la liste : avance d'une étape, sans suivi. */

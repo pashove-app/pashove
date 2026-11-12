@@ -288,6 +288,7 @@ function payoutErrorKey(error: { message?: string }): string {
   const message = error.message ?? "";
 
   if (message.includes("kyc_required")) return "kycRequired";
+  if (message.includes("refund_reserve_locked")) return "reserveLocked";
   if (message.includes("insufficient_funds")) return "insufficientFunds";
   if (message.includes("payout_amount_too_low")) return "payoutAmountTooLow";
   if (message.includes("method_not_found")) return "payoutMethodMissing";

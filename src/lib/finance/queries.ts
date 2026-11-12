@@ -332,3 +332,17 @@ export async function getPayout(
 
   return (data as unknown as PayoutSummary | null) ?? null;
 }
+
+/** Réserve de remboursement calculée par le cron quotidien. */
+export async function getStoreReserve(storeId: string): Promise<number> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("store_financial_reserves")
+    .select("reserved_fcfa")
+    .eq("store_id", storeId)
+    .maybeSingle();
+
+  const value = Number((data as { reserved_fcfa?: number } | null)?.reserved_fcfa ?? 0);
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}

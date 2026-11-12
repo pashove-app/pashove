@@ -1882,6 +1882,12 @@ const en: Dictionary = {
       codHelp: "Cash received directly by you. Not withdrawable.",
       commissionLabel: "Commission due",
       commissionHelp: "Deducted from your future online payments.",
+      reserveLabel: "Refund reserve",
+      reserveHelp:
+        "5% of the last 30 days’ revenue, held to cover returns.",
+      withdrawableLabel: "Withdrawable amount",
+      withdrawableHelp:
+        "Available balance minus the refund reserve.",
       methodsLink: "Payout methods",
       securityLink: "Payout security",
       methodsTitle: "Payout methods",
@@ -2089,6 +2095,8 @@ const en: Dictionary = {
         kycPending: "A file is already under review.",
         kycAlreadyApproved: "Your identity is already verified.",
         kycRequired: "Verify your identity before requesting a payout.",
+        reserveLocked:
+          "Part of your balance is held for potential refunds. Lower the payout amount.",
         twoFactorRequired: "Confirm your two-factor authentication to continue.",
       },
       viewJournal: "View journal",
@@ -2250,6 +2258,30 @@ const en: Dictionary = {
       markPaid: "Mark payment collected",
       cancelButton: "Cancel order",
       refundButton: "Refund order",
+      refundsTitle: "Refunds",
+      refundPartial: "Partial",
+      refundFull: "Full",
+      refundStatusRequested: "requested",
+      refundStatusProcessing: "processing",
+      refundStatusCompleted: "completed",
+      refundStatusFailed: "failed",
+      refundStatusRejected: "rejected",
+      partialRefundTitle: "Refund items",
+      partialRefundHelp:
+        "Pick the lines and quantities. The amount is calculated on the server, then the Pashove team executes the refund in SasPay.",
+      partialRefundButton: "Choose items",
+      partialRefundRemaining: "Still refundable: {count}",
+      partialRefundQuantity: "Qty",
+      partialRefundReason: "Reason (optional)",
+      partialRefundReasonPlaceholder: "E.g. damaged item, wrong size…",
+      partialRefundSubmit: "Request refund",
+      partialRefundCancel: "Cancel",
+      partialRefundRequested:
+        "Partial refund request recorded. The amount is reserved until SasPay confirms.",
+      errorRefundQuantity:
+        "Check the quantities: they exceed what is still refundable.",
+      errorRefundNotSupported:
+        "Partial refunds are only available for captured SasPay payments.",
       refundConfirmTitle: "Refund this order?",
       refundConfirmText:
         "The sale and commission will be reversed by compensating entries. The journal stays intact.",

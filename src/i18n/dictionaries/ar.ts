@@ -1867,6 +1867,11 @@ const ar: Dictionary = {
       codHelp: "نقد استلمته مباشرة. غير قابل للسحب.",
       commissionLabel: "العمولة المستحقة",
       commissionHelp: "تُخصم من مدفوعاتك الإلكترونية القادمة.",
+      reserveLabel: "احتياطي الاسترداد",
+      reserveHelp:
+        "5٪ من إيرادات آخر 30 يوماً، محجوزة لتغطية المرتجعات.",
+      withdrawableLabel: "المبلغ القابل للسحب",
+      withdrawableHelp: "الرصيد المتاح ناقص احتياطي الاسترداد.",
       methodsLink: "طرق السحب",
       securityLink: "أمان السحب",
       methodsTitle: "طرق السحب",
@@ -2067,6 +2072,8 @@ const ar: Dictionary = {
         kycPending: "يوجد ملف قيد التحقق بالفعل.",
         kycAlreadyApproved: "تم التحقق من هويتك بالفعل.",
         kycRequired: "تحقق من هويتك قبل طلب السحب.",
+        reserveLocked:
+          "جزء من رصيدك محجوز لعمليات استرداد محتملة. خفّض مبلغ السحب.",
         twoFactorRequired: "أكد المصادقة الثنائية للمتابعة.",
       },
       viewJournal: "عرض السجل",
@@ -2228,6 +2235,30 @@ const ar: Dictionary = {
       markPaid: "تأكيد تحصيل الدفع",
       cancelButton: "إلغاء الطلب",
       refundButton: "استرداد الطلب",
+      refundsTitle: "المبالغ المستردة",
+      refundPartial: "جزئي",
+      refundFull: "كلي",
+      refundStatusRequested: "requested",
+      refundStatusProcessing: "processing",
+      refundStatusCompleted: "completed",
+      refundStatusFailed: "failed",
+      refundStatusRejected: "rejected",
+      partialRefundTitle: "استرداد عناصر",
+      partialRefundHelp:
+        "اختر الأسطر والكميات. يُحسب المبلغ على الخادم، ثم ينفّذ فريق Pashove الاسترداد لدى SasPay.",
+      partialRefundButton: "اختيار العناصر",
+      partialRefundRemaining: "المتبقي القابل للاسترداد: {count}",
+      partialRefundQuantity: "الكمية",
+      partialRefundReason: "السبب (اختياري)",
+      partialRefundReasonPlaceholder: "مثال: منتج تالف، مقاس خاطئ…",
+      partialRefundSubmit: "طلب الاسترداد",
+      partialRefundCancel: "إلغاء",
+      partialRefundRequested:
+        "تم تسجيل طلب الاسترداد الجزئي. المبلغ محجوز حتى تأكيد SasPay.",
+      errorRefundQuantity:
+        "تحقق من الكميات: إنها تتجاوز ما تبقى قابلاً للاسترداد.",
+      errorRefundNotSupported:
+        "الاسترداد الجزئي متاح فقط لمدفوعات SasPay المحصّلة.",
       refundConfirmTitle: "استرداد هذا الطلب؟",
       refundConfirmText:
         "سيتم عكس البيع والعمولة بقيود تعويضية. يبقى السجل كما هو.",

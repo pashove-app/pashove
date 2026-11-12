@@ -3,7 +3,11 @@ import { redirect } from "next/navigation";
 import { FinanceOverview } from "@/components/finance/finance-overview";
 import { resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
-import { getStoreBalances, listRecentLedger } from "@/lib/finance/queries";
+import {
+  getStoreBalances,
+  getStoreReserve,
+  listRecentLedger,
+} from "@/lib/finance/queries";
 import { currentStore } from "@/lib/stores/queries";
 
 export async function generateMetadata({
@@ -30,8 +34,9 @@ export default async function FinancePage({
   const store = await currentStore();
   if (!store) redirect(`/${locale}/onboarding/store`);
 
-  const [balances, movements, t] = await Promise.all([
+  const [balances, reserve, movements, t] = await Promise.all([
     getStoreBalances(store.id),
+    getStoreReserve(store.id),
     listRecentLedger(store.id),
     getDictionary(locale),
   ]);
@@ -42,6 +47,7 @@ export default async function FinancePage({
       locale={locale}
       currency={store.currency}
       balances={balances}
+      reserve={reserve}
       movements={movements}
     />
   );

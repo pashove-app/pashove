@@ -1890,6 +1890,11 @@ const ln: Dictionary = {
       codHelp: "Mbongo oyo ozwaki moko. Ekoki kobimisama te.",
       commissionLabel: "Commission ya kofuta",
       commissionHelp: "Ekobimisama na ba paiement en ligne ya yo.",
+      reserveLabel: "Bobateli ya bozongisi",
+      reserveHelp:
+        "5 % ya mbongo ya mikolo 30 eleki, mpo na bozongisi biloko.",
+      withdrawableLabel: "Mbongo ekoki kobimisama",
+      withdrawableHelp: "Solde disponible longola bobateli ya bozongisi.",
       methodsLink: "Ba nzela ya kobimisa mbongo",
       securityLink: "Bokengi ya kobimisa mbongo",
       methodsTitle: "Ba nzela ya kobimisa mbongo",
@@ -2093,6 +2098,8 @@ const ln: Dictionary = {
         kycPending: "Dossier moko ezali na bokengi.",
         kycAlreadyApproved: "Identité na yo ebekisamí.",
         kycRequired: "Kengisa identité liboso ya kosenga retrait.",
+        reserveLocked:
+          "Ndambu ya mbongo na yo ebombami mpo na bozongisi. Kokitisa motango ya retrait.",
         twoFactorRequired: "Ndima 2FA na yo mpo na kokoba.",
       },
       viewJournal: "Tala journal",
@@ -2255,6 +2262,30 @@ const ln: Dictionary = {
       markPaid: "Tyá kofuta esalemi",
       cancelButton: "Longola commande",
       refundButton: "Kozongisa mbongo",
+      refundsTitle: "Bozongisi mbongo",
+      refundPartial: "Ndambu",
+      refundFull: "Nyonso",
+      refundStatusRequested: "requested",
+      refundStatusProcessing: "processing",
+      refundStatusCompleted: "completed",
+      refundStatusFailed: "failed",
+      refundStatusRejected: "rejected",
+      partialRefundTitle: "Kozongisa mbongo ya biloko",
+      partialRefundHelp:
+        "Pona biloko na motango. Mbongo ebalusami na server, sima Pashove ezongisaki yango na SasPay.",
+      partialRefundButton: "Pona biloko",
+      partialRefundRemaining: "Ekoki kozongisama : {count}",
+      partialRefundQuantity: "Motango",
+      partialRefundReason: "Ntina (soki okoki)",
+      partialRefundReasonPlaceholder: "Ex. eloko ebebi, monene mabe…",
+      partialRefundSubmit: "Senga bozongisi",
+      partialRefundCancel: "Tika",
+      partialRefundRequested:
+        "Esengelo ya bozongisi ndambu ekɔtaki. Mbongo ebatelami kino SasPay endimaki.",
+      errorRefundQuantity:
+        "Tala motango : eleki oyo ekoki kozongisama.",
+      errorRefundNotSupported:
+        "Bozongisi ndambu ezali kaka mpo na mbongo ya SasPay oyo ekɔtaki.",
       refundConfirmTitle: "Kozongisa mbongo ya commande oyo ?",
       refundConfirmText:
         "Vente mpe commission ekobongisama na écriture mosusu. Journal ekobebisama te.",

@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { OrderDetail } from "@/components/orders/order-detail";
 import { resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
-import { getOrder } from "@/lib/orders/queries";
+import { getOrder, listOrderRefunds } from "@/lib/orders/queries";
 import { currentStore } from "@/lib/stores/queries";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -23,11 +23,13 @@ export default async function OrderPage({
   const order = await getOrder(id, store.id);
   if (!order) notFound();
 
+  const refunds = await listOrderRefunds(order.id, store.id);
+
   const t = await getDictionary(locale);
 
   return (
     <div className="mx-auto w-full max-w-6xl">
-      <OrderDetail t={t} locale={locale} order={order} />
+      <OrderDetail t={t} locale={locale} order={order} refunds={refunds} />
     </div>
   );
 }

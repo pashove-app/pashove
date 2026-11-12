@@ -307,3 +307,79 @@ export async function getOrder(
     payment: row.payments?.[0] ?? null,
   };
 }
+
+export type OrderRefundLine = {
+  order_item_id: string;
+  quantity: number;
+  amount: number;
+  product_name: string;
+  variant_label: string | null;
+};
+
+export type OrderRefund = {
+  id: string;
+  amount: number;
+  currency: string;
+  status: string;
+  reason: string | null;
+  provider_reference: string | null;
+  created_at: string;
+  completed_at: string | null;
+  items: OrderRefundLine[];
+};
+
+type RefundRow = Omit<OrderRefund, "items"> & {
+  refund_items?: {
+    order_item_id: string;
+    quantity: number;
+    amount: number;
+    order_item:
+      | { product_name: string; variant_label: string | null }
+      | { product_name: string; variant_label: string | null }[]
+      | null;
+  }[] | null;
+};
+
+/** Les remboursements d'une commande, avec leurs lignes. */
+export async function listOrderRefunds(
+  orderId: string,
+  storeId: string,
+): Promise<OrderRefund[]> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("refunds")
+    .select(
+      [
+        "id, amount, currency, status, reason, provider_reference",
+        "created_at, completed_at",
+        "refund_items(order_item_id, quantity, amount, order_item:order_items(product_name, variant_label))",
+      ].join(", "),
+    )
+    .eq("order_id", orderId)
+    .eq("store_id", storeId)
+    .order("created_at", { ascending: false });
+
+  return ((data ?? []) as unknown as RefundRow[]).map((row) => ({
+    id: row.id,
+    amount: row.amount,
+    currency: row.currency,
+    status: row.status,
+    reason: row.reason,
+    provider_reference: row.provider_reference,
+    created_at: row.created_at,
+    completed_at: row.completed_at,
+    items: (row.refund_items ?? []).map((item) => {
+      const product = Array.isArray(item.order_item)
+        ? item.order_item[0]
+        : item.order_item;
+      return {
+        order_item_id: item.order_item_id,
+        quantity: item.quantity,
+        amount: item.amount,
+        product_name: product?.product_name ?? "Article",
+        variant_label: product?.variant_label ?? null,
+      };
+    }),
+  }));
+}
