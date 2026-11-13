@@ -114,6 +114,14 @@ export default async function SettingsHubPage({
         />
 
         <SettingsLink
+          href={path(locale, "/app/settings/api")}
+          icon="code"
+          title="API et clés"
+          text="Connecte un outil externe avec une clé à accès limité."
+          cta="Gérer les clés"
+        />
+
+        <SettingsLink
           href={path(locale, "/auth/security")}
           icon="shield"
           title={t.dashboard.settings.securityTitle}
