@@ -30,7 +30,10 @@ grant select, insert, update, delete on public.webhook_endpoints to authenticate
 
 create policy webhook_endpoints_select on public.webhook_endpoints
   for select to authenticated
-  using (public.is_store_member(store_id) or public.is_platform_admin());
+  using (
+    public.has_store_role(store_id, array['owner', 'admin']::public.store_role[])
+    or public.is_platform_admin()
+  );
 
 create policy webhook_endpoints_write on public.webhook_endpoints
   for all to authenticated
