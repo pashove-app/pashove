@@ -221,3 +221,26 @@ Toutes les cases de `docs/06-CHECKLIST-LANCEMENT.md` doivent être cochées.
 À chaque session : **on choisit UN lot testable**, on le construit, on le
 déploie, on le teste sur mobile. Jamais deux gros chantiers en parallèle.
 Commits fréquents, déploiements fréquents.
+
+---
+
+## Mise à jour — 13/11/2026 (ÉTAPE 7)
+
+- [x] **Onboarding 15 étapes** : checklist `/app/onboarding`, progression en base,
+      redirection après publication.
+- [x] **Vitrine complète** : catégories, services, à propos, FAQ, suivi de
+      commande public, JSON-LD et sitemap.
+- [x] **10 rapports d'analyses** : ventes, produits, clients, conversion,
+      fidélité, livraison, retraits, stock, marketing.
+- [x] **Inventaire** : emplacements, mouvements, alertes, export CSV.
+- [x] **Remboursements partiels** et réserve de 5 %.
+- [x] **Support structuré** : tickets, SLA, macros, base de connaissances.
+- [x] **API publique v1** : `/api/v1/store|products|orders`, clés `pk_live_`.
+- [x] **Webhooks marchands** : endpoints, signature HMAC, relances.
+- [x] **Affiliation anti-fraude** : clics plafonnés, auto-parrainage refusé,
+      commission plafonnée.
+- [x] **Numérique protégé** : versions, filigrane nominatif, limite d'IP.
+- [x] **Qualité** : Sentry, Playwright, Jest, CI.
+
+Restant avant lancement commercial : clés PSP réelles, Upstash/Turnstile,
+revue juridique et monitoring d'alertes.

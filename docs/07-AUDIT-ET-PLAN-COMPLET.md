@@ -528,3 +528,22 @@ recevoir une commande COD, appliquer un code promo, suivre la commande, voir son
 ledger, demander un retrait avec KYC/PIN. C'est une **démo fonctionnelle solide**,
 pas encore un produit commercial : il manque les paiements en ligne, le site
 public, le multi-boutiques, les thèmes et les fonctions P1.
+
+---
+
+## Mise à jour — 13/11/2026
+
+L'écart principal de l'audit (absence d'API, de webhooks et de protection du
+numérique) est comblé :
+
+- API v1 en lecture avec clés marchand révocables et empreintes SHA-256.
+- Webhooks signés avec relance exponentielle et garde anti-SSRF.
+- Affiliation : clics hachés, plafond horaire, auto-parrainage et commission
+  plafonnée par la marge.
+- Fichiers numériques : versions figées, filigrane nominatif, trois IP max sur
+  24 h, journal des téléchargements.
+- Support, inventaire, remboursements partiels et onboarding 15 étapes livrés.
+
+Risques résiduels : files volumineuses servies sans filigrane au-delà de 4 Mo,
+pas de file d'attente Upstash, rate limiting applicatif encore absent sur
+l'API publique.

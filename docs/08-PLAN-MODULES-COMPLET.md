@@ -750,3 +750,30 @@ boutique, des domaines et de la finance multi-boutiques.
 
 En parallèle, tu peux lancer la création du compte Flutterwave et me transmettre
 les clés ; je préparerai le lot paiements dès qu'elles seront disponibles.
+
+---
+
+## Mise à jour — 13/11/2026
+
+### Modules livrés depuis ce plan
+
+| Module | État |
+|---|---|
+| Inventaire (emplacements, mouvements, CSV) | ✅ |
+| Remboursements partiels + réserve | ✅ |
+| Support (tickets, SLA, macros, KB) | ✅ |
+| API v1 + clés marchand | ✅ |
+| Webhooks marchands | ✅ |
+| Affiliation anti-fraude | ✅ |
+| Versioning et filigrane numérique | ✅ |
+| Sentry / Playwright / Jest | ✅ |
+| Onboarding 15 étapes, pages vitrine, 10 analyses | ✅ |
+
+### Reste pour un lancement commercial
+
+1. Brancher les clés PSP de production et les webhooks réels.
+2. Rate limiting Upstash + Turnstile sur API, auth et checkout.
+3. File d'attente pour les webhooks (le cron actuel traite 20 livraisons/run).
+4. Revue juridique des CGU, politiques et mentions.
+5. Alertes Sentry et supervision des crons.
+6. Tests E2E exécutés avec navigateurs installés en CI.
