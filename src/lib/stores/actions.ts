@@ -124,7 +124,7 @@ export async function publishStoreAction(
   if (error) return { status: "error", messageKey: "serverError" };
 
   revalidatePath("/", "layout");
-  redirect(`/${locale}/app?published=1`);
+  redirect(`/${locale}/app/onboarding?published=1`);
 }
 
 /**

@@ -45,12 +45,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     for (const store of (data ?? []) as { slug: string; updated_at: string }[]) {
       for (const locale of LOCALES) {
+        const modified = store.updated_at
+          ? new Date(store.updated_at)
+          : new Date();
+
         entries.push({
           url: `${BASE_URL}/${locale}/store/${store.slug}`,
-          lastModified: store.updated_at ? new Date(store.updated_at) : new Date(),
+          lastModified: modified,
           changeFrequency: "weekly",
           priority: 0.8,
         });
+
+        for (const sub of ["categories", "services", "about", "faq", "blog"]) {
+          entries.push({
+            url: `${BASE_URL}/${locale}/store/${store.slug}/${sub}`,
+            lastModified: modified,
+            changeFrequency: "weekly",
+            priority: 0.5,
+          });
+        }
       }
     }
   } catch {

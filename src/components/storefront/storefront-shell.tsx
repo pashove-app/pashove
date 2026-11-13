@@ -120,6 +120,12 @@ function StorefrontFooter({
               <Link href={`${home}#products`} className="text-[0.8125rem] text-subtle transition-colors hover:text-fg">
                 {labels.navNew}
               </Link>
+              <Link href={path(locale, `/store/${store.slug}/categories`)} className="text-[0.8125rem] text-subtle transition-colors hover:text-fg">
+                {labels.navCategories}
+              </Link>
+              <Link href={path(locale, `/store/${store.slug}/services`)} className="text-[0.8125rem] text-subtle transition-colors hover:text-fg">
+                {labels.navServices}
+              </Link>
               <Link href={path(locale, `/store/${store.slug}/cart`)} className="text-[0.8125rem] text-subtle transition-colors hover:text-fg">
                 {labels.viewCart}
               </Link>
@@ -155,6 +161,18 @@ function StorefrontFooter({
               {labels.footerHelp}
             </p>
             <div className="mt-4 flex flex-col gap-2.5 text-[0.8125rem] text-subtle">
+              <Link href={path(locale, `/store/${store.slug}/order-status`)} className="transition-colors hover:text-fg">
+                {labels.navOrderStatus}
+              </Link>
+              <Link href={path(locale, `/store/${store.slug}/faq`)} className="transition-colors hover:text-fg">
+                {labels.navFaq}
+              </Link>
+              <Link href={path(locale, `/store/${store.slug}/about`)} className="transition-colors hover:text-fg">
+                {labels.navAbout}
+              </Link>
+              <Link href={path(locale, `/store/${store.slug}/blog`)} className="transition-colors hover:text-fg">
+                {labels.navBlog}
+              </Link>
               {store.contact_email ? (
                 <a href={`mailto:${store.contact_email}`} dir="ltr" className="truncate transition-colors hover:text-fg">
                   {store.contact_email}

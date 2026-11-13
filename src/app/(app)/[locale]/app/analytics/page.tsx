@@ -60,6 +60,33 @@ export default async function AnalyticsPage({
         </Link>
       </div>
 
+      <nav className="mt-5 flex gap-2 overflow-x-auto pb-1">
+        {[
+          ["overview", "/app/analytics", "Vue d’ensemble"],
+          ["sales", "/app/analytics/sales", "Ventes"],
+          ["products", "/app/analytics/products", "Produits"],
+          ["customers", "/app/analytics/customers", "Clients"],
+          ["conversion", "/app/analytics/conversion", "Conversion"],
+          ["retention", "/app/analytics/retention", "Fidélité"],
+          ["delivery", "/app/analytics/delivery", "Livraison"],
+          ["payouts", "/app/analytics/payouts", "Retraits"],
+          ["inventory", "/app/analytics/inventory", "Stock"],
+          ["marketing", "/app/analytics/marketing", "Marketing"],
+        ].map(([key, href, label]) => (
+          <Link
+            key={key}
+            href={`/${locale}${href}`}
+            className={`inline-flex h-8 shrink-0 items-center rounded-full border px-3 text-[0.75rem] font-medium ${
+              key === "overview"
+                ? "border-brand-500 bg-brand-500 text-white"
+                : "border-border bg-surface text-subtle hover:border-border-strong"
+            }`}
+          >
+            {label}
+          </Link>
+        ))}
+      </nav>
+
       <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Chiffre d'affaires" value={money(data.revenue)} hint="30 jours" />
         <Stat label="Commandes payées" value={String(data.orders)} hint={`Panier moyen ${money(data.averageOrder)}`} />

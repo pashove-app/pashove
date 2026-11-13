@@ -65,10 +65,21 @@ export async function StorefrontHeader({
       : [
           { href: home, label: labels.navHome },
           {
-            href: path(locale, `/store/${store.slug}/collections`),
-            label: labels.navCollections,
+            href: path(locale, `/store/${store.slug}/categories`),
+            label: labels.navCategories,
           },
-          { href: `${home}#products`, label: labels.navNew },
+          {
+            href: path(locale, `/store/${store.slug}/services`),
+            label: labels.navServices,
+          },
+          {
+            href: path(locale, `/store/${store.slug}/about`),
+            label: labels.navAbout,
+          },
+          {
+            href: path(locale, `/store/${store.slug}/faq`),
+            label: labels.navFaq,
+          },
           {
             href: path(locale, `/store/${store.slug}/contact`),
             label: labels.navContact,

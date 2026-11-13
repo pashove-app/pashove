@@ -95,8 +95,33 @@ export default async function StorefrontPage({
   const sections = theme.sections.filter((section) => section.enabled);
   const bannerUrl = store.banner ? publicUrl(store.banner.object_key) : null;
 
+  const origin = new URL(
+    (process.env.NEXT_PUBLIC_SITE_URL ?? "https://pashove.com").replace(/\/+$/, ""),
+  ).origin;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Store",
+    name: store.name,
+    url: `${origin}/${locale}/store/${store.slug}`,
+    description: store.description ?? store.hero_subtitle ?? undefined,
+    currenciesAccepted: store.currency,
+    paymentAccepted: store.cod_enabled
+      ? "Mobile Money, Card, Cash on delivery"
+      : "Mobile Money, Card",
+    address: {
+      "@type": "PostalAddress",
+      addressCountry: store.country,
+    },
+  };
+
   return (
     <StorefrontShell store={store} locale={locale} t={t}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
       <StorefrontHeader store={store} locale={locale} t={t} />
 
       <main>
