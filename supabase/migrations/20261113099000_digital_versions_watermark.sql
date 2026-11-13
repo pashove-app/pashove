@@ -175,9 +175,9 @@ begin
 
   select
     e.*,
-    coalesce(vm.object_key, m.object_key) as object_key,
-    coalesce(vm_media.file_name, m.file_name) as file_name,
-    coalesce(vm_media.content_type, m.content_type) as content_type,
+    coalesce(pinned_media.object_key, vm.object_key, m.object_key) as object_key,
+    coalesce(pinned_media.file_name, vm.file_name, m.file_name) as file_name,
+    coalesce(pinned_media.content_type, vm.content_type, m.content_type) as content_type,
     s.name as store_name,
     s.slug as store_slug,
     o.number as order_number
@@ -186,7 +186,7 @@ begin
   join public.stores s on s.id = e.store_id
   join public.orders o on o.id = e.order_id
   left join public.product_digital_versions v on v.id = e.version_id
-  left join public.media_assets vm_media on vm_media.id = v.media_id
+  left join public.media_assets pinned_media on pinned_media.id = v.media_id
   left join public.product_digital_versions latest
     on latest.product_id = e.product_id
    and latest.version = (
