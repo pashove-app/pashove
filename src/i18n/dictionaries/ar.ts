@@ -1870,6 +1870,8 @@ const ar: Dictionary = {
     affiliateCopied: "تم النسخ",
     affiliateEmpty: "لا توجد روابط بعد.",
     affiliateSales: "المبيعات",
+    affiliateClicks: "النقرات",
+    affiliateConversion: "التحويل",
     affiliateEarned: "العمولة المكتسبة",
       discoverSubtitle: "منتجات فتحها متاجر أخرى للمشاركة.",
       discoverEmpty: "لا توجد منتجات مشتركة",

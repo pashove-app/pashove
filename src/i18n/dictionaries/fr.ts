@@ -1942,6 +1942,8 @@ const fr = {
     affiliateCopied: "Lien copié",
     affiliateEmpty: "Aucun lien pour l’instant.",
     affiliateSales: "Ventes",
+    affiliateClicks: "Clics",
+    affiliateConversion: "Conversion",
     affiliateEarned: "Commission gagnée",
       discoverSubtitle: "Des produits ouverts au partage par d’autres boutiques.",
       discoverEmpty: "Aucun produit partagé",

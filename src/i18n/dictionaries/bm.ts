@@ -1885,6 +1885,8 @@ const bm: Dictionary = {
     affiliateCopied: "Lien kɔpilen",
     affiliateEmpty: "Lien tɛ yen.",
     affiliateSales: "Feerew",
+    affiliateClicks: "Klikw",
+    affiliateConversion: "Conversion",
     affiliateEarned: "Commission sɔrɔlen",
       discoverSubtitle: "Fɛn minnu dɔgɔkun wɛrɛw yamaruya ka tila.",
       discoverEmpty: "Fɛn tila tɛ yen",

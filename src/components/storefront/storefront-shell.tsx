@@ -9,6 +9,7 @@ import type { Dictionary } from "@/i18n/get-dictionary";
 import { formatMoney } from "@/lib/money";
 import { publicUrl } from "@/lib/r2/media";
 import type { PublicStore } from "@/lib/storefront/queries";
+import { AffiliateClickTracker } from "@/components/affiliates/click-tracker";
 import { StorefrontChat } from "@/components/messages/chat-widget";
 import { getPublicStoreTheme } from "@/lib/theme/queries";
 import { themeStyle } from "@/lib/theme/style";
@@ -38,6 +39,7 @@ export async function StorefrontShell({
   return (
     <div className="flex min-h-dvh flex-col bg-bg" style={style}>
       <ThemeScope style={style} />
+      <AffiliateClickTracker />
       <div className="flex-1">{children}</div>
       <StorefrontFooter
         store={store}

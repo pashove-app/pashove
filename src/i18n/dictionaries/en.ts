@@ -1883,6 +1883,8 @@ const en: Dictionary = {
     affiliateCopied: "Link copied",
     affiliateEmpty: "No links yet.",
     affiliateSales: "Sales",
+    affiliateClicks: "Clicks",
+    affiliateConversion: "Conversion",
     affiliateEarned: "Commission earned",
       discoverSubtitle: "Products opened to sharing by other stores.",
       discoverEmpty: "No shared products",

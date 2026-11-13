@@ -364,9 +364,21 @@ export default async function PartnersPage({
                   </div>
                   <div className="flex gap-4 text-end text-[0.75rem]">
                     <div>
+                      <p className="text-faint">{labels.affiliateClicks}</p>
+                      <p className="font-medium tabular-nums text-fg">
+                        {link.clicks}
+                      </p>
+                    </div>
+                    <div>
                       <p className="text-faint">{labels.affiliateSales}</p>
                       <p className="font-medium tabular-nums text-fg">
                         {link.salesCount}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-faint">{labels.affiliateConversion}</p>
+                      <p className="font-medium tabular-nums text-fg">
+                        {link.conversionRate} %
                       </p>
                     </div>
                     <div>

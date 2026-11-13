@@ -1893,6 +1893,8 @@ const ln: Dictionary = {
     affiliateCopied: "Lien ekopí",
     affiliateEmpty: "Lien ezali te.",
     affiliateSales: "Botɛki",
+    affiliateClicks: "Ba clics",
+    affiliateConversion: "Conversion",
     affiliateEarned: "Commission ezwami",
       discoverSubtitle: "Biloko oyo magazini mosusu epesi nzela ya kokabola.",
       discoverEmpty: "Biloko ya kokabola ezali te",

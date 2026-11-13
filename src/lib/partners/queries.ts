@@ -42,7 +42,9 @@ export type AffiliateLink = {
   productName: string;
   ownerStoreName: string;
   ownerStoreSlug: string;
+  clicks: number;
   salesCount: number;
+  conversionRate: number;
   earned: number;
   earnedLabel: string;
 };
@@ -227,7 +229,12 @@ export async function listAffiliateLinks(
       productName: String(row.productName ?? ""),
       ownerStoreName: String(row.ownerStoreName ?? ""),
       ownerStoreSlug: String(row.ownerStoreSlug ?? ""),
+      clicks: Number(row.clicks ?? 0),
       salesCount: Number(row.salesCount ?? 0),
+      conversionRate:
+        Number(row.clicks ?? 0) > 0
+          ? Math.round((Number(row.salesCount ?? 0) / Number(row.clicks)) * 100)
+          : 0,
       earned,
       earnedLabel: formatMoney(earned, currency, tag),
     };
