@@ -14,10 +14,13 @@ export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export default async function CustomerDownloadsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; slug: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   const { locale: raw, slug } = await params;
+  const { error } = await searchParams;
   const locale = resolveLocale(raw);
 
   const user = await getCustomerUser();
@@ -41,6 +44,13 @@ export default async function CustomerDownloadsPage({
       <h1 className="mt-4 text-[1.75rem] font-medium tracking-[-0.03em] text-fg sm:text-[2rem]">
         {labels.downloads}
       </h1>
+
+      {error === "shared" ? (
+        <p className="mt-4 rounded-xl border border-amber-400/30 bg-amber-400/[0.07] px-3.5 py-3 text-[0.8125rem] text-amber-700 dark:text-amber-300">
+          Ce fichier a été ouvert depuis trop d’appareils différents. Contacte
+          la boutique si tu as changé d’appareil.
+        </p>
+      ) : null}
 
       {entitlements.length === 0 ? (
         <div className="mt-6 rounded-3xl border border-border bg-surface px-6 py-14 text-center">

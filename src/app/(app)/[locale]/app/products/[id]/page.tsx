@@ -7,6 +7,7 @@ import { Icon, icons } from "@/components/ui/primitives";
 import { path } from "@/components/ui/types";
 import { resolveLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
+import { listDigitalVersions } from "@/lib/digital/queries";
 import { getProduct } from "@/lib/products/queries";
 import { getPartnerOffer } from "@/lib/partners/queries";
 import { publicUrl } from "@/lib/r2/media";
@@ -56,6 +57,10 @@ export default async function EditProductPage({
   if (!product) notFound();
 
   const offer = await getPartnerOffer(product.id, store.id);
+  const versions =
+    product.product_type === "digital"
+      ? await listDigitalVersions(product.id)
+      : [];
   const eligible =
     product.product_type === "physical" && product.variants.length === 0;
 
@@ -112,6 +117,44 @@ export default async function EditProductPage({
         initialDescriptionImage={initialDescriptionImage}
         initialFile={initialFile}
       />
+
+      {product.product_type === "digital" && versions.length > 0 ? (
+        <section className="mt-6 overflow-hidden rounded-2xl border border-border bg-surface">
+          <div className="border-b border-hairline px-5 py-4">
+            <h2 className="text-[0.9375rem] font-medium text-fg">
+              Versions du fichier
+            </h2>
+            <p className="mt-1 text-[0.75rem] text-subtle">
+              Remplacer le fichier numérique crée une nouvelle version. Les acheteurs
+              gardent la version achetée ; le filigrane est ajouté au téléchargement.
+            </p>
+          </div>
+          <ul className="divide-y divide-hairline">
+            {versions.map((version, index) => (
+              <li key={version.id} className="flex items-center justify-between gap-3 px-5 py-3">
+                <div className="min-w-0">
+                  <p className="text-[0.8125rem] font-medium text-fg">
+                    Version {version.version}
+                    {index === 0 ? (
+                      <span className="ms-2 rounded-full bg-brand-500/10 px-2 py-0.5 text-[0.625rem] font-medium text-accent">
+                        Actuelle
+                      </span>
+                    ) : null}
+                  </p>
+                  <p className="mt-0.5 truncate text-[0.6875rem] text-subtle">
+                    {version.file_name ?? "Fichier"} · {version.notes ?? "—"}
+                  </p>
+                </div>
+                <span className="shrink-0 text-[0.625rem] text-faint">
+                  {new Intl.DateTimeFormat("fr-FR", { dateStyle: "short" }).format(
+                    new Date(version.created_at),
+                  )}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {membership && canManageCatalog(membership.role) ? (
         <div className="mt-6">

@@ -136,6 +136,28 @@ export async function signDownload(
   );
 }
 
+/** Lit un objet privé pour le filigraner avant envoi au client. */
+export async function readObject(
+  key: string,
+  kind: MediaKind,
+): Promise<{ bytes: Uint8Array; contentType: string } | null> {
+  try {
+    const result = await client().send(
+      new GetObjectCommand({ Bucket: bucketFor(kind), Key: key }),
+    );
+
+    if (!result.Body) return null;
+
+    const bytes = await result.Body.transformToByteArray();
+    return {
+      bytes,
+      contentType: result.ContentType ?? "application/octet-stream",
+    };
+  } catch {
+    return null;
+  }
+}
+
 /** Supprime l'objet du bon bucket. Appelé après la suppression de sa ligne. */
 export async function deleteObject(key: string, kind: MediaKind): Promise<void> {
   await client().send(
