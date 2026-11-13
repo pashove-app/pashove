@@ -122,6 +122,14 @@ export default async function SettingsHubPage({
         />
 
         <SettingsLink
+          href={path(locale, "/app/settings/webhooks")}
+          icon="webhook"
+          title="Webhooks"
+          text="Envoie les événements de commande à ton système, avec signature et relances."
+          cta="Configurer"
+        />
+
+        <SettingsLink
           href={path(locale, "/auth/security")}
           icon="shield"
           title={t.dashboard.settings.securityTitle}
