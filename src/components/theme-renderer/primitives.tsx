@@ -133,7 +133,7 @@ export function SectionHeading({
         <h2
           style={{
             fontFamily: "var(--s-heading-font, inherit)",
-            fontSize: "clamp(1.75rem, 3.2vw, var(--s-heading-size, 2.5rem))",
+            fontSize: "clamp(1.75rem, 3.2cqw, var(--s-heading-size, 2.5rem))",
             fontWeight: "var(--s-heading-weight, 600)" as CSSProperties["fontWeight"],
             lineHeight: "var(--s-heading-line, 1.1)",
             letterSpacing: "var(--s-heading-tracking, 0)",
@@ -444,7 +444,7 @@ export function HeadingStyle({
       className={className}
       style={{
         fontFamily: "var(--s-heading-font, inherit)",
-        fontSize: `clamp(1.5rem, 3vw, ${fontSize}px)`,
+        fontSize: `clamp(1.5rem, 3cqw, ${fontSize}px)`,
         fontWeight: 600,
         lineHeight: "var(--s-heading-line, 1.1)",
         letterSpacing: "var(--s-heading-tracking, 0)",

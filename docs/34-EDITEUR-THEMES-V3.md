@@ -157,6 +157,21 @@ Fonctions principales : `theme_editor_load`, `theme_create`, `theme_duplicate`,
 - **Tests** : 22 tests Jest, dont la normalisation de tous les types de sections,
   les placeholders et les marchés.
 
+### Corrections du 15/11/2026 (soir)
+
+- **Barre du haut sur une seule ligne** : hauteur unique de 40 px pour tous les
+  contrôles, icônes centrées, espacements réguliers, groupes gauche / centre /
+  droite. Les commandes secondaires (annuler, rétablir, inspecteur, aperçu)
+  s’effacent sous 1280 px.
+- **Aperçu mobile centré** : le cadre 390 px est centré dans la zone grise ;
+  les tailles du thème utilisent des unités de conteneur (`cqw`), donc le
+  contenu s’adapte réellement au cadre au lieu du viewport du navigateur.
+- **Fiche produit complète** : galerie et informations en deux colonnes
+  (empilées sur mobile), miniatures cliquables, variantes taille/couleur,
+  prix unique, onglets description/livraison/caractéristiques et produits
+  associés. Le produit de démo possède 3 images et 12 variantes.
+- **Nettoyage** : brouillons de test `black-shop` et `maboutie` supprimés.
+
 ## Limites connues
 
 - L’éditeur est intégré au tableau de bord ; sur téléphone, sa barre de

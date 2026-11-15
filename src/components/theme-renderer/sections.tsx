@@ -434,12 +434,12 @@ function Slideshow({ section, context, flags }: SectionProps) {
 
   return (
     <div className="relative w-full overflow-hidden" style={{ borderRadius: "var(--s-radius, 24px)" }}>
-      <div className="relative flex min-h-[380px] items-end" style={{ minHeight: "clamp(360px, 44vw, 560px)" }}>
+      <div className="relative flex min-h-[380px] items-end" style={{ minHeight: "clamp(360px, 44cqw, 560px)" }}>
         <SmartImage src={image || null} alt={alt} ratio="auto" radius={0} style={{ position: "absolute", inset: 0, height: "100%", objectFit: "cover" }} />
         {overlay ? <div style={{ position: "absolute", inset: 0, background: "rgb(0 0 0 / 0.45)" }} /> : null}
         <div className="relative z-10 w-full p-6 sm:p-10" style={{ color: "#fff", textAlign: align as CSSProperties["textAlign"] }}>
           {settingString(slideSettings, "heading") ? (
-            <h2 style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: 700, margin: 0, lineHeight: 1.05 }}>
+            <h2 style={{ fontSize: "clamp(2rem, 4cqw, 3.5rem)", fontWeight: 700, margin: 0, lineHeight: 1.05 }}>
               {settingString(slideSettings, "heading")}
             </h2>
           ) : null}
@@ -677,22 +677,26 @@ function ProductInfo({ section, context, settings, flags }: SectionProps) {
   return (
     <div style={{ width: "100%", display: "grid", gap: 18 }}>
       <div>
-        <h1 style={{ margin: 0, fontSize: "clamp(1.8rem, 3vw, 2.6rem)", lineHeight: 1.08, fontWeight: 650 }}>
+        <h1 style={{ margin: 0, fontSize: "clamp(1.8rem, 3cqw, 2.6rem)", lineHeight: 1.08, fontWeight: 650 }}>
           {product.name}
         </h1>
         {bool(section, "showDescription", true) && product.description ? (
           <p style={{ marginTop: 10, color: "var(--t-muted)", lineHeight: 1.7 }}>{product.description}</p>
         ) : null}
       </div>
-      <div className="flex flex-wrap items-baseline gap-3">
-        <p style={{ margin: 0, fontSize: "1.7rem", fontWeight: 700 }}>{product.priceLabel}</p>
-        {product.compareAtLabel ? (
-          <p style={{ margin: 0, color: "var(--t-muted)", textDecoration: "line-through" }}>{product.compareAtLabel}</p>
-        ) : null}
-        {product.discountPercent ? (
-          <span style={{ borderRadius: 6, background: "var(--t-text)", color: "var(--t-bg)", padding: "2px 7px", fontSize: "0.7rem", fontWeight: 700 }}>-{product.discountPercent}%</span>
-        ) : null}
-      </div>
+      {/* Le prix réel est rendu par ProductBuyBox (il suit la variante).
+          En édition seulement, on affiche un aperçu statique. */}
+      {flags.editable ? (
+        <div className="flex flex-wrap items-baseline gap-3">
+          <p style={{ margin: 0, fontSize: "1.7rem", fontWeight: 700 }}>{product.priceLabel}</p>
+          {product.compareAtLabel ? (
+            <p style={{ margin: 0, color: "var(--t-muted)", textDecoration: "line-through" }}>{product.compareAtLabel}</p>
+          ) : null}
+          {product.discountPercent ? (
+            <span style={{ borderRadius: 6, background: "var(--t-text)", color: "var(--t-bg)", padding: "2px 7px", fontSize: "0.7rem", fontWeight: 700 }}>-{product.discountPercent}%</span>
+          ) : null}
+        </div>
+      ) : null}
 
       {flags.editable ? (
         <div style={{ display: "grid", gap: 12, maxWidth: 520 }}>
@@ -909,10 +913,10 @@ function renderBody({ section, settings, context, flags }: SectionProps): ReactN
             <SmartImage src={image} alt={text(section, "imageAlt", context)} ratio="auto" radius={0} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: settingString(section.settings, "imageFit", "cover") as "cover" | "contain" | "fill" }} />
           ) : null}
           {overlay ? <div style={{ position: "absolute", inset: 0, background: `rgb(0 0 0 / ${opacity})` }} /> : null}
-          <div className="relative z-10 flex w-full flex-col" style={{ alignItems: position === "center" ? "center" : position === "right" ? "flex-end" : "flex-start", justifyContent: "center", padding: "clamp(2rem, 6vw, 4rem)", color: "#fff", textAlign: position as CSSProperties["textAlign"], minHeight: "inherit" }}>
+          <div className="relative z-10 flex w-full flex-col" style={{ alignItems: position === "center" ? "center" : position === "right" ? "flex-end" : "flex-start", justifyContent: "center", padding: "clamp(2rem, 6cqw, 4rem)", color: "#fff", textAlign: position as CSSProperties["textAlign"], minHeight: "inherit" }}>
             <div style={{ maxWidth: 720 }}>
               {text(section, "eyebrow", context) ? <p style={{ margin: "0 0 0.7rem", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.16em" }}>{text(section, "eyebrow", context)}</p> : null}
-              <h1 style={{ margin: 0, fontFamily: "var(--s-heading-font, inherit)", fontSize: "clamp(2.2rem, 5vw, var(--s-heading-size, 3.5rem))", lineHeight: "var(--s-heading-line, 1.05)", fontWeight: 700, letterSpacing: "var(--s-heading-tracking, 0)" }}>
+              <h1 style={{ margin: 0, fontFamily: "var(--s-heading-font, inherit)", fontSize: "clamp(2.2rem, 5cqw, var(--s-heading-size, 3.5rem))", lineHeight: "var(--s-heading-line, 1.05)", fontWeight: 700, letterSpacing: "var(--s-heading-tracking, 0)" }}>
                 {text(section, "heading", context, context.storeName)}
               </h1>
               {text(section, "subheading", context) ? <p style={{ margin: "1rem 0 0", maxWidth: 560, color: "rgb(255 255 255 / 0.88)", fontSize: "1rem", lineHeight: 1.6 }}>{text(section, "subheading", context)}</p> : null}
@@ -1141,7 +1145,7 @@ function renderBody({ section, settings, context, flags }: SectionProps): ReactN
     case "quote": {
       return (
         <div style={{ maxWidth: 820, marginInline: "auto", textAlign: "center" }}>
-          <p style={{ margin: 0, fontFamily: "var(--s-heading-font, inherit)", fontSize: "clamp(1.4rem, 3vw, 2rem)", lineHeight: 1.35 }}>
+          <p style={{ margin: 0, fontFamily: "var(--s-heading-font, inherit)", fontSize: "clamp(1.4rem, 3cqw, 2rem)", lineHeight: 1.35 }}>
             “{text(section, "text", context)}”
           </p>
           {text(section, "author", context) ? <p style={{ margin: "1rem 0 0", fontWeight: 700 }}>{text(section, "author", context)}</p> : null}
@@ -1469,7 +1473,7 @@ function renderBody({ section, settings, context, flags }: SectionProps): ReactN
       return (
         <div style={{ width: "100%", maxWidth: "var(--t-content-width)" }}>
           {bool(section, "showTitle", true) ? (
-            <h1 style={{ margin: 0, fontSize: "clamp(2rem, 4vw, 3rem)", lineHeight: 1.08 }}>{context.page?.title ?? "Titre de la page"}</h1>
+            <h1 style={{ margin: 0, fontSize: "clamp(2rem, 4cqw, 3rem)", lineHeight: 1.08 }}>{context.page?.title ?? "Titre de la page"}</h1>
           ) : null}
           {bool(section, "showDate", false) && context.page?.publishedAt ? (
             <p style={{ margin: "0.6rem 0 0", fontSize: "0.75rem", color: "var(--t-muted)" }}>{context.page.publishedAt}</p>
@@ -1503,7 +1507,7 @@ function renderBody({ section, settings, context, flags }: SectionProps): ReactN
       const article = context.article;
       return (
         <article style={{ width: "100%", maxWidth: "var(--t-content-width)" }}>
-          <h1 style={{ margin: 0, fontSize: "clamp(2rem, 4vw, 3rem)", lineHeight: 1.08 }}>{article?.title ?? "Titre de l’article"}</h1>
+          <h1 style={{ margin: 0, fontSize: "clamp(2rem, 4cqw, 3rem)", lineHeight: 1.08 }}>{article?.title ?? "Titre de l’article"}</h1>
           {bool(section, "showAuthor", true) || bool(section, "showDate", true) ? (
             <p style={{ margin: "0.7rem 0 0", fontSize: "0.78rem", color: "var(--t-muted)" }}>
               {bool(section, "showAuthor", true) ? article?.author ?? "" : ""}
@@ -1554,7 +1558,7 @@ function renderBody({ section, settings, context, flags }: SectionProps): ReactN
       const cart = context.cart;
       return (
         <div style={{ width: "100%", maxWidth: 860 }}>
-          <h1 style={{ margin: 0, fontSize: "clamp(1.8rem, 4vw, 2.6rem)" }}>{text(section, "heading", context, "Ton panier")}</h1>
+          <h1 style={{ margin: 0, fontSize: "clamp(1.8rem, 4cqw, 2.6rem)" }}>{text(section, "heading", context, "Ton panier")}</h1>
           <div style={{ marginTop: 20, display: "grid", gap: 12 }}>
             {(cart?.lines ?? []).map((line) => (
               <div key={line.id} style={{ display: "grid", gridTemplateColumns: "64px 1fr auto", gap: 12, alignItems: "center", borderBottom: "1px solid var(--t-border)", paddingBottom: 12 }}>

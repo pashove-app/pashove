@@ -1621,31 +1621,30 @@ function TopBar(props: {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-bg/95 backdrop-blur">
-      <div className="flex flex-wrap items-center gap-2 px-3 py-2 sm:px-4">
-        <div className="flex items-center gap-1">
-          <Link href={`/${props.locale}/app/themes`} className="flex h-10 w-10 items-center justify-center rounded-xl text-subtle hover:bg-hairline hover:text-fg" aria-label="Retour aux thèmes">
+      <div className="flex h-14 items-center gap-2 px-2 sm:px-3">
+        <div className="flex shrink-0 items-center gap-1">
+          <Link
+            href={`/${props.locale}/app/themes`}
+            className="flex h-9 w-9 items-center justify-center rounded-full text-subtle hover:bg-hairline hover:text-fg"
+            aria-label="Retour aux thèmes"
+          >
             <Icon path={icons.chevronLeft} className="h-4 w-4" />
           </Link>
-          <div className="hidden items-center gap-1 md:flex">
-            <button type="button" onClick={() => props.setPanel("sections")} className={cn("h-9 rounded-full px-3 text-[0.72rem] font-medium", props.panel === "sections" ? "bg-hairline text-fg" : "text-subtle hover:text-fg")}>Sections</button>
-            <button type="button" onClick={() => props.setPanel("theme")} className={cn("h-9 rounded-full px-3 text-[0.72rem] font-medium", props.panel === "theme" ? "bg-hairline text-fg" : "text-subtle hover:text-fg")}>
-              <span className="2xl:hidden">Thème</span>
-              <span className="hidden 2xl:inline">Paramètres du thème</span>
-            </button>
-            <button type="button" onClick={() => props.setPanel("apps")} className={cn("h-9 rounded-full px-3 text-[0.72rem] font-medium", props.panel === "apps" ? "bg-hairline text-fg" : "text-subtle hover:text-fg")}>Intégrations</button>
+          <div className="hidden items-center gap-1 lg:flex">
+            <button type="button" onClick={() => props.setPanel("sections")} className={cn("h-9 rounded-full px-2.5 text-[0.72rem] font-medium", props.panel === "sections" ? "bg-hairline text-fg" : "text-subtle hover:text-fg")}>Sections</button>
+            <button type="button" onClick={() => props.setPanel("theme")} className={cn("h-9 rounded-full px-2.5 text-[0.72rem] font-medium", props.panel === "theme" ? "bg-hairline text-fg" : "text-subtle hover:text-fg")}>Thème</button>
+            <button type="button" onClick={() => props.setPanel("apps")} className={cn("h-9 rounded-full px-2.5 text-[0.72rem] font-medium", props.panel === "apps" ? "bg-hairline text-fg" : "text-subtle hover:text-fg")}>Intégrations</button>
           </div>
         </div>
 
-        <div className="order-last flex w-full min-w-0 items-center justify-center gap-2 2xl:order-none 2xl:w-auto 2xl:flex-1">
-          <div className="relative">
-            <button type="button" className="flex min-w-0 max-w-[220px] items-center gap-2 truncate text-[0.8rem] font-semibold text-fg" onClick={() => setThemeMenu((open) => !open)}>
+        <div className="flex min-w-0 flex-1 items-center justify-center gap-2">
+          <div className="relative min-w-0">
+            <button type="button" className="flex h-9 min-w-0 max-w-[170px] items-center gap-2 truncate text-[0.78rem] font-semibold text-fg" onClick={() => setThemeMenu((open) => !open)}>
               <span className="truncate">{props.name}</span>
-              <span className={cn("rounded-full px-2 py-0.5 text-[0.6rem] font-semibold", props.status.active ? "bg-emerald-500/15 text-emerald-400" : "bg-amber-500/15 text-amber-300")}>
+              <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[0.58rem] font-semibold", props.status.active ? "bg-emerald-500/15 text-emerald-400" : "bg-amber-500/15 text-amber-300")}>
                 {props.status.active ? "En ligne" : "Brouillon"}
               </span>
-              <span className="hidden text-[0.65rem] text-subtle 2xl:inline">
-                {props.saveState === "saving" ? "· Enregistrement…" : props.saveState === "error" ? "· Erreur" : props.dirty ? "· Modifié" : "· Sauvegardé"}
-              </span>
+              {props.dirty ? <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" title="Modifications non enregistrées" /> : null}
             </button>
             {themeMenu ? (
               <div className="absolute left-0 top-11 z-50 w-60 rounded-xl border border-border bg-surface p-1.5 shadow-2xl">
@@ -1668,7 +1667,7 @@ function TopBar(props: {
           </div>
 
           <select
-            className="h-9 max-w-[120px] rounded-lg border border-border bg-bg-soft px-2 text-[0.68rem] text-fg"
+            className="h-9 w-[128px] shrink-0 rounded-full border border-border bg-bg-soft px-2.5 text-[0.68rem] text-fg"
             value={props.market}
             onChange={(event) => props.setMarket(event.target.value)}
             title="Marché d’aperçu"
@@ -1680,10 +1679,10 @@ function TopBar(props: {
             ))}
           </select>
 
-          <div className="relative">
-            <button type="button" className="h-9 max-w-[160px] truncate rounded-lg border border-border bg-bg-soft px-2 text-[0.68rem] text-fg" onClick={() => setTemplateMenu((open) => !open)}>
-              {props.currentTemplate?.name ?? "Modèle"}
-              <Icon path={icons.chevronDown} className="ms-1 inline h-3.5 w-3.5" />
+          <div className="relative min-w-0">
+            <button type="button" className="flex h-9 max-w-[150px] items-center gap-1 rounded-full border border-border bg-bg-soft px-2.5 text-[0.68rem] text-fg" onClick={() => setTemplateMenu((open) => !open)}>
+              <span className="truncate">{props.currentTemplate?.name ?? "Modèle"}</span>
+              <Icon path={icons.chevronDown} className="h-3.5 w-3.5 shrink-0" />
             </button>
             {templateMenu ? (
               <div className="absolute right-0 top-11 z-50 max-h-[75vh] w-[22rem] overflow-y-auto rounded-xl border border-border bg-surface p-2 shadow-2xl">
@@ -1710,21 +1709,20 @@ function TopBar(props: {
           </div>
         </div>
 
-        <div className="flex items-center gap-1">
-          <button type="button" onClick={props.undo} disabled={!props.canUndo} className="hidden h-9 w-9 rounded-lg text-subtle hover:bg-hairline hover:text-fg disabled:opacity-30 sm:block" title="Annuler (Ctrl+Z)"><Icon path={icons.undo} className="h-4 w-4" /></button>
-          <button type="button" onClick={props.redo} disabled={!props.canRedo} className="hidden h-9 w-9 rounded-lg text-subtle hover:bg-hairline hover:text-fg disabled:opacity-30 sm:block" title="Rétablir (Ctrl+Y)"><Icon path={icons.redo} className="h-4 w-4" /></button>
-          <button type="button" onClick={() => props.setInspect(!props.inspect)} className={cn("hidden h-9 rounded-lg px-2 text-[0.65rem] font-semibold sm:block", props.inspect ? "bg-brand-500/15 text-brand-300" : "text-subtle hover:text-fg")} title="Inspecteur">Inspecter</button>
-          <div className="hidden items-center gap-0.5 rounded-lg border border-border p-0.5 sm:flex">
+        <div className="flex shrink-0 items-center gap-1">
+          <button type="button" onClick={props.undo} disabled={!props.canUndo} className="hidden h-9 w-9 items-center justify-center rounded-full text-subtle hover:bg-hairline hover:text-fg disabled:opacity-30 xl:flex" title="Annuler (Ctrl+Z)"><Icon path={icons.undo} className="h-4 w-4" /></button>
+          <button type="button" onClick={props.redo} disabled={!props.canRedo} className="hidden h-9 w-9 items-center justify-center rounded-full text-subtle hover:bg-hairline hover:text-fg disabled:opacity-30 xl:flex" title="Rétablir (Ctrl+Y)"><Icon path={icons.redo} className="h-4 w-4" /></button>
+          <button type="button" onClick={() => props.setInspect(!props.inspect)} aria-pressed={props.inspect} className={cn("hidden h-9 w-9 items-center justify-center rounded-full xl:flex", props.inspect ? "bg-brand-500/15 text-brand-300" : "text-subtle hover:bg-hairline hover:text-fg")} title="Inspecteur"><Icon path={icons.sliders} className="h-4 w-4" /></button>
+          <div className="flex items-center gap-0.5 rounded-full border border-border p-0.5">
             {(["desktop", "tablet", "mobile"] as const).map((entry) => (
-              <button key={entry} type="button" onClick={() => props.setDevice(entry)} className={cn("h-8 rounded-md px-2 text-[0.62rem]", props.device === entry ? "bg-hairline text-fg" : "text-subtle")} title={entry === "desktop" ? "Ordinateur" : entry === "tablet" ? "Tablette" : "Mobile"}>
+              <button key={entry} type="button" onClick={() => props.setDevice(entry)} className={cn("grid h-8 w-8 place-items-center rounded-full", props.device === entry ? "bg-hairline text-fg" : "text-subtle")} title={entry === "desktop" ? "Ordinateur" : entry === "tablet" ? "Tablette" : "Mobile"}>
                 <Icon path={entry === "desktop" ? icons.monitor : entry === "tablet" ? icons.tablet : icons.phone} className="h-4 w-4" />
               </button>
             ))}
           </div>
-          <button type="button" onClick={props.openPreview} className="hidden h-9 rounded-lg border border-border px-2.5 text-[0.65rem] font-medium text-subtle hover:text-fg md:block">Aperçu</button>
-          <button type="button" onClick={() => props.save(false, true)} className="h-9 rounded-lg border border-border px-2.5 text-[0.65rem] font-semibold text-fg">Enregistrer</button>
-          <button type="button" onClick={props.publish} className="h-9 rounded-lg bg-brand-500 px-2.5 text-[0.65rem] font-semibold text-white hover:bg-brand-600">Publier</button>
-          <button type="button" className="flex h-9 w-9 items-center justify-center rounded-lg text-subtle md:hidden" onClick={() => setMobileMenu((open) => !open)}><Icon path={icons.menu} className="h-4 w-4" /></button>
+          <button type="button" onClick={props.openPreview} className="hidden h-9 rounded-full border border-border px-2.5 text-[0.65rem] font-medium text-subtle hover:text-fg xl:block">Aperçu</button>
+          <button type="button" onClick={() => props.save(false, true)} className="h-9 rounded-full border border-border px-3 text-[0.68rem] font-semibold text-fg">Enregistrer</button>
+          <button type="button" onClick={props.publish} className="h-9 rounded-full bg-brand-500 px-3 text-[0.68rem] font-semibold text-white hover:bg-brand-600">Publier</button>
         </div>
       </div>
 
@@ -2593,7 +2591,11 @@ function PreviewPane({
         </p>
         <p className="text-[0.62rem] text-faint">{inspect ? "Clique pour sélectionner" : "Navigation libre"}</p>
       </div>
-      <div ref={outerRef} className="overflow-hidden rounded-2xl border border-border bg-white" style={{ height: Math.max(400, height * scale) }}>
+      <div ref={outerRef} className="flex justify-center">
+        <div
+          className="overflow-hidden rounded-2xl border border-border bg-white"
+          style={{ width: width * scale, maxWidth: "100%", height: Math.max(400, height * scale) }}
+        >
         <div
           ref={innerRef}
           style={{ width, transform: `scale(${scale})`, transformOrigin: "top left" }}
@@ -2613,6 +2615,7 @@ function PreviewPane({
               market,
             }}
           />
+        </div>
         </div>
       </div>
       <p className="px-1 text-center text-[0.6rem] text-faint">

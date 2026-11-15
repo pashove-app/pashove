@@ -119,6 +119,9 @@ export function ThemeDocumentRenderer({
   const style: CSSProperties = {
     ...themeVars(settings),
     minHeight: "100%",
+    // Les tailles en `cqw` suivent la largeur du cadre d'aperçu (390/768/1440)
+    // et, en vitrine, la largeur réelle du document.
+    containerType: "inline-size",
   };
 
   return (
@@ -136,23 +139,57 @@ export function ThemeDocumentRenderer({
       ) : null}
 
       <main>
-        {visible(template?.sections ?? []).map((section) => (
-          <div key={section.id} className="relative" data-theme-section={section.id}>
-            <RevealWrapper section={section} editable={flags.editable}>
-              <SectionRenderer section={section} settings={settings} context={context} flags={renderFlags} />
-            </RevealWrapper>
-            {flags.editable && flags.onAddSection ? (
-              <button
-                type="button"
-                aria-label="Ajouter une section ici"
-                onClick={() => flags.onAddSection?.(section.id)}
-                className="absolute bottom-0 left-1/2 z-30 flex h-7 w-7 -translate-x-1/2 translate-y-1/2 items-center justify-center rounded-full border-2 border-white bg-[#2F5CFF] text-[15px] font-bold leading-none text-white shadow-lg"
-              >
-                +
-              </button>
-            ) : null}
-          </div>
-        ))}
+        {(() => {
+          const sections = visible(template?.sections ?? []);
+          const sectionNode = (section: ThemeSectionInstance) => (
+            <div key={section.id} className="relative" data-theme-section={section.id}>
+              <RevealWrapper section={section} editable={flags.editable}>
+                <SectionRenderer section={section} settings={settings} context={context} flags={renderFlags} />
+              </RevealWrapper>
+              {flags.editable && flags.onAddSection ? (
+                <button
+                  type="button"
+                  aria-label="Ajouter une section ici"
+                  onClick={() => flags.onAddSection?.(section.id)}
+                  className="absolute bottom-0 left-1/2 z-30 flex h-7 w-7 -translate-x-1/2 translate-y-1/2 items-center justify-center rounded-full border-2 border-white bg-[#2F5CFF] text-[15px] font-bold leading-none text-white shadow-lg"
+                >
+                  +
+                </button>
+              ) : null}
+            </div>
+          );
+
+          // Fiche produit : galerie et informations côte à côte (empilées sur
+          // mobile), comme une vraie page produit — pas deux blocs pleine largeur.
+          const gallery = template?.type === "product" ? sections.find((entry) => entry.type === "product-gallery") : undefined;
+          const info = template?.type === "product" ? sections.find((entry) => entry.type === "product-info") : undefined;
+          const paired = Boolean(gallery && info);
+          const rest = paired
+            ? sections.filter((entry) => entry !== gallery && entry !== info)
+            : sections;
+
+          return (
+            <>
+              {paired && gallery && info ? (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: device === "mobile" ? "1fr" : "minmax(0, 1.05fr) minmax(0, 0.95fr)",
+                    gap: device === "mobile" ? 16 : 40,
+                    alignItems: "start",
+                    width: "100%",
+                    maxWidth: 1320,
+                    margin: "0 auto",
+                  }}
+                >
+                  {sectionNode(gallery)}
+                  {sectionNode(info)}
+                </div>
+              ) : null}
+              {rest.map((section) => sectionNode(section))}
+            </>
+          );
+        })()}
       </main>
 
       {flags.showChrome !== false ? (

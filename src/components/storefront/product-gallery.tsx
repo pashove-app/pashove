@@ -27,7 +27,7 @@ export function ProductGallery({
   }
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row">
+    <div className="flex w-full flex-col gap-3 sm:flex-row">
       {images.length > 1 ? (
         <div className="order-2 flex gap-2 overflow-x-auto pb-1 sm:order-1 sm:w-20 sm:flex-col sm:overflow-visible sm:pb-0">
           {images.map((image, index) => (
