@@ -13,6 +13,7 @@ import { StorefrontHero } from "@/components/storefront/storefront-hero";
 import { ThemeBlocks } from "@/components/storefront/theme-blocks";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
 import { TrustStrip } from "@/components/storefront/trust-strip";
+import { ThemeDocumentRenderer } from "@/components/theme-renderer/theme-document";
 import { LOCALE_META, isLocale } from "@/i18n/config";
 import { getDictionary, interpolate } from "@/i18n/get-dictionary";
 import { isBrandedRequest } from "@/lib/domains/request";
@@ -20,8 +21,14 @@ import { publicUrl } from "@/lib/r2/media";
 import { listStoreProducts } from "@/lib/storefront/products";
 import { listPublicBundles } from "@/lib/storefront/bundles";
 import { listPublicCollections } from "@/lib/storefront/collections";
+import { listPublicNav } from "@/lib/storefront/navigation";
 import { loadStorefront } from "@/lib/storefront/queries";
 import { getPublicStoreTheme } from "@/lib/theme/queries";
+import { buildStoreRenderContext } from "@/lib/theme-editor/render-context";
+import {
+  getPublicMetafields,
+  getPublicThemeDocument,
+} from "@/lib/theme-editor/queries";
 
 /**
  * La vitrine est publique et ne dépend d'aucune session : elle peut être mise
@@ -86,14 +93,40 @@ export default async function StorefrontPage({
   if (status === "suspended") return <StorefrontClosed t={t} />;
   if (!store) notFound();
 
-  const [products, collections, bundles, theme] = await Promise.all([
-    listStoreProducts(store.id),
-    listPublicCollections(store.id),
-    listPublicBundles(store.id, store.currency, LOCALE_META[locale].tag),
-    getPublicStoreTheme(store.slug),
-  ]);
+  const [products, collections, bundles, theme, customTheme, nav, shopMetafields] =
+    await Promise.all([
+      listStoreProducts(store.id),
+      listPublicCollections(store.id),
+      listPublicBundles(store.id, store.currency, LOCALE_META[locale].tag),
+      getPublicStoreTheme(store.slug),
+      getPublicThemeDocument(store.slug),
+      listPublicNav(store.id),
+      getPublicMetafields(store.slug, "shop", store.id),
+    ]);
   const sections = theme.sections.filter((section) => section.enabled);
   const bannerUrl = store.banner ? publicUrl(store.banner.object_key) : null;
+
+  if (customTheme) {
+    const context = buildStoreRenderContext({
+      store,
+      locale,
+      nav,
+      products,
+      collections,
+      metafields: { shop: shopMetafields },
+      appEmbeds: customTheme.appEmbeds,
+    });
+
+    return (
+      <StorefrontShell store={store} locale={locale} t={t} hideFooter>
+        <ThemeDocumentRenderer
+          document={customTheme.document}
+          context={context}
+          templateId="index"
+        />
+      </StorefrontShell>
+    );
+  }
 
   const origin = new URL(
     (process.env.NEXT_PUBLIC_SITE_URL ?? "https://pashove.com").replace(/\/+$/, ""),

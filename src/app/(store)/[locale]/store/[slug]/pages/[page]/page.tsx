@@ -13,6 +13,9 @@ import { getPublishedCustomPage } from "@/lib/storefront/custom-pages";
 import { policySlugFromUrl, type PolicySlug } from "@/lib/policies/pages";
 import { getPublishedPolicyPage } from "@/lib/policies/queries";
 import { loadStorefront } from "@/lib/storefront/queries";
+import { ThemeDocumentRenderer } from "@/components/theme-renderer/theme-document";
+import { loadThemedStorefront } from "@/lib/theme-editor/storefront-render";
+import { getPublicAssignment, getPublicMetafields } from "@/lib/theme-editor/queries";
 
 type LabelKey = "mentions" | "terms" | "privacy" | "shipping" | "returns";
 
@@ -122,6 +125,38 @@ export default async function StoreCustomPage({
 
   const page = await getPublishedCustomPage(store.id, rawPage);
   if (!page) notFound();
+
+  const themed = await loadThemedStorefront(store, locale);
+  if (themed) {
+    const assigned = await getPublicAssignment(store.slug, "page", page.id);
+    const wanted =
+      assigned && themed.theme.document.templates.some((template) => template.id === assigned)
+        ? assigned
+        : "page";
+    const template =
+      themed.theme.document.templates.find((entry) => entry.id === wanted) ??
+      themed.theme.document.templates.find((entry) => entry.type === "page");
+
+    if (template) {
+      const metafields = await getPublicMetafields(store.slug, "page", page.id);
+      themed.context.page = {
+        title: page.title,
+        content: page.body,
+        publishedAt: new Intl.DateTimeFormat(LOCALE_META[locale].tag, { dateStyle: "long" }).format(new Date(page.updated_at)),
+      };
+      themed.context.metafields = { ...themed.context.metafields, page: metafields };
+
+      return (
+        <StorefrontShell store={store} locale={locale} t={t} hideFooter>
+          <ThemeDocumentRenderer
+            document={themed.theme.document}
+            context={themed.context}
+            templateId={template.id}
+          />
+        </StorefrontShell>
+      );
+    }
+  }
 
   const date = new Intl.DateTimeFormat(LOCALE_META[locale].tag, {
     dateStyle: "long",

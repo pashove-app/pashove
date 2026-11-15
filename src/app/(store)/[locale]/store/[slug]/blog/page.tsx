@@ -10,6 +10,8 @@ import { getDictionary } from "@/i18n/get-dictionary";
 import { listPublishedPosts } from "@/lib/storefront/blog";
 import { loadStorefront } from "@/lib/storefront/queries";
 import { publicUrl } from "@/lib/r2/media";
+import { ThemeDocumentRenderer } from "@/components/theme-renderer/theme-document";
+import { loadThemedStorefront } from "@/lib/theme-editor/storefront-render";
 
 export async function generateMetadata({
   params,
@@ -50,6 +52,36 @@ export default async function StoreBlogPage({
 
   const posts = await listPublishedPosts(store.id);
   const tag = LOCALE_META[locale].tag;
+
+  const themed = await loadThemedStorefront(store, locale);
+  if (themed) {
+    const template =
+      themed.theme.document.templates.find((entry) => entry.type === "blog") ??
+      themed.theme.document.templates.find((entry) => entry.type === "index");
+    if (template) {
+      themed.context.posts = posts.map((post) => ({
+        id: post.id,
+        title: post.title,
+        slug: post.slug,
+        excerpt: post.excerpt,
+        imageUrl: post.cover_key ? coverUrl(post.cover_key) : null,
+        publishedAt: post.published_at
+          ? new Intl.DateTimeFormat(tag, { dateStyle: "long" }).format(new Date(post.published_at))
+          : null,
+        author: store.name,
+      }));
+
+      return (
+        <StorefrontShell store={store} locale={locale} t={t} hideFooter>
+          <ThemeDocumentRenderer
+            document={themed.theme.document}
+            context={themed.context}
+            templateId={template.id}
+          />
+        </StorefrontShell>
+      );
+    }
+  }
 
   return (
     <StorefrontShell store={store} locale={locale} t={t}>

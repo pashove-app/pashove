@@ -5,6 +5,7 @@ import { resolveLocale } from "@/i18n/config";
 import { listCampaigns } from "@/lib/marketing/campaigns";
 import { formatMoney } from "@/lib/money";
 import { createClient } from "@/lib/supabase/server";
+import { daysAgoIso } from "@/lib/analytics/period";
 import { currentStore } from "@/lib/stores/queries";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -16,7 +17,7 @@ export default async function MarketingReportPage({ params }: { params: Promise<
   if (!store) redirect(`/${locale}/onboarding/store`);
 
   const supabase = await createClient();
-  const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
+  const since = daysAgoIso(30);
   const [{ data }, campaigns] = await Promise.all([
     supabase
       .from("orders")

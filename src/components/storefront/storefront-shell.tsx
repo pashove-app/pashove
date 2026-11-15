@@ -23,11 +23,14 @@ export async function StorefrontShell({
   locale,
   t,
   children,
+  hideFooter = false,
 }: {
   store: PublicStore;
   locale: Locale;
   t: Dictionary;
   children: ReactNode;
+  /** Un thème publié dessine son propre pied de page. */
+  hideFooter?: boolean;
 }) {
   const [policySlugs, theme] = await Promise.all([
     listPublishedPolicySlugs(store.id),
@@ -41,12 +44,14 @@ export async function StorefrontShell({
       <ThemeScope style={style} />
       <AffiliateClickTracker />
       <div className="flex-1">{children}</div>
-      <StorefrontFooter
-        store={store}
-        locale={locale}
-        t={t}
-        policySlugs={policySlugs}
-      />
+      {hideFooter ? null : (
+        <StorefrontFooter
+          store={store}
+          locale={locale}
+          t={t}
+          policySlugs={policySlugs}
+        />
+      )}
       <StorefrontChat
         slug={store.slug}
         locale={locale}

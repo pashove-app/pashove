@@ -4,6 +4,7 @@ import { ReportPanel, ReportShell, ReportStats } from "@/components/analytics/re
 import { resolveLocale } from "@/i18n/config";
 import { formatMoney } from "@/lib/money";
 import { createClient } from "@/lib/supabase/server";
+import { daysAgoIso } from "@/lib/analytics/period";
 import { currentStore } from "@/lib/stores/queries";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -15,7 +16,7 @@ export default async function RetentionReportPage({ params }: { params: Promise<
   if (!store) redirect(`/${locale}/onboarding/store`);
 
   const supabase = await createClient();
-  const since = new Date(Date.now() - 90 * 86_400_000).toISOString();
+  const since = daysAgoIso(90);
   const { data } = await supabase
     .from("orders")
     .select("customer_email, total_amount, payment_status")

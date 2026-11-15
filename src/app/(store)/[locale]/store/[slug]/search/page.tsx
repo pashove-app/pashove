@@ -11,6 +11,8 @@ import { LOCALE_META, isLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { searchStoreProducts } from "@/lib/storefront/products";
 import { loadStorefront } from "@/lib/storefront/queries";
+import { ThemeDocumentRenderer } from "@/components/theme-renderer/theme-document";
+import { loadThemedStorefront } from "@/lib/theme-editor/storefront-render";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
@@ -34,6 +36,29 @@ export default async function SearchPage({
   const { q: rawQuery } = await searchParams;
   const query = typeof rawQuery === "string" ? rawQuery.slice(0, 80) : "";
   const products = query ? await searchStoreProducts(store.id, query) : [];
+  const themed = await loadThemedStorefront(store, locale);
+  if (themed) {
+    const template =
+      themed.theme.document.templates.find((entry) => entry.type === "search") ??
+      themed.theme.document.templates.find((entry) => entry.type === "index");
+    if (template) {
+      themed.context.search = {
+        query,
+        results: products.map(themed.toCard),
+        emptyText: t.storefront.searchNoResults,
+      };
+
+      return (
+        <StorefrontShell store={store} locale={locale} t={t} hideFooter>
+          <ThemeDocumentRenderer
+            document={themed.theme.document}
+            context={themed.context}
+            templateId={template.id}
+          />
+        </StorefrontShell>
+      );
+    }
+  }
   const labels = t.storefront;
   const countLabel = (
     products.length === 1 ? labels.collectionCount : labels.collectionCountPlural

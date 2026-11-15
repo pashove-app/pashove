@@ -13,6 +13,9 @@ import { getDictionary } from "@/i18n/get-dictionary";
 import { publicUrl } from "@/lib/r2/media";
 import { getPublicCollection } from "@/lib/storefront/collections";
 import { loadStorefront } from "@/lib/storefront/queries";
+import { ThemeDocumentRenderer } from "@/components/theme-renderer/theme-document";
+import { loadThemedStorefront } from "@/lib/theme-editor/storefront-render";
+import { getPublicAssignment, getPublicMetafields } from "@/lib/theme-editor/queries";
 
 export const revalidate = 60;
 
@@ -54,6 +57,39 @@ export default async function CollectionPage({
 
   const { collection, products } = detail;
   const coverUrl = collection.image_key ? publicUrl(collection.image_key) : null;
+
+  const themed = await loadThemedStorefront(store, locale);
+  if (themed) {
+    const assigned = await getPublicAssignment(store.slug, "collection", collection.id);
+    const wanted =
+      assigned && themed.theme.document.templates.some((template) => template.id === assigned)
+        ? assigned
+        : "collection";
+    const template =
+      themed.theme.document.templates.find((entry) => entry.id === wanted) ??
+      themed.theme.document.templates.find((entry) => entry.type === "collection");
+
+    if (template) {
+      const metafields = await getPublicMetafields(store.slug, "collection", collection.id);
+      themed.context.collection = {
+        name: collection.name,
+        description: collection.description,
+        imageUrl: coverUrl,
+        products: products.map(themed.toCard),
+      };
+      themed.context.metafields = { ...themed.context.metafields, collection: metafields };
+
+      return (
+        <StorefrontShell store={store} locale={locale} t={t} hideFooter>
+          <ThemeDocumentRenderer
+            document={themed.theme.document}
+            context={themed.context}
+            templateId={template.id}
+          />
+        </StorefrontShell>
+      );
+    }
+  }
 
   return (
     <StorefrontShell store={store} locale={locale} t={t}>

@@ -244,3 +244,29 @@ Commits fréquents, déploiements fréquents.
 
 Restant avant lancement commercial : clés PSP réelles, Upstash/Turnstile,
 revue juridique et monitoring d'alertes.
+
+---
+
+## Mise à jour — 15/11/2026 (ÉDITEUR DE THÈMES V3)
+
+- [x] **Constructeur visuel complet** : thème → modèles → sections → blocs →
+      paramètres, 46 types de sections, 11 types de modèles.
+- [x] **Éditeur 3 zones** : barre supérieure, structure, aperçu réel,
+      paramètres ; responsive mobile-first.
+- [x] **Édition en direct** : sélection dans l’aperçu, inspecteur,
+      glisser-déposer souris et tactile, blocs déplaçables entre sections
+      compatibles.
+- [x] **Paramètres du thème** : palettes, typographie, mise en page,
+      animations, éléments visuels, réseaux sociaux, recherche, devise, panier,
+      CSS, presets de style, traductions.
+- [x] **Brouillon / publié**, sauvegarde automatique 30 s, undo/redo,
+      historique de 50 versions, aperçu partageable 7 jours.
+- [x] **Méta-champs** et **app embeds / app blocks**.
+- [x] **Vitrine** : rendu du thème publié sur l’accueil, les produits, les
+      collections, les pages, le blog, la recherche, le panier, les 404 et le
+      mot de passe.
+- [x] **Base** : 12 tables, RLS par boutique, RPC `security definer`,
+      migration appliquée.
+- [x] **Qualité** : build, TypeScript, Jest (16 tests) et lint verts.
+
+Reste à faire : captures authentifiées de l’éditeur (compte de test).

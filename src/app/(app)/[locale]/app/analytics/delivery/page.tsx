@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { ReportPanel, ReportShell, ReportStats } from "@/components/analytics/report-shell";
 import { resolveLocale } from "@/i18n/config";
 import { createClient } from "@/lib/supabase/server";
+import { daysAgoIso } from "@/lib/analytics/period";
 import { currentStore } from "@/lib/stores/queries";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -14,7 +15,7 @@ export default async function DeliveryReportPage({ params }: { params: Promise<{
   if (!store) redirect(`/${locale}/onboarding/store`);
 
   const supabase = await createClient();
-  const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
+  const since = daysAgoIso(30);
   const { data } = await supabase
     .from("orders")
     .select("status")

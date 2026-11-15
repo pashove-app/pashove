@@ -12,6 +12,9 @@ import { getDictionary } from "@/i18n/get-dictionary";
 import { getPublishedPost } from "@/lib/storefront/blog";
 import { loadStorefront } from "@/lib/storefront/queries";
 import { publicUrl } from "@/lib/r2/media";
+import { ThemeDocumentRenderer } from "@/components/theme-renderer/theme-document";
+import { loadThemedStorefront } from "@/lib/theme-editor/storefront-render";
+import { getPublicAssignment, getPublicMetafields } from "@/lib/theme-editor/queries";
 
 export async function generateMetadata({
   params,
@@ -62,6 +65,53 @@ export default async function StoreBlogPostPage({
 
   const cover = coverUrl(post.cover_key);
   const tag = LOCALE_META[locale].tag;
+
+  const themed = await loadThemedStorefront(store, locale);
+  if (themed) {
+    const assigned = await getPublicAssignment(store.slug, "article", post.id);
+    const wanted =
+      assigned && themed.theme.document.templates.some((template) => template.id === assigned)
+        ? assigned
+        : "article";
+    const template =
+      themed.theme.document.templates.find((entry) => entry.id === wanted) ??
+      themed.theme.document.templates.find((entry) => entry.type === "article");
+
+    if (template) {
+      const metafields = await getPublicMetafields(store.slug, "article", post.id);
+      themed.context.article = {
+        title: post.title,
+        content: post.body,
+        imageUrl: cover,
+        publishedAt: post.published_at
+          ? new Intl.DateTimeFormat(tag, { dateStyle: "long" }).format(new Date(post.published_at))
+          : null,
+        author: store.name,
+      };
+      themed.context.posts = [
+        {
+          id: post.id,
+          title: post.title,
+          slug: post.slug,
+          excerpt: post.excerpt,
+          imageUrl: cover,
+          publishedAt: post.published_at,
+          author: store.name,
+        },
+      ];
+      themed.context.metafields = { ...themed.context.metafields, article: metafields };
+
+      return (
+        <StorefrontShell store={store} locale={locale} t={t} hideFooter>
+          <ThemeDocumentRenderer
+            document={themed.theme.document}
+            context={themed.context}
+            templateId={template.id}
+          />
+        </StorefrontShell>
+      );
+    }
+  }
 
   return (
     <StorefrontShell store={store} locale={locale} t={t}>

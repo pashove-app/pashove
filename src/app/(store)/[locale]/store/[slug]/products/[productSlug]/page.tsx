@@ -32,6 +32,15 @@ import {
 } from "@/lib/storefront/service-slots";
 import { loadStorefront } from "@/lib/storefront/queries";
 import { createPublicClient } from "@/lib/supabase/public";
+import { listPublicNav } from "@/lib/storefront/navigation";
+import { listPublicCollections } from "@/lib/storefront/collections";
+import { ThemeDocumentRenderer } from "@/components/theme-renderer/theme-document";
+import { buildStoreRenderContext } from "@/lib/theme-editor/render-context";
+import {
+  getPublicAssignment,
+  getPublicMetafields,
+  getPublicThemeDocument,
+} from "@/lib/theme-editor/queries";
 
 export const revalidate = 30;
 
@@ -97,6 +106,13 @@ export default async function ProductPage({
 
   const product = await getStoreProduct(store.id, productSlug);
   if (!product) notFound();
+
+  const [customTheme, nav, assignedTemplate, productMetafields] = await Promise.all([
+    getPublicThemeDocument(store.slug),
+    listPublicNav(store.id),
+    getPublicAssignment(store.slug, "product", product.id),
+    getPublicMetafields(store.slug, "product", product.id),
+  ]);
 
   const labels = t.storefront;
   const localeTag = LOCALE_META[locale].tag;
@@ -178,6 +194,44 @@ export default async function ProductPage({
     .sort((left, right) => right.score - left.score)
     .slice(0, 4)
     .map((item) => item.entry);
+
+  if (customTheme) {
+    const wanted =
+      assignedTemplate &&
+      customTheme.document.templates.some((template) => template.id === assignedTemplate)
+        ? assignedTemplate
+        : "product";
+    const template =
+      customTheme.document.templates.find((entry) => entry.id === wanted) ??
+      customTheme.document.templates.find((entry) => entry.type === "product");
+
+    if (template) {
+      const collections = await listPublicCollections(store.id);
+      const context = buildStoreRenderContext({
+        store,
+        locale,
+        nav,
+        products: all,
+        collections,
+        metafields: { product: productMetafields },
+        appEmbeds: customTheme.appEmbeds,
+      });
+
+      context.product = priced;
+      context.productImages = images;
+      context.serviceSlots = serviceSlots;
+
+      return (
+        <StorefrontShell store={store} locale={locale} t={t} hideFooter>
+          <ThemeDocumentRenderer
+            document={customTheme.document}
+            context={context}
+            templateId={template.id}
+          />
+        </StorefrontShell>
+      );
+    }
+  }
 
   const physical = product.product_type === "physical";
 
