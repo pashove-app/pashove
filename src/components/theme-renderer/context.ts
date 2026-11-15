@@ -109,6 +109,8 @@ export type ThemeRenderFlags = {
   selectedBlockId?: string | null;
   onSelectSection?: (sectionId: string) => void;
   onSelectBlock?: (sectionId: string, blockId: string) => void;
+  /** Éditeur : ajouter une section juste après celle-ci. */
+  onAddSection?: (afterSectionId: string) => void;
   device?: "desktop" | "tablet" | "mobile";
   market?: string;
   loggedIn?: boolean;

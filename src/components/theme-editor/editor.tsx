@@ -85,6 +85,28 @@ export type ThemeEditorProps = {
   assignments: ThemeAssignment[];
 };
 
+/** Petite icône de structure, par catégorie de section. */
+function sectionIcon(category: string): string {
+  switch (category) {
+    case "header":
+      return "☰";
+    case "banner":
+      return "▣";
+    case "content":
+      return "¶";
+    case "commerce":
+      return "◈";
+    case "marketing":
+      return "✦";
+    case "footer":
+      return "▤";
+    case "advanced":
+      return "⚙";
+    default:
+      return "▢";
+  }
+}
+
 function deepCloneSection(section: ThemeSectionInstance): ThemeSectionInstance {
   return {
     ...section,
@@ -172,6 +194,7 @@ export function ThemeEditor(props: ThemeEditorProps) {
   >(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [libraryArea, setLibraryArea] = useState<SectionArea>("template");
+  const [libraryAfterId, setLibraryAfterId] = useState<string | null>(null);
   const [templateModal, setTemplateModal] = useState(false);
   const [assignModal, setAssignModal] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
@@ -852,11 +875,18 @@ export function ThemeEditor(props: ThemeEditorProps) {
       commit(
         {
           ...document,
-          templates: document.templates.map((template) =>
-            template.id === currentTemplate.id
-              ? { ...template, sections: [...template.sections, section] }
-              : template,
-          ),
+          templates: document.templates.map((template) => {
+            if (template.id !== currentTemplate.id) return template;
+            const afterIndex = libraryAfterId
+              ? template.sections.findIndex((entry) => entry.id === libraryAfterId)
+              : -1;
+            if (afterIndex < 0) {
+              return { ...template, sections: [...template.sections, section] };
+            }
+            const sections = [...template.sections];
+            sections.splice(afterIndex + 1, 0, section);
+            return { ...template, sections };
+          }),
         },
         makeId("add-section"),
       );
@@ -872,6 +902,7 @@ export function ThemeEditor(props: ThemeEditorProps) {
     }
     setLibraryOpen(false);
     setLibraryArea("template");
+    setLibraryAfterId(null);
     setPanel("sections");
   };
 
@@ -1190,7 +1221,7 @@ export function ThemeEditor(props: ThemeEditorProps) {
   };
 
   return (
-    <div className="pashove-editor min-h-dvh bg-bg text-fg">
+    <div className="pashove-editor fixed inset-0 z-50 flex flex-col bg-bg text-fg">
       <style>{`@media (max-width: 1023px) { .pashove-editor button, .pashove-editor select { min-height: 44px; } }`}</style>
       {toast ? (
         <div className="fixed bottom-24 left-1/2 z-[90] -translate-x-1/2 rounded-full bg-ink-950 px-5 py-2.5 text-[0.8rem] font-medium text-white shadow-2xl">
@@ -1263,12 +1294,12 @@ export function ThemeEditor(props: ThemeEditorProps) {
         onSave={() => void save(false, true)}
       />
 
-      <div className="grid min-h-[calc(100dvh-57px)] lg:grid-cols-[280px_minmax(0,1fr)_350px]">
-        <aside className="hidden border-b border-border bg-surface/40 lg:block lg:border-b-0 lg:border-r">
+      <div className="grid min-h-0 flex-1 overflow-hidden lg:grid-cols-[280px_minmax(0,1fr)_350px]">
+        <aside className="hidden min-h-0 overflow-y-auto border-b border-border bg-surface/40 lg:block lg:border-b-0 lg:border-r">
           <LeftPanel {...leftPanelProps} />
         </aside>
 
-        <section className="min-w-0 bg-bg-soft/40 p-3 pb-28 sm:p-4 lg:pb-4">
+        <section className="min-h-0 min-w-0 overflow-y-auto bg-bg-soft/40 p-3 pb-28 sm:p-4 lg:pb-4">
           <PreviewPane
             document={document}
             context={previewContext}
@@ -1287,18 +1318,23 @@ export function ThemeEditor(props: ThemeEditorProps) {
               setPanel("sections");
               setMobileSheet("settings");
             }}
+            onAddSection={(afterSectionId) => {
+              setLibraryArea("template");
+              setLibraryAfterId(afterSectionId);
+              setLibraryOpen(true);
+            }}
           />
         </section>
 
-        <aside className="hidden border-t border-border bg-surface/40 lg:block lg:border-l lg:border-t-0">
-          <div className="max-h-[calc(100dvh-57px)] overflow-y-auto p-4">
+        <aside className="hidden min-h-0 overflow-y-auto border-t border-border bg-surface/40 lg:block lg:border-l lg:border-t-0">
+          <div className="p-4">
             {renderInspector(false)}
           </div>
         </aside>
       </div>
 
       {/* Barre flottante mobile : Modifier · Page · Terminé */}
-      <nav className="fixed inset-x-3 bottom-3 z-50 flex items-center gap-1 rounded-2xl border border-border bg-surface/95 p-1.5 shadow-2xl backdrop-blur lg:hidden">
+      <nav aria-label="Barre de l’éditeur" className="fixed inset-x-3 bottom-3 z-50 flex items-center gap-1 rounded-2xl border border-border bg-surface/95 p-1.5 shadow-2xl backdrop-blur lg:hidden">
         <button
           type="button"
           onClick={() => setMobileSheet("structure")}
@@ -1326,43 +1362,38 @@ export function ThemeEditor(props: ThemeEditorProps) {
           <LeftPanel
             {...leftPanelProps}
             panel="sections"
-            onOpenInspector={() => setMobileSheet("settings")}
+            setSelection={(next) => {
+              setSelection(next);
+              if (next && (next.kind === "section" || next.kind === "block")) {
+                setMobileSheet("settings");
+              }
+            }}
           />
         </BottomSheet>
       ) : null}
 
       {mobileSheet === "templates" ? (
-        <BottomSheet title="Choisir une page" onClose={() => setMobileSheet(null)}>
-          <div className="grid gap-1">
-            {document.templates.map((template) => (
-              <button
-                key={template.id}
-                type="button"
-                className={cn(
-                  "flex min-h-12 items-center justify-between gap-2 rounded-xl px-3 text-left text-[0.8rem]",
-                  template.id === currentTemplate?.id ? "bg-brand-500/10 text-brand-200" : "text-fg hover:bg-hairline",
-                )}
-                onClick={() => {
-                  setSelectedTemplateId(template.id);
-                  setSelection({ kind: "template", templateId: template.id });
-                  setMobileSheet(null);
-                }}
-              >
-                <span className="truncate">{template.name}</span>
-                <span className="shrink-0 text-[0.62rem] text-subtle">{templateLabel(template.type)}</span>
-              </button>
-            ))}
-            <button
-              type="button"
-              className="mt-1 h-11 rounded-xl border border-dashed border-border text-[0.72rem] font-semibold text-brand-300"
-              onClick={() => {
-                setTemplateModal(true);
-                setMobileSheet(null);
-              }}
-            >
-              + Créer un modèle
-            </button>
-          </div>
+        <BottomSheet
+          title="Page d’accueil"
+          closeLabel="Terminé"
+          onClose={() => setMobileSheet(null)}
+        >
+          <TemplatePicker
+            templates={document.templates}
+            currentTemplateId={currentTemplate?.id}
+            themeName={name}
+            active={status.active}
+            autoFocus
+            onPick={(id) => {
+              setSelectedTemplateId(id);
+              setSelection({ kind: "template", templateId: id });
+              setMobileSheet(null);
+            }}
+            onCreate={() => {
+              setTemplateModal(true);
+              setMobileSheet(null);
+            }}
+          />
         </BottomSheet>
       ) : null}
 
@@ -1560,14 +1591,6 @@ function TopBar(props: {
   const [templateMenu, setTemplateMenu] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
 
-  const groups: { label: string; types: ThemeTemplateType[] }[] = [
-    { label: "Pages", types: ["index", "page", "404", "password"] },
-    { label: "Produits", types: ["product"] },
-    { label: "Collections", types: ["collection", "list-collections"] },
-    { label: "Blog", types: ["blog", "article"] },
-    { label: "Autres", types: ["search", "cart"] },
-  ];
-
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-bg/95 backdrop-blur">
       <div className="flex flex-wrap items-center gap-2 px-3 py-2 sm:px-4">
@@ -1636,36 +1659,25 @@ function TopBar(props: {
               {props.currentTemplate?.name ?? "Modèle"} ▾
             </button>
             {templateMenu ? (
-              <div className="absolute right-0 top-11 z-50 max-h-[70vh] w-64 overflow-y-auto rounded-xl border border-border bg-surface p-1.5 shadow-2xl">
-                {groups.map((group) => {
-                  const templates = props.templates.filter((template) => group.types.includes(template.type));
-                  if (templates.length === 0) return null;
-                  return (
-                    <div key={group.label} className="mb-1">
-                      <p className="px-2 py-1 text-[0.6rem] font-semibold uppercase tracking-[0.12em] text-faint">{group.label}</p>
-                      {templates.map((template) => (
-                        <button
-                          key={template.id}
-                          type="button"
-                          className={cn("block w-full rounded-lg px-2.5 py-1.5 text-left text-[0.7rem]", template.id === props.selectedTemplateId ? "bg-brand-500/15 text-brand-300" : "text-subtle hover:bg-hairline hover:text-fg")}
-                          onClick={() => {
-                            props.setSelectedTemplateId(template.id);
-                            props.setSelection({ kind: "template", templateId: template.id });
-                            setTemplateMenu(false);
-                          }}
-                        >
-                          {template.name}
-                        </button>
-                      ))}
-                    </div>
-                  );
-                })}
-                <div className="border-t border-border pt-1">
-                  <button type="button" className="block w-full rounded-lg px-2.5 py-2 text-left text-[0.7rem] font-semibold text-brand-300" onClick={() => { props.onTemplateModal(); setTemplateMenu(false); }}>+ Créer un modèle</button>
-                  {props.currentTemplate && props.currentTemplate.type !== "index" ? (
-                    <button type="button" className="block w-full rounded-lg px-2.5 py-2 text-left text-[0.7rem] text-red-400" onClick={() => { props.onDeleteTemplate(props.currentTemplate!.id); setTemplateMenu(false); }}>Supprimer ce modèle</button>
-                  ) : null}
-                </div>
+              <div className="absolute right-0 top-11 z-50 max-h-[75vh] w-[22rem] overflow-y-auto rounded-xl border border-border bg-surface p-2 shadow-2xl">
+                <TemplatePicker
+                  templates={props.templates}
+                  currentTemplateId={props.selectedTemplateId}
+                  themeName={props.name}
+                  active={props.status.active}
+                  onPick={(id) => {
+                    props.setSelectedTemplateId(id);
+                    props.setSelection({ kind: "template", templateId: id });
+                    setTemplateMenu(false);
+                  }}
+                  onCreate={() => {
+                    props.onTemplateModal();
+                    setTemplateMenu(false);
+                  }}
+                />
+                {props.currentTemplate && props.currentTemplate.type !== "index" ? (
+                  <button type="button" className="mt-1 block w-full rounded-lg px-2.5 py-2 text-left text-[0.7rem] text-red-400 hover:bg-hairline" onClick={() => { props.onDeleteTemplate(props.currentTemplate!.id); setTemplateMenu(false); }}>Supprimer ce modèle</button>
+                ) : null}
               </div>
             ) : null}
           </div>
@@ -1752,7 +1764,7 @@ function MobileTopBar({
       <button
         type="button"
         onClick={onMenu}
-        aria-label="Menu"
+        aria-label="Menu de l’éditeur"
         className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-fg"
       >
         ⋮
@@ -1768,15 +1780,159 @@ function MobileTopBar({
   );
 }
 
+const TEMPLATE_PICKER_GROUPS: {
+  type: ThemeTemplateType;
+  label: string;
+  icon: string;
+}[] = [
+  { type: "index", label: "Page d’accueil", icon: "⌂" },
+  { type: "product", label: "Produits", icon: "◇" },
+  { type: "collection", label: "Collections", icon: "▤" },
+  { type: "list-collections", label: "Liste de collections", icon: "▦" },
+  { type: "cart", label: "Panier", icon: "◫" },
+  { type: "page", label: "Pages", icon: "▭" },
+  { type: "blog", label: "Blogs", icon: "✎" },
+  { type: "article", label: "Articles de blog", icon: "☰" },
+  { type: "search", label: "Recherche", icon: "⌕" },
+  { type: "password", label: "Mot de passe", icon: "⚿" },
+  { type: "404", label: "Page 404", icon: "⚠" },
+];
+
+/** Sélecteur de page : recherche, catégories, modèles et pied de thème. */
+function TemplatePicker({
+  templates,
+  currentTemplateId,
+  themeName,
+  active,
+  onPick,
+  onCreate,
+  autoFocus = false,
+}: {
+  templates: ThemeTemplate[];
+  currentTemplateId?: string;
+  themeName: string;
+  active: boolean;
+  onPick: (id: string) => void;
+  onCreate: () => void;
+  autoFocus?: boolean;
+}) {
+  const [query, setQuery] = useState("");
+  const [expanded, setExpanded] = useState<ThemeTemplateType | null>(null);
+
+  const term = query.trim().toLowerCase();
+  const groups = TEMPLATE_PICKER_GROUPS.map((group) => ({
+    ...group,
+    templates: templates
+      .filter((template) => template.type === group.type)
+      .filter(
+        (template) =>
+          term === "" ||
+          template.name.toLowerCase().includes(term) ||
+          group.label.toLowerCase().includes(term),
+      ),
+  })).filter((group) => group.templates.length > 0);
+
+  return (
+    <div className="grid gap-1">
+      <div className="relative">
+        <input
+          className="h-11 w-full rounded-xl border border-border bg-bg-soft px-3 text-[0.8rem] text-fg"
+          placeholder="Rechercher dans la boutique en ligne"
+          value={query}
+          autoFocus={autoFocus}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+      </div>
+
+      {groups.map((group) => {
+        const isOpen = expanded === group.type;
+        const single = group.templates.length === 1;
+        return (
+          <div key={group.type}>
+            <button
+              type="button"
+              className={cn(
+                "flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-[0.8rem] hover:bg-hairline",
+                group.templates.some((template) => template.id === currentTemplateId)
+                  ? "bg-brand-500/10 font-semibold text-brand-200"
+                  : "text-fg",
+              )}
+              onClick={() => {
+                if (single) {
+                  onPick(group.templates[0].id);
+                } else {
+                  setExpanded(isOpen ? null : group.type);
+                }
+              }}
+            >
+              <span className="w-5 shrink-0 text-center text-[0.95rem] text-subtle">{group.icon}</span>
+              <span className="min-w-0 flex-1 truncate">{group.label}</span>
+              {!single ? <span className="text-[0.7rem] text-faint">{isOpen ? "▾" : "›"}</span> : null}
+            </button>
+            {isOpen ? (
+              <div className="ml-8 grid gap-0.5 border-l border-border pl-2">
+                {group.templates.map((template) => (
+                  <button
+                    key={template.id}
+                    type="button"
+                    className={cn(
+                      "min-h-10 truncate rounded-lg px-2 text-left text-[0.75rem]",
+                      template.id === currentTemplateId
+                        ? "bg-brand-500/10 text-brand-200"
+                        : "text-subtle hover:bg-hairline hover:text-fg",
+                    )}
+                    onClick={() => onPick(template.id)}
+                  >
+                    {template.name}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        );
+      })}
+
+      {groups.length === 0 ? (
+        <p className="px-3 py-4 text-center text-[0.75rem] text-subtle">Aucune page ne correspond.</p>
+      ) : null}
+
+      <button
+        type="button"
+        className="mt-1 h-11 rounded-xl border border-dashed border-border text-[0.72rem] font-semibold text-brand-300"
+        onClick={onCreate}
+      >
+        + Créer un modèle
+      </button>
+
+      <div className="mt-2 flex items-center justify-between border-t border-border px-1 pt-3">
+        <div>
+          <p className="text-[0.8rem] font-semibold text-fg">{themeName}</p>
+          <p className="text-[0.62rem] text-subtle">{templates.length} modèle(s)</p>
+        </div>
+        <span
+          className={cn(
+            "rounded-full px-2 py-0.5 text-[0.6rem] font-semibold",
+            active ? "bg-emerald-500/15 text-emerald-400" : "bg-amber-500/15 text-amber-300",
+          )}
+        >
+          {active ? "Actif" : "Brouillon"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 /** Tiroir mobile : glisse depuis le bas, se ferme au glissement vers le bas. */
 function BottomSheet({
   title,
   onClose,
   children,
+  closeLabel = "✕",
 }: {
   title: string;
   onClose: () => void;
   children: ReactNode;
+  closeLabel?: string;
 }) {
   const [dragY, setDragY] = useState(0);
   const startRef = useRef<number | null>(null);
@@ -1821,15 +1977,15 @@ function BottomSheet({
         >
           <span className="mx-auto block h-1.5 w-10 rounded-full bg-border" />
         </div>
-        <div className="flex items-center justify-between gap-2 px-4 py-2">
-          <h2 className="min-w-0 truncate text-[0.9rem] font-semibold text-fg">{title}</h2>
+        <div className="relative flex items-center justify-center px-4 py-2">
+          <h2 className="max-w-[70%] truncate text-center text-[0.9rem] font-semibold text-fg">{title}</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Fermer"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-subtle"
+            className="absolute end-3 top-1/2 -translate-y-1/2 rounded-full px-2 py-1 text-[0.75rem] font-medium text-subtle"
           >
-            ✕
+            {closeLabel}
           </button>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-8">{children}</div>
@@ -1881,6 +2037,8 @@ function LeftPanel(props: {
 
   const [drag, setDrag] = useState<DragItem | null>(null);
   const [touchDrag, setTouchDrag] = useState<DragItem | null>(null);
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!touchDrag) return;
@@ -2004,192 +2162,259 @@ function LeftPanel(props: {
     );
   }
 
-  const renderGroup = (area: SectionArea, label: string, sections: ThemeSectionInstance[], templateId?: string) => (
-    <div className="mb-3">
-      <div className="flex items-center justify-between px-2 py-1.5">
-        <p className="text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-faint">{label}</p>
-        <span className="flex items-center gap-1 text-[0.6rem] text-faint">
-          {sections.length}
-          {area !== "template" ? (
-            <button type="button" className="h-6 w-6 rounded-md text-[0.7rem] hover:bg-hairline hover:text-fg" title="Ajouter une section" onClick={() => props.onOpenLibrary(area)}>+</button>
-          ) : null}
-        </span>
-      </div>
-      <div className="grid gap-0.5">
-        {sections.map((section, index) => (
-          <div key={section.id}>
-            <div
-              data-section-row
-              data-section-id={section.id}
-              data-area={area}
-              data-template-id={templateId ?? ""}
-              draggable
-              onDragStart={(event: DragEvent) => {
-                event.stopPropagation();
-                setDrag({ kind: "section", area, id: section.id, templateId });
-              }}
-              onDragOver={(event) => event.preventDefault()}
-              onDrop={() => {
-                if (!drag || drag.area !== area || drag.templateId !== templateId) return;
-                if (drag.kind === "block") {
-                  props.onMoveBlockToSection(area, templateId, drag.sectionId, drag.id, section.id);
-                  setDrag(null);
-                  return;
-                }
-                const from = sections.findIndex((entry) => entry.id === drag.id);
-                if (from < 0 || from === index) return;
-                props.onMoveSection(area, templateId, drag.id, index - from);
-                setDrag(null);
-              }}
-              className={cn(
-                "group flex items-center gap-1 rounded-lg px-1 py-0.5",
-                props.selection?.kind === "section" && props.selection.sectionId === section.id ? "bg-brand-500/15" : "hover:bg-hairline",
-              )}
-            >
-              <span
-                className="cursor-grab px-1 text-[0.65rem] text-faint"
-                title="Glisser pour réordonner"
-                style={{ touchAction: "none" }}
-                onPointerDown={(event) => {
-                  if (event.pointerType === "mouse") return;
-                  event.preventDefault();
-                  setTouchDrag({ kind: "section", area, id: section.id, templateId });
-                }}
-              >⠿</span>
-              <button
-                type="button"
-                className="min-w-0 flex-1 truncate py-1.5 text-left text-[0.72rem] font-medium text-fg"
-                onClick={() => {
-                  props.setSelection({ kind: "section", area, sectionId: section.id, templateId });
-                  props.onOpenInspector?.();
-                }}
-              >
-                {section.name}
-              </button>
-              <button
-                type="button"
-                className={cn("h-7 w-6 text-[0.65rem]", section.visible ? "text-faint" : "text-amber-400")}
-                title={section.visible ? "Masquer" : "Afficher"}
-                onClick={() => props.onToggleSection(area, templateId, section)}
-              >
-                {section.visible ? "👁" : "—"}
-              </button>
-              <SectionMenu
-                onUp={() => props.onMoveSection(area, templateId, section.id, -1)}
-                onDown={() => props.onMoveSection(area, templateId, section.id, 1)}
-                onDuplicate={() => props.onDuplicateSection(area, templateId, section)}
-                onDelete={() => props.onDeleteSection(area, templateId, section.id)}
-                onRename={() => {
-                  const next = window.prompt("Nom de la section", section.name);
-                  if (next) props.onRenameSection(area, templateId, section, next);
-                }}
-              />
-            </div>
+  const renderGroup = (
+    area: SectionArea,
+    label: string,
+    sections: ThemeSectionInstance[],
+    templateId?: string,
+  ) => {
+    const collapsed = collapsedGroups[area] === true;
 
-            {props.selection && (props.selection.kind === "section" || props.selection.kind === "block") && props.selection.sectionId === section.id ? (
-              <div className="ml-4 grid gap-0.5 border-l border-border pl-2">
-                {section.blocks.map((block, blockIndex) => (
+    return (
+      <div className="mb-1">
+        <button
+          type="button"
+          className="flex min-h-10 w-full items-center gap-1.5 rounded-lg px-2 text-left hover:bg-hairline"
+          onClick={() =>
+            setCollapsedGroups((current) => ({ ...current, [area]: !collapsed }))
+          }
+        >
+          <span className="w-4 text-[0.7rem] text-faint">{collapsed ? "›" : "⌄"}</span>
+          <span className="text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-subtle">
+            {label}
+          </span>
+        </button>
+
+        {collapsed ? null : (
+          <div className="grid gap-0.5">
+            {sections.map((section, index) => {
+              const selected =
+                (props.selection?.kind === "section" || props.selection?.kind === "block") &&
+                props.selection.sectionId === section.id;
+              const expanded = expandedSections.has(section.id) || selected;
+              const icon = sectionIcon(getSectionSchema(section.type)?.category ?? "");
+
+              return (
+                <div key={section.id}>
                   <div
-                    key={block.id}
-                    data-block-row
-                    data-block-id={block.id}
+                    data-section-row
                     data-section-id={section.id}
                     data-area={area}
                     data-template-id={templateId ?? ""}
                     draggable
                     onDragStart={(event: DragEvent) => {
                       event.stopPropagation();
-                      setDrag({ kind: "block", area, id: block.id, sectionId: section.id, templateId });
+                      setDrag({ kind: "section", area, id: section.id, templateId });
                     }}
                     onDragOver={(event) => event.preventDefault()}
                     onDrop={() => {
-                      if (!drag || drag.kind !== "block" || drag.area !== area || drag.templateId !== templateId) return;
-                      if (drag.sectionId !== section.id) {
+                      if (!drag || drag.area !== area || drag.templateId !== templateId) return;
+                      if (drag.kind === "block") {
                         props.onMoveBlockToSection(area, templateId, drag.sectionId, drag.id, section.id);
                         setDrag(null);
                         return;
                       }
-                      if (drag.id === block.id) return;
-                      props.onMoveBlock(area, templateId, section.id, drag.id, blockIndex - section.blocks.findIndex((entry) => entry.id === drag.id));
+                      const from = sections.findIndex((entry) => entry.id === drag.id);
+                      if (from < 0 || from === index) return;
+                      props.onMoveSection(area, templateId, drag.id, index - from);
                       setDrag(null);
                     }}
-                    className={cn("group flex items-center gap-1 rounded-md px-1", props.selection?.kind === "block" && props.selection.blockId === block.id ? "bg-brand-500/10" : "hover:bg-hairline")}
+                    className={cn(
+                      "group flex min-h-10 items-center gap-1 rounded-lg px-1.5",
+                      selected ? "bg-brand-500/15" : "hover:bg-hairline",
+                    )}
                   >
+                    <button
+                      type="button"
+                      className="flex h-8 w-5 shrink-0 items-center justify-center text-[0.7rem] text-faint"
+                      title={expanded ? "Replier les blocs" : "Déplier les blocs"}
+                      onClick={() =>
+                        setExpandedSections((current) => {
+                          const next = new Set(current);
+                          if (next.has(section.id)) next.delete(section.id);
+                          else next.add(section.id);
+                          return next;
+                        })
+                      }
+                    >
+                      {expanded ? "⌄" : "›"}
+                    </button>
+                    <span className="w-4 shrink-0 text-center text-[0.72rem] text-subtle">{icon}</span>
+                    <button
+                      type="button"
+                      className="min-w-0 flex-1 truncate py-1.5 text-left text-[0.75rem] font-medium text-fg"
+                      onClick={() => {
+                        props.setSelection({ kind: "section", area, sectionId: section.id, templateId });
+                        props.onOpenInspector?.();
+                      }}
+                    >
+                      {section.name}
+                    </button>
                     <span
-                      className="cursor-grab px-0.5 text-[0.6rem] text-faint"
-                      title="Glisser le bloc · déposer sur une section compatible"
+                      className="hidden cursor-grab px-0.5 text-[0.65rem] text-faint group-hover:inline"
+                      title="Glisser pour réordonner"
                       style={{ touchAction: "none" }}
                       onPointerDown={(event) => {
                         if (event.pointerType === "mouse") return;
                         event.preventDefault();
-                        event.stopPropagation();
-                        setTouchDrag({ kind: "block", area, id: block.id, sectionId: section.id, templateId });
+                        setTouchDrag({ kind: "section", area, id: section.id, templateId });
                       }}
-                    >⠿</span>
-                    <button type="button" className="min-w-0 flex-1 truncate py-1 text-left text-[0.66rem] text-subtle" onClick={() => {
-                      props.setSelection({ kind: "block", area, sectionId: section.id, blockId: block.id, templateId });
-                      props.onOpenInspector?.();
-                    }}>
-                      {block.name || getBlockSchema(block.type)?.label || block.type}
-                      {!block.visible ? " · masqué" : ""}
-                    </button>
+                    >
+                      ⠿
+                    </span>
                     <button
                       type="button"
-                      className={cn("h-6 w-5 text-[0.6rem]", block.visible ? "text-faint" : "text-amber-400")}
-                      title={block.visible ? "Masquer le bloc" : "Afficher le bloc"}
-                      onClick={() => props.onToggleBlock(area, templateId, section.id, block)}
+                      className={cn(
+                        "h-7 w-6 text-[0.62rem] opacity-70 lg:opacity-0 lg:group-hover:opacity-100",
+                        section.visible ? "text-faint" : "text-amber-400",
+                      )}
+                      title={section.visible ? "Masquer" : "Afficher"}
+                      onClick={() => props.onToggleSection(area, templateId, section)}
                     >
-                      {block.visible ? "👁" : "—"}
+                      {section.visible ? "👁" : "—"}
                     </button>
-                    <BlockMenu
-                      onUp={() => props.onMoveBlock(area, templateId, section.id, block.id, -1)}
-                      onDown={() => props.onMoveBlock(area, templateId, section.id, block.id, 1)}
-                      onDuplicate={() => props.onDuplicateBlock(area, templateId, section, block)}
+                    <SectionMenu
+                      onUp={() => props.onMoveSection(area, templateId, section.id, -1)}
+                      onDown={() => props.onMoveSection(area, templateId, section.id, 1)}
+                      onDuplicate={() => props.onDuplicateSection(area, templateId, section)}
+                      onDelete={() => props.onDeleteSection(area, templateId, section.id)}
                       onRename={() => {
-                        const next = window.prompt("Nom du bloc", block.name || getBlockSchema(block.type)?.label || block.type);
-                        if (next !== null) props.onRenameBlock(area, templateId, section.id, block, next);
+                        const next = window.prompt("Nom de la section", section.name);
+                        if (next) props.onRenameSection(area, templateId, section, next);
                       }}
-                      onDelete={() => props.onDeleteBlock(area, templateId, section.id, block.id)}
                     />
                   </div>
-                ))}
-                {getSectionSchema(section.type)?.blocks ? (
-                  <div className="flex flex-wrap gap-1 py-1">
-                    {blockTypesForSection(section.type).map((type) => (
-                      <button
-                        key={type}
-                        type="button"
-                        className="rounded-md border border-border px-1.5 py-0.5 text-[0.58rem] text-subtle hover:border-brand-500 hover:text-fg"
-                        onClick={() => props.onAddBlock(section, type)}
-                      >
-                        + {getBlockSchema(type)?.label ?? type}
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
+
+                  {expanded ? (
+                    <div className="ml-7 grid gap-0.5 border-l border-border pl-2">
+                      {section.blocks.map((block, blockIndex) => (
+                        <div
+                          key={block.id}
+                          data-block-row
+                          data-block-id={block.id}
+                          data-section-id={section.id}
+                          data-area={area}
+                          data-template-id={templateId ?? ""}
+                          draggable
+                          onDragStart={(event: DragEvent) => {
+                            event.stopPropagation();
+                            setDrag({ kind: "block", area, id: block.id, sectionId: section.id, templateId });
+                          }}
+                          onDragOver={(event) => event.preventDefault()}
+                          onDrop={() => {
+                            if (!drag || drag.kind !== "block" || drag.area !== area || drag.templateId !== templateId) return;
+                            if (drag.sectionId !== section.id) {
+                              props.onMoveBlockToSection(area, templateId, drag.sectionId, drag.id, section.id);
+                              setDrag(null);
+                              return;
+                            }
+                            if (drag.id === block.id) return;
+                            props.onMoveBlock(area, templateId, section.id, drag.id, blockIndex - section.blocks.findIndex((entry) => entry.id === drag.id));
+                            setDrag(null);
+                          }}
+                          className={cn(
+                            "group flex min-h-9 items-center gap-1 rounded-md px-1",
+                            props.selection?.kind === "block" && props.selection.blockId === block.id
+                              ? "bg-brand-500/10"
+                              : "hover:bg-hairline",
+                          )}
+                        >
+                          <span
+                            className="cursor-grab px-0.5 text-[0.6rem] text-faint"
+                            title="Glisser le bloc · déposer sur une section compatible"
+                            style={{ touchAction: "none" }}
+                            onPointerDown={(event) => {
+                              if (event.pointerType === "mouse") return;
+                              event.preventDefault();
+                              event.stopPropagation();
+                              setTouchDrag({ kind: "block", area, id: block.id, sectionId: section.id, templateId });
+                            }}
+                          >
+                            ⠿
+                          </span>
+                          <button
+                            type="button"
+                            className="min-w-0 flex-1 truncate py-1 text-left text-[0.68rem] text-subtle"
+                            onClick={() => {
+                              props.setSelection({ kind: "block", area, sectionId: section.id, blockId: block.id, templateId });
+                              props.onOpenInspector?.();
+                            }}
+                          >
+                            {block.name || getBlockSchema(block.type)?.label || block.type}
+                            {!block.visible ? " · masqué" : ""}
+                          </button>
+                          <button
+                            type="button"
+                            className={cn("h-6 w-5 text-[0.6rem] opacity-70 lg:opacity-0 lg:group-hover:opacity-100", block.visible ? "text-faint" : "text-amber-400")}
+                            title={block.visible ? "Masquer le bloc" : "Afficher le bloc"}
+                            onClick={() => props.onToggleBlock(area, templateId, section.id, block)}
+                          >
+                            {block.visible ? "👁" : "—"}
+                          </button>
+                          <BlockMenu
+                            onUp={() => props.onMoveBlock(area, templateId, section.id, block.id, -1)}
+                            onDown={() => props.onMoveBlock(area, templateId, section.id, block.id, 1)}
+                            onDuplicate={() => props.onDuplicateBlock(area, templateId, section, block)}
+                            onRename={() => {
+                              const next = window.prompt("Nom du bloc", block.name || getBlockSchema(block.type)?.label || block.type);
+                              if (next !== null) props.onRenameBlock(area, templateId, section.id, block, next);
+                            }}
+                            onDelete={() => props.onDeleteBlock(area, templateId, section.id, block.id)}
+                          />
+                        </div>
+                      ))}
+
+                      {getSectionSchema(section.type)?.blocks ? (
+                        <div className="flex flex-wrap gap-1 py-1">
+                          {blockTypesForSection(section.type).map((type) => (
+                            <button
+                              key={type}
+                              type="button"
+                              className="rounded-md border border-border px-1.5 py-0.5 text-[0.58rem] text-subtle hover:border-brand-500 hover:text-fg"
+                              onClick={() => props.onAddBlock(section, type)}
+                            >
+                              + {getBlockSchema(type)?.label ?? type}
+                            </button>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
+
+            <button
+              type="button"
+              aria-label={
+                area === "header"
+                  ? "Ajouter une section à l’en-tête"
+                  : area === "footer"
+                    ? "Ajouter une section au pied de page"
+                    : "Ajouter une section au modèle"
+              }
+              onClick={() => props.onOpenLibrary(area)}
+              className="flex min-h-10 items-center gap-2 rounded-lg px-2 text-left text-[0.75rem] font-medium text-brand-300 hover:bg-hairline"
+            >
+              <span className="text-[1rem] leading-none">+</span>
+              Ajouter une section
+            </button>
           </div>
-        ))}
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
-    <div className="p-3">
+    <div className="px-2 py-3">
+      <div className="px-1 pb-3 pt-1">
+        <h1 className="truncate text-[1.05rem] font-semibold text-fg">
+          {props.currentTemplate?.name ?? "Page d’accueil"}
+        </h1>
+      </div>
       {renderGroup("header", "En-tête", props.document.header)}
-      <div className="mb-1 flex items-center justify-between px-2 py-1.5">
-        <p className="text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-faint">Modèle de page</p>
-        <span className="text-[0.6rem] text-faint">{props.currentTemplate?.sections.length ?? 0}/25</span>
-      </div>
-      {renderGroup("template", props.currentTemplate?.name ?? "Page", props.currentTemplate?.sections ?? [], props.currentTemplate?.id)}
-      <button type="button" onClick={() => props.onOpenLibrary("template")} className="mb-4 h-10 w-full rounded-xl border border-dashed border-border text-[0.7rem] font-medium text-subtle hover:border-brand-500 hover:text-fg">+ Ajouter une section</button>
+      {renderGroup("template", "Modèle", props.currentTemplate?.sections ?? [], props.currentTemplate?.id)}
       {renderGroup("footer", "Pied de page", props.document.footer)}
-      <div className="rounded-xl border border-border bg-bg-soft p-2.5">
-        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-faint">Modèles appliqués</p>
-        <p className="mt-1 text-[0.66rem] leading-relaxed text-subtle">{props.assignedResources.length} élément(s) utilisent « {props.currentTemplate?.name} ».</p>
-        <button type="button" onClick={props.onAssign} className="mt-2 h-9 w-full rounded-lg border border-border text-[0.65rem] font-medium text-fg">Appliquer le modèle</button>
-      </div>
     </div>
   );
 }
@@ -2278,6 +2503,7 @@ function PreviewPane({
   selection,
   onSelectSection,
   onSelectBlock,
+  onAddSection,
 }: {
   document: ThemeDocument;
   context: ThemeRenderContext;
@@ -2288,6 +2514,7 @@ function PreviewPane({
   selection: Selection;
   onSelectSection: (id: string) => void;
   onSelectBlock: (sectionId: string, blockId: string) => void;
+  onAddSection: (afterSectionId: string) => void;
 }) {
   const width = device === "desktop" ? 1440 : device === "tablet" ? 768 : 390;
   const outerRef = useRef<HTMLDivElement | null>(null);
@@ -2342,6 +2569,7 @@ function PreviewPane({
               selectedBlockId,
               onSelectSection,
               onSelectBlock,
+              onAddSection,
               device,
               market,
             }}

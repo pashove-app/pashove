@@ -126,9 +126,21 @@ export function ThemeDocumentRenderer({
 
       <main>
         {visible(template?.sections ?? []).map((section) => (
-          <RevealWrapper key={section.id} section={section} editable={flags.editable}>
-            <SectionRenderer section={section} settings={settings} context={context} flags={flags} />
-          </RevealWrapper>
+          <div key={section.id} className="relative" data-theme-section={section.id}>
+            <RevealWrapper section={section} editable={flags.editable}>
+              <SectionRenderer section={section} settings={settings} context={context} flags={flags} />
+            </RevealWrapper>
+            {flags.editable && flags.onAddSection ? (
+              <button
+                type="button"
+                aria-label="Ajouter une section ici"
+                onClick={() => flags.onAddSection?.(section.id)}
+                className="absolute bottom-0 left-1/2 z-30 flex h-7 w-7 -translate-x-1/2 translate-y-1/2 items-center justify-center rounded-full border-2 border-white bg-[#2F5CFF] text-[15px] font-bold leading-none text-white shadow-lg"
+              >
+                +
+              </button>
+            ) : null}
+          </div>
         ))}
       </main>
 

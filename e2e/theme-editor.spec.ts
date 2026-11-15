@@ -118,8 +118,8 @@ test.describe("éditeur de thèmes", () => {
 
     const heading = `Bienvenue E2E ${Date.now()}`;
 
-    // Ajoute une section depuis la bibliothèque (scopée à la modale).
-    await page.getByRole("button", { name: /Ajouter une section/ }).first().click();
+    // Ajoute une section au modèle depuis la bibliothèque.
+    await page.getByRole("button", { name: "Ajouter une section au modèle" }).click();
     const library = page.getByRole("dialog", { name: "Ajouter une section" });
     await expect(library).toBeVisible();
     await library.getByRole("button", { name: /Bannière d.image/ }).first().click();
@@ -160,6 +160,23 @@ test.describe("éditeur de thèmes", () => {
     await expect(settingsSheet).toBeVisible();
     await page.screenshot({ path: testInfo.outputPath("editor-mobile-settings.png"), fullPage: false });
     await settingsSheet.getByRole("button", { name: "Fermer" }).click();
+
+    // Menu ⋮.
+    await page.getByRole("button", { name: "Menu de l’éditeur" }).click();
+    const menuSheet = page.getByRole("dialog", { name: "Menu" });
+    await expect(menuSheet).toBeVisible();
+    await page.screenshot({ path: testInfo.outputPath("editor-mobile-menu.png"), fullPage: false });
+    await menuSheet.getByRole("button", { name: "Fermer" }).click();
+
+    // Sélecteur de page (recherche + catégories + pied de thème).
+    await page
+      .getByRole("navigation", { name: "Barre de l’éditeur" })
+      .getByRole("button", { name: "Page d’accueil" })
+      .click();
+    const pagesSheet = page.getByRole("dialog", { name: "Page d’accueil" });
+    await expect(pagesSheet).toBeVisible();
+    await page.screenshot({ path: testInfo.outputPath("editor-mobile-pages.png"), fullPage: false });
+    await pagesSheet.getByRole("button", { name: "Fermer" }).click();
 
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.waitForTimeout(500);

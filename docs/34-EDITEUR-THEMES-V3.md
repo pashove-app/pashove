@@ -29,21 +29,34 @@ lit que le document **publié**.
 
 ## Écran
 
-- **Zone A** — barre supérieure : Sections / Paramètres du thème / Intégrations,
-  nom + statut, menu du thème (renommer, code, traductions, dupliquer,
-  télécharger, versions, aperçu partageable, réinitialiser), sélecteur de
-  marché, sélecteur de modèle, annuler/rétablir, inspecteur, ordinateur /
-  tablette / mobile, aperçu, enregistrer, publier.
-- **Zone B** — structure : en-tête, modèle, pied de page ; sections et blocs
-  avec œil (masquer), menu (renommer, monter, descendre, dupliquer, supprimer),
-  glisser-déposer souris **et tactile**, déplacement de bloc entre sections
-  compatibles.
+L’éditeur est **plein écran** (il recouvre le tableau de bord), comme les
+éditeurs e-commerce de référence.
+
+- **Zone A** — barre supérieure : Sections / Thème / Intégrations, nom + statut,
+  menu du thème (renommer, code, traductions, dupliquer, télécharger, versions,
+  aperçu partageable, réinitialiser), marché, sélecteur de page, annuler /
+  rétablir, inspecteur, ordinateur / tablette / mobile, aperçu, enregistrer,
+  publier.
+- **Zone B** — structure épurée : titre de la page, groupes repliables
+  **En-tête / Modèle / Pied de page**, lignes avec chevron, icône et nom, actions
+  au survol, « + Ajouter une section » sous chaque groupe. Glisser-déposer
+  souris **et tactile**, déplacement de bloc entre sections compatibles.
 - **Zone C** — aperçu réel de la boutique, mis à jour en direct (debounce
-  100 ms). Clic dans l’aperçu = sélection ; l’inspecteur surligne les sections.
+  100 ms). Clic dans l’aperçu = sélection ; bouton **+** bleu entre les sections
+  pour en insérer une à cet endroit.
 - **Zone B2** — paramètres de l’élément sélectionné ou paramètres généraux du
   thème (logo, favicon, palettes, typographie, mise en page, animations,
   éléments visuels, réseaux sociaux, recherche, devise, panier, CSS, style,
   traductions).
+
+### Sélecteur de page
+
+Le sélecteur de page (menu du haut sur ordinateur, tiroir sur téléphone)
+reprend la structure de référence : recherche « Rechercher dans la boutique en
+ligne », catégories avec icônes et chevrons (Page d’accueil, Produits,
+Collections, Liste de collections, Panier, Pages, Blogs, Articles de blog,
+Recherche, Mot de passe, Page 404), modèles personnalisés et pied de thème avec
+statut Actif / Brouillon.
 
 Sur téléphone, l’éditeur est **100 % aperçu** avec des tiroirs (bottom sheets) :
 
@@ -119,7 +132,8 @@ Fonctions principales : `theme_editor_load`, `theme_create`, `theme_duplicate`,
   boutique → thème → section → titre → enregistrement → publication réelle
   vérifiée sur la vitrine. **Exécuté le 15/11/2026 : 1 passed**, captures
   `editor-desktop.png`, `editor-section.png`, `editor-mobile.png` (viewport
-  390×844), `editor-mobile-structure.png`, `editor-mobile-settings.png` et
+  390×844), `editor-mobile-structure.png`, `editor-mobile-settings.png`,
+  `editor-mobile-menu.png`, `editor-mobile-pages.png` et
   `storefront-publie.png` (page entière).
 
 ## Limites connues
