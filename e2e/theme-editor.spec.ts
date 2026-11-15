@@ -30,6 +30,32 @@ async function login(page: Page) {
   await expect(page).not.toHaveURL(/\/auth\/login/, { timeout: 15_000 });
 }
 
+/**
+ * Le compte de test peut posséder plusieurs boutiques : on sélectionne
+ * explicitement celle du parcours avant d'ouvrir l'éditeur.
+ */
+async function selectStore(page: Page, slug: string) {
+  await page.goto("/fr/app");
+  const select = page.getByLabel(/Boutique active|Active store/).first();
+  await expect(select).toBeVisible({ timeout: 15_000 });
+
+  const options = await select.locator("option").allTextContents();
+  const wanted =
+    process.env.E2E_STORE_NAME ??
+    options.find((option) => option.toLowerCase().includes("démo")) ??
+    options.find((option) => option.toLowerCase().includes(slug.toLowerCase()));
+
+  if (!wanted) {
+    throw new Error(
+      `Boutique « ${slug} » introuvable dans le sélecteur (${options.join(", ")}).`,
+    );
+  }
+
+  await select.selectOption({ label: wanted });
+  // Le changement passe par une server action et recharge le dashboard.
+  await page.waitForTimeout(1500);
+}
+
 async function openEditor(page: Page) {
   await page.goto("/fr/app/themes");
 
@@ -46,17 +72,41 @@ async function openEditor(page: Page) {
 }
 
 test.describe("éditeur de thèmes", () => {
+  test.setTimeout(120_000);
+
   test("ajoute une bannière, modifie le titre et enregistre", async ({ page }, testInfo) => {
+    page.on("response", (response) => {
+      if (response.url().includes("/api/themes/")) {
+        console.log(`[api] ${response.request().method()} ${response.status()} ${response.url()}`);
+      }
+    });
+    page.on("pageerror", (error) => console.log(`[pageerror] ${error.message}`));
+    page.on("console", (message) => {
+      if (message.type() === "error") console.log(`[console] ${message.text()}`);
+    });
+
     await login(page);
+    if (storeSlug) await selectStore(page, storeSlug);
     await openEditor(page);
+
+    // Repart d'un brouillon propre pour des captures sans sections de test
+    // empilées d'une exécution précédente.
+    if (process.env.E2E_RESET === "1") {
+      page.once("dialog", (dialog) => void dialog.accept());
+      await page.getByRole("button", { name: /Pashove Dawn/ }).first().click();
+      await page.getByRole("button", { name: "Réinitialiser le thème" }).click();
+      await page.waitForTimeout(800);
+    }
 
     await page.screenshot({ path: testInfo.outputPath("editor-desktop.png"), fullPage: false });
 
     const heading = `Bienvenue E2E ${Date.now()}`;
 
-    // Ajoute une section depuis la bibliothèque.
+    // Ajoute une section depuis la bibliothèque (scopée à la modale).
     await page.getByRole("button", { name: /Ajouter une section/ }).first().click();
-    await page.getByRole("button", { name: /Bannière d.image/ }).first().click();
+    const library = page.getByRole("dialog", { name: "Ajouter une section" });
+    await expect(library).toBeVisible();
+    await library.getByRole("button", { name: /Bannière d.image/ }).first().click();
     await expect(page.getByText("Section", { exact: true }).first()).toBeVisible();
 
     // Modifie le titre de la section.
@@ -68,15 +118,20 @@ test.describe("éditeur de thèmes", () => {
 
     // Enregistre.
     await page.getByRole("button", { name: "Enregistrer" }).click();
-    await expect(page.getByText(/Version enregistrée|Brouillon enregistré/).first()).toBeVisible({
-      timeout: 15_000,
-    });
+    const toast = page
+      .getByText(/Version enregistrée|Brouillon enregistré|Impossible d.enregistrer/)
+      .first();
+    await expect(toast).toBeVisible({ timeout: 15_000 });
+    await expect(toast).toHaveText(/Version enregistrée|Brouillon enregistré/);
 
     await page.screenshot({ path: testInfo.outputPath("editor-section.png"), fullPage: false });
 
-    // Aperçu mobile.
-    await page.getByTitle("Mobile").first().click();
+    // Vrai viewport téléphone : panneaux empilés et barre de navigation basse.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(800);
     await page.screenshot({ path: testInfo.outputPath("editor-mobile.png"), fullPage: false });
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.waitForTimeout(500);
 
     if (shouldPublish && storeSlug) {
       page.on("dialog", (dialog) => void dialog.accept());
@@ -85,7 +140,15 @@ test.describe("éditeur de thèmes", () => {
 
       await page.goto(`/fr/store/${storeSlug}`);
       await expect(page.getByText(heading).first()).toBeVisible({ timeout: 20_000 });
-      await page.screenshot({ path: testInfo.outputPath("storefront-publie.png"), fullPage: false });
+      // Laisse l'hydratation et les animations d'apparition se déclencher,
+      // puis parcourt la page pour charger les images différées.
+      await page.waitForLoadState("networkidle");
+      await page.waitForTimeout(1200);
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      await page.waitForTimeout(1000);
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.waitForTimeout(600);
+      await page.screenshot({ path: testInfo.outputPath("storefront-publie.png"), fullPage: true });
     }
   });
 });

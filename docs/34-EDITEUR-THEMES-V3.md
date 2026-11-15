@@ -106,15 +106,17 @@ Fonctions principales : `theme_editor_load`, `theme_create`, `theme_duplicate`,
 - `npx jest` : 19 tests ✅ (document de thème et moyens de paiement)
 - `npm run lint` : 0 erreur (avertissements existants uniquement)
 - Migration appliquée sur le projet Supabase `pashove`.
-- Test E2E `e2e/theme-editor.spec.ts` : parcours connexion → thème → section →
-  titre → enregistrement → publication (activé par `E2E_EMAIL`,
-  `E2E_PASSWORD`, `E2E_STORE_SLUG`, `E2E_PUBLISH=1`).
+- Test E2E `e2e/theme-editor.spec.ts` : parcours connexion → sélection de la
+  boutique → thème → section → titre → enregistrement → publication réelle
+  vérifiée sur la vitrine. **Exécuté le 15/11/2026 : 1 passed**, captures
+  `editor-desktop.png`, `editor-section.png`, `editor-mobile.png` (viewport
+  390×844) et `storefront-publie.png` (page entière).
 
 ## Limites connues
 
-- Les captures authentifiées de l’éditeur restent à produire : le test E2E
-  génère `editor-desktop.png`, `editor-section.png`, `editor-mobile.png` et
-  `storefront-publie.png` dès qu’un compte de test est fourni.
+- L’éditeur est intégré au tableau de bord ; sur téléphone, sa barre de
+  navigation basse (Structure / Aperçu / Paramètres) passe au-dessus de celle du
+  tableau de bord.
 - L’aperçu est un rendu local du document ; le lien « Aperçu » ouvre la vraie
   vitrine avec le brouillon.
 - Les sections avancées (Liquid, HTML, CSS) sont optionnelles et destinées aux

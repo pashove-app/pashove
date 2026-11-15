@@ -964,7 +964,7 @@ export function ThemeEditor(props: ThemeEditorProps) {
   const assignedResources = assignmentList.filter((entry) => entry.templateKey === currentTemplate?.id);
 
   return (
-    <div className="pashove-editor min-h-dvh bg-bg text-fg">
+    <div className="pashove-editor min-h-dvh bg-bg pb-16 text-fg lg:pb-0">
       <style>{`@media (max-width: 1023px) { .pashove-editor button, .pashove-editor select { min-height: 44px; } }`}</style>
       {toast ? (
         <div className="fixed bottom-24 left-1/2 z-[90] -translate-x-1/2 rounded-full bg-ink-950 px-5 py-2.5 text-[0.8rem] font-medium text-white shadow-2xl">
@@ -1243,7 +1243,7 @@ export function ThemeEditor(props: ThemeEditorProps) {
       </div>
 
       {/* Barre mobile */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t border-border bg-surface/95 backdrop-blur lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-3 border-t border-border bg-surface/95 backdrop-blur lg:hidden">
         {(["structure", "preview", "settings"] as const).map((pane) => (
           <button
             key={pane}
@@ -1380,19 +1380,22 @@ function TopBar(props: {
           </Link>
           <div className="hidden items-center gap-1 md:flex">
             <button type="button" onClick={() => props.setPanel("sections")} className={cn("h-9 rounded-full px-3 text-[0.72rem] font-medium", props.panel === "sections" ? "bg-hairline text-fg" : "text-subtle hover:text-fg")}>Sections</button>
-            <button type="button" onClick={() => props.setPanel("theme")} className={cn("h-9 rounded-full px-3 text-[0.72rem] font-medium", props.panel === "theme" ? "bg-hairline text-fg" : "text-subtle hover:text-fg")}>Paramètres du thème</button>
+            <button type="button" onClick={() => props.setPanel("theme")} className={cn("h-9 rounded-full px-3 text-[0.72rem] font-medium", props.panel === "theme" ? "bg-hairline text-fg" : "text-subtle hover:text-fg")}>
+              <span className="2xl:hidden">Thème</span>
+              <span className="hidden 2xl:inline">Paramètres du thème</span>
+            </button>
             <button type="button" onClick={() => props.setPanel("apps")} className={cn("h-9 rounded-full px-3 text-[0.72rem] font-medium", props.panel === "apps" ? "bg-hairline text-fg" : "text-subtle hover:text-fg")}>Intégrations</button>
           </div>
         </div>
 
-        <div className="flex min-w-0 flex-1 items-center justify-center gap-2">
+        <div className="order-last flex w-full min-w-0 items-center justify-center gap-2 2xl:order-none 2xl:w-auto 2xl:flex-1">
           <div className="relative">
-            <button type="button" className="flex max-w-[220px] items-center gap-2 truncate text-[0.8rem] font-semibold text-fg" onClick={() => setThemeMenu((open) => !open)}>
+            <button type="button" className="flex min-w-0 max-w-[220px] items-center gap-2 truncate text-[0.8rem] font-semibold text-fg" onClick={() => setThemeMenu((open) => !open)}>
               <span className="truncate">{props.name}</span>
               <span className={cn("rounded-full px-2 py-0.5 text-[0.6rem] font-semibold", props.status.active ? "bg-emerald-500/15 text-emerald-400" : "bg-amber-500/15 text-amber-300")}>
                 {props.status.active ? "En ligne" : "Brouillon"}
               </span>
-              <span className="hidden text-[0.65rem] text-subtle sm:inline">
+              <span className="hidden text-[0.65rem] text-subtle 2xl:inline">
                 {props.saveState === "saving" ? "· Enregistrement…" : props.saveState === "error" ? "· Erreur" : props.dirty ? "· Modifié" : "· Sauvegardé"}
               </span>
             </button>
@@ -2057,7 +2060,13 @@ function SectionLibraryModal({
 
   return (
     <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-5" onClick={onClose}>
-      <div className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-t-2xl border border-border bg-surface p-4 sm:rounded-2xl" onClick={(event) => event.stopPropagation()}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Ajouter une section"
+        className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-t-2xl border border-border bg-surface p-4 sm:rounded-2xl"
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-sm font-semibold text-fg">Ajouter une section</h2>
           <button type="button" className="h-9 w-9 rounded-lg border border-border text-subtle" onClick={onClose}>✕</button>
