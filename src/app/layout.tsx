@@ -49,12 +49,23 @@ export const metadata: Metadata = {
     template: "%s · Pashove",
   },
   robots: { index: true, follow: true },
+  // Google exige un favicon carré dont le côté est un multiple de 48 px.
+  // On déclare un ICO multi-tailles (48/96) et des PNG 96/144/192.
   icons: {
     icon: [
-      { url: "/brand/pashove-mark.png", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/brand/pashove-mark-96.png", type: "image/png", sizes: "96x96" },
+      { url: "/brand/pashove-mark-144.png", type: "image/png", sizes: "144x144" },
+      { url: "/brand/pashove-mark-192.png", type: "image/png", sizes: "192x192" },
     ],
-    shortcut: "/brand/pashove-mark.png",
-    apple: "/brand/pashove-mark.png",
+    shortcut: "/favicon.ico",
+    apple: [
+      {
+        url: "/brand/apple-touch-icon.png",
+        type: "image/png",
+        sizes: "180x180",
+      },
+    ],
   },
   description:
     "Crée ta boutique, vends tes produits physiques, numériques ou tes services et encaisse en Mobile Money dans 22 pays.",
