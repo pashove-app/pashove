@@ -117,7 +117,7 @@ export function FieldControl({
   }
 
   return (
-    <div className={cn("grid gap-1.5", compact && "gap-1")}>
+    <div className={cn("grid gap-1.5", compact && "gap-1")} data-field-key={field.key}>
       <div className="flex items-center justify-between gap-2">
         <label className={labelClass()}>{field.label}</label>
         {(field.type === "text" || field.type === "textarea") && !isMetafield ? (
@@ -1002,48 +1002,111 @@ export function ThemeSettingsPanel({
         </div>
       );
 
-    case "translations": {
-      const defaults: Record<string, string> = {
-        navHome: "Accueil",
-        navProducts: "Produits",
-        navCollections: "Collections",
-        navAbout: "À propos",
-        navContact: "Contact",
-        addToCart: "Ajouter au panier",
-        viewCart: "Voir le panier",
-        searchTitle: "Rechercher",
-        newsletterPlaceholder: "ton@email.com",
-        newsletterButton: "S’inscrire",
-        freeShipping: "Livraison offerte",
-        footerRights: "Tous droits réservés",
-        emptyCart: "Ton panier est vide",
-      };
-
-      return (
-        <div className="grid gap-2">
-          <p className="text-[0.7rem] leading-relaxed text-subtle">Modifie les libellés par défaut du thème. Laisse vide pour garder la traduction automatique.</p>
-          {Object.entries(defaults).map(([key, fallback]) => (
-            <div key={key} className="grid gap-1">
-              <label className={labelClass()}>{fallback}</label>
-              <input
-                className={inputClass()}
-                value={settings.translations[key] ?? ""}
-                placeholder={fallback}
-                onChange={(event) =>
-                  onChange({
-                    translations: { ...settings.translations, [key]: event.target.value },
-                  })
-                }
-              />
-            </div>
-          ))}
-        </div>
-      );
-    }
+    case "translations":
+      return <TranslationsEditor settings={settings} onChange={onChange} />;
 
     default:
       return null;
   }
+}
+
+/* ------------------------------------------------------------------ *
+ *  Contenu du thème (traductions)
+ * ------------------------------------------------------------------ */
+
+const TRANSLATION_GROUPS: { label: string; keys: [string, string][] }[] = [
+  {
+    label: "Navigation",
+    keys: [
+      ["navHome", "Accueil"],
+      ["navProducts", "Produits"],
+      ["navCollections", "Collections"],
+      ["navAbout", "À propos"],
+      ["navContact", "Contact"],
+    ],
+  },
+  {
+    label: "Produits",
+    keys: [
+      ["addToCart", "Ajouter au panier"],
+      ["viewCart", "Voir le panier"],
+      ["searchTitle", "Rechercher"],
+    ],
+  },
+  {
+    label: "Panier",
+    keys: [
+      ["emptyCart", "Ton panier est vide"],
+      ["freeShipping", "Livraison offerte"],
+    ],
+  },
+  {
+    label: "Newsletter",
+    keys: [
+      ["newsletterPlaceholder", "ton@email.com"],
+      ["newsletterButton", "S’inscrire"],
+    ],
+  },
+  {
+    label: "Pied de page",
+    keys: [["footerRights", "Tous droits réservés"]],
+  },
+];
+
+function TranslationsEditor({
+  settings,
+  onChange,
+}: {
+  settings: ThemeSettings;
+  onChange: (patch: Partial<ThemeSettings>) => void;
+}) {
+  const [query, setQuery] = useState("");
+
+  const term = query.trim().toLowerCase();
+  return (
+    <div className="grid gap-3">
+      <p className="text-[0.7rem] leading-relaxed text-subtle">
+        Modifie les libellés par défaut du thème. Laisse vide pour garder la traduction automatique.
+      </p>
+      <input
+        className={inputClass()}
+        placeholder="Rechercher un texte…"
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+      />
+      {TRANSLATION_GROUPS.map((group) => {
+        const keys = group.keys.filter(
+          ([key, fallback]) =>
+            term === "" ||
+            key.toLowerCase().includes(term) ||
+            fallback.toLowerCase().includes(term),
+        );
+        if (keys.length === 0) return null;
+        return (
+          <div key={group.label} className="grid gap-2">
+            <p className="text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-faint">
+              {group.label}
+            </p>
+            {keys.map(([key, fallback]) => (
+              <div key={key} className="grid gap-1">
+                <label className={labelClass()}>{fallback}</label>
+                <input
+                  className={inputClass()}
+                  value={settings.translations[key] ?? ""}
+                  placeholder={fallback}
+                  onChange={(event) =>
+                    onChange({
+                      translations: { ...settings.translations, [key]: event.target.value },
+                    })
+                  }
+                />
+              </div>
+            ))}
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 const FONT_OPTIONS = [

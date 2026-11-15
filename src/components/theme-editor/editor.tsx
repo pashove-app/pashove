@@ -208,6 +208,14 @@ export function ThemeEditor(props: ThemeEditorProps) {
     documentRef.current = document;
   }, [document]);
 
+  // Sur téléphone, l'éditeur s'ouvre directement sur l'aperçu mobile.
+  useEffect(() => {
+    if (window.matchMedia("(max-width: 1023px)").matches) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setDevice("mobile");
+    }
+  }, []);
+
   useEffect(() => {
     dirtyRef.current = dirty;
   }, [dirty]);
@@ -871,6 +879,37 @@ export function ThemeEditor(props: ThemeEditorProps) {
     updateSection({ ...section, blocks: [...section.blocks, newBlock(type)] });
   };
 
+  /** Ajoute un app block comme section du modèle courant. */
+  const addAppBlockSection = (block: ThemeAppBlock) => {
+    if (!currentTemplate) return;
+    if (currentTemplate.sections.length >= 25) {
+      setToast("Limite de 25 sections par modèle atteinte.");
+      return;
+    }
+    const section = newSection("app-block");
+    section.name = block.name || "Bloc d’application";
+    section.settings = {
+      ...section.settings,
+      heading: block.name,
+      appId: block.appId,
+      blockType: block.blockType,
+    };
+    commit(
+      {
+        ...document,
+        templates: document.templates.map((template) =>
+          template.id === currentTemplate.id
+            ? { ...template, sections: [...template.sections, section] }
+            : template,
+        ),
+      },
+      makeId("add-app"),
+    );
+    setSelection({ kind: "section", area: "template", sectionId: section.id, templateId: currentTemplate.id });
+    setPanel("sections");
+    setToast(`« ${block.name} » ajouté au modèle.`);
+  };
+
   const createTemplate = (type: ThemeTemplateType, templateName: string, baseId: string) => {
     const base = document.templates.find((template) => template.id === baseId);
     const template = base ? cloneTemplate(base, templateName) : newTemplate(type, templateName);
@@ -1103,8 +1142,17 @@ export function ThemeEditor(props: ThemeEditorProps) {
                   <div className="grid gap-1">
                     <p className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-faint">Blocs disponibles</p>
                     {appBlockList.map((block) => (
-                      <div key={block.id} className="rounded-xl border border-border bg-bg-soft px-3 py-2 text-[0.72rem]">
-                        {block.name} · {block.blockType}
+                      <div key={block.id} className="flex items-center justify-between gap-2 rounded-xl border border-border bg-bg-soft px-3 py-2 text-[0.72rem]">
+                        <span className="min-w-0 truncate">
+                          {block.name} · {block.blockType}
+                        </span>
+                        <button
+                          type="button"
+                          className="h-8 shrink-0 rounded-lg border border-border px-2 text-[0.65rem] font-medium text-fg hover:border-brand-500"
+                          onClick={() => addAppBlockSection(block)}
+                        >
+                          + Ajouter à la page
+                        </button>
                       </div>
                     ))}
                   </div>

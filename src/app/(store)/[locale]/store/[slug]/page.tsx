@@ -27,6 +27,7 @@ import { getPublicStoreTheme } from "@/lib/theme/queries";
 import { buildStoreRenderContext } from "@/lib/theme-editor/render-context";
 import {
   getPublicMetafields,
+  getPublicPaymentMethods,
   getPublicThemeDocument,
 } from "@/lib/theme-editor/queries";
 
@@ -93,7 +94,7 @@ export default async function StorefrontPage({
   if (status === "suspended") return <StorefrontClosed t={t} />;
   if (!store) notFound();
 
-  const [products, collections, bundles, theme, customTheme, nav, shopMetafields] =
+  const [products, collections, bundles, theme, customTheme, nav, shopMetafields, paymentMethods] =
     await Promise.all([
       listStoreProducts(store.id),
       listPublicCollections(store.id),
@@ -102,6 +103,7 @@ export default async function StorefrontPage({
       getPublicThemeDocument(store.slug),
       listPublicNav(store.id),
       getPublicMetafields(store.slug, "shop", store.id),
+      getPublicPaymentMethods(store),
     ]);
   const sections = theme.sections.filter((section) => section.enabled);
   const bannerUrl = store.banner ? publicUrl(store.banner.object_key) : null;
@@ -115,6 +117,7 @@ export default async function StorefrontPage({
       collections,
       metafields: { shop: shopMetafields },
       appEmbeds: customTheme.appEmbeds,
+      paymentMethods,
     });
 
     return (

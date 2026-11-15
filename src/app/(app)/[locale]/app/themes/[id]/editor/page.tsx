@@ -8,7 +8,7 @@ import { listCollections } from "@/lib/collections/queries";
 import { listNavItems } from "@/lib/storefront/navigation";
 import { currentMembership } from "@/lib/stores/queries";
 import { createClient } from "@/lib/supabase/server";
-import { loadEditorData } from "@/lib/theme-editor/queries";
+import { getPublicPaymentMethods, loadEditorData } from "@/lib/theme-editor/queries";
 import {
   buildStoreRenderContext,
   toPricedProduct,
@@ -60,7 +60,7 @@ export default async function ThemeEditorPage({
   if (!membership) redirect(`/${locale}/onboarding/store`);
 
   const store = membership.store;
-  const [editorData, products, collections, nav, metafieldsResult] = await Promise.all([
+  const [editorData, products, collections, nav, metafieldsResult, paymentMethods] = await Promise.all([
     loadEditorData(store.id),
     listProducts(store.id),
     listCollections(store.id),
@@ -72,6 +72,7 @@ export default async function ThemeEditorPage({
         .eq("store_id", store.id)
         .order("key", { ascending: true }),
     ),
+    getPublicPaymentMethods(store),
   ]);
 
   const theme = editorData.themes.find((entry) => entry.id === id) ?? editorData.themes[0];
@@ -128,6 +129,7 @@ export default async function ThemeEditorPage({
     appEmbeds: editorData.appEmbeds
       .filter((embed) => embed.enabled)
       .map((embed) => ({ appId: embed.appId, name: embed.name, settings: embed.settings })),
+    paymentMethods,
   });
 
   const firstProduct = storeProducts[0];

@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import { createThemeDocument } from "@/lib/theme-editor/defaults";
 import { normalizeDocument } from "@/lib/theme-editor/normalize";
+import { paymentMethodLabels } from "@/lib/theme-editor/render-context";
+import { getCheckoutPaymentMethods } from "@/lib/payments/queries";
 import type {
   ThemeAssignment,
   ThemeDocument,
@@ -150,6 +152,31 @@ export const getPublicThemeDocument = cache(
     };
   },
 );
+
+/**
+ * Moyens de paiement affichés sur la vitrine. La liste vient de l'éligibilité
+ * calculée en base (plan, pays, devise, COD) : aucun moyen non configuré.
+ */
+export async function getPublicPaymentMethods(store: {
+  slug: string;
+  country: string;
+  currency: string;
+  cod_enabled: boolean;
+}): Promise<string[]> {
+  try {
+    const eligibility = await getCheckoutPaymentMethods(
+      store.slug,
+      false,
+      store.country,
+      store.currency,
+      0,
+      true,
+    );
+    return paymentMethodLabels(eligibility.methods);
+  } catch {
+    return [];
+  }
+}
 
 export async function getPublicAssignment(
   slug: string,

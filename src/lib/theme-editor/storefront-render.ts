@@ -6,6 +6,7 @@ import type { Locale } from "@/i18n/config";
 import type { ThemeRenderContext } from "@/components/theme-renderer/context";
 import {
   getPublicMetafields,
+  getPublicPaymentMethods,
   getPublicThemeDocument,
   type PublicThemeDocument,
 } from "@/lib/theme-editor/queries";
@@ -29,12 +30,13 @@ export async function loadThemedStorefront(
   store: PublicStore,
   locale: Locale,
 ): Promise<ThemedStorefront | null> {
-  const [theme, products, collections, nav, shopMetafields] = await Promise.all([
+  const [theme, products, collections, nav, shopMetafields, paymentMethods] = await Promise.all([
     getPublicThemeDocument(store.slug),
     listStoreProducts(store.id),
     listPublicCollections(store.id),
     listPublicNav(store.id),
     getPublicMetafields(store.slug, "shop", store.id),
+    getPublicPaymentMethods(store),
   ]);
 
   if (!theme) return null;
@@ -47,6 +49,7 @@ export async function loadThemedStorefront(
     collections,
     metafields: { shop: shopMetafields },
     appEmbeds: theme.appEmbeds,
+    paymentMethods,
   });
 
   return {

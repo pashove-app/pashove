@@ -10,7 +10,11 @@ import { listPublicCollections } from "@/lib/storefront/collections";
 import { listPublicNav } from "@/lib/storefront/navigation";
 import { loadStorefront } from "@/lib/storefront/queries";
 import { buildStoreRenderContext, toPricedProduct } from "@/lib/theme-editor/render-context";
-import { getPreviewDocument, getPublicMetafields } from "@/lib/theme-editor/queries";
+import {
+  getPreviewDocument,
+  getPublicMetafields,
+  getPublicPaymentMethods,
+} from "@/lib/theme-editor/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -34,13 +38,14 @@ export default async function ThemePreviewPage({
   const preview = await getPreviewDocument(token);
   if (!preview) notFound();
 
-  const [t, products, collections, nav, query, shopMetafields] = await Promise.all([
+  const [t, products, collections, nav, query, shopMetafields, paymentMethods] = await Promise.all([
     getDictionary(locale),
     listStoreProducts(store.id),
     listPublicCollections(store.id),
     listPublicNav(store.id),
     searchParams,
     getPublicMetafields(slug, "shop", store.id),
+    getPublicPaymentMethods(store),
   ]);
 
   const requested = query.template ?? "index";
@@ -58,6 +63,7 @@ export default async function ThemePreviewPage({
     collections,
     metafields: { shop: shopMetafields },
     appEmbeds: preview.appEmbeds,
+    paymentMethods,
   });
 
   if (template?.type === "product") {

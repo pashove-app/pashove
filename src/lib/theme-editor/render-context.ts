@@ -21,6 +21,27 @@ const FALLBACK_NAV: { key: string; href: string; labels: Record<string, string> 
   { key: "contact", href: "/contact", labels: { fr: "Contact", en: "Contact" } },
 ];
 
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  cod: "Paiement à la livraison",
+  orange_money: "Orange Money",
+  wave: "Wave",
+  mtn_money: "MTN MoMo",
+  moov_money: "Moov Money",
+  mobile_money: "Mobile Money",
+  card: "Carte bancaire",
+};
+
+/**
+ * Libellés des moyens réellement éligibles, calculés en base par
+ * `checkout_payment_methods` : un moyen non configuré n'est jamais affiché.
+ */
+export function paymentMethodLabels(methods: readonly string[]): string[] {
+  const labels = methods
+    .map((method) => PAYMENT_METHOD_LABELS[method] ?? null)
+    .filter((label): label is string => label !== null);
+  return [...new Set(labels)];
+}
+
 function paymentMethods(country: string, cod: boolean): string[] {
   const byCountry: Record<string, string[]> = {
     ML: ["Orange Money", "Moov Money", "Carte bancaire"],
@@ -87,6 +108,8 @@ export function buildStoreRenderContext(input: {
   collections: PublicCollection[];
   metafields?: Record<string, Record<string, unknown>>;
   appEmbeds?: { appId: string; name: string; settings: Record<string, unknown> }[];
+  /** Moyens calculés en base ; sinon, repli par pays pour l'aperçu. */
+  paymentMethods?: string[];
 }): ThemeRenderContext {
   const { store, locale, nav, products, collections } = input;
   const homePath = `/${locale}/store/${store.slug}`;
@@ -118,7 +141,7 @@ export function buildStoreRenderContext(input: {
       store.shipping_flat_amount === 0
         ? "Livraison offerte"
         : `Livraison : ${formatMoney(store.shipping_flat_amount, store.currency, localeTag)}`,
-    paymentMethods: paymentMethods(store.country, store.cod_enabled),
+    paymentMethods: input.paymentMethods ?? paymentMethods(store.country, store.cod_enabled),
     nav: navItems,
     products: products.map((product) => productCard(product, store, locale)),
     collections: collections.map((collection) => collectionCard(collection)),

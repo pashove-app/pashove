@@ -9,6 +9,7 @@ import {
   normalizeSettings,
 } from "@/lib/theme-editor/normalize";
 import { getSectionSchema } from "@/lib/theme-editor/schema";
+import { paymentMethodLabels } from "@/lib/theme-editor/render-context";
 
 describe("document de thème", () => {
   it("crée un document avec tous les modèles par défaut", () => {
@@ -164,6 +165,18 @@ describe("document de thème", () => {
     expect(settings.typeScale).toBe(2);
     expect(settings.baseFontSize).toBe(12);
     expect(settings.cartType).toBe("drawer");
+  });
+});
+
+describe("moyens de paiement de la vitrine", () => {
+  it("n’affiche que les moyens éligibles, dans l’ordre attendu", () => {
+    expect(
+      paymentMethodLabels(["orange_money", "cod", "inconnu", "wave", "orange_money"]),
+    ).toEqual(["Orange Money", "Paiement à la livraison", "Wave"]);
+  });
+
+  it("retourne une liste vide si aucun moyen n’est configuré", () => {
+    expect(paymentMethodLabels([])).toEqual([]);
   });
 });
 

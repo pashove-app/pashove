@@ -39,6 +39,7 @@ import { buildStoreRenderContext } from "@/lib/theme-editor/render-context";
 import {
   getPublicAssignment,
   getPublicMetafields,
+  getPublicPaymentMethods,
   getPublicThemeDocument,
 } from "@/lib/theme-editor/queries";
 
@@ -107,11 +108,12 @@ export default async function ProductPage({
   const product = await getStoreProduct(store.id, productSlug);
   if (!product) notFound();
 
-  const [customTheme, nav, assignedTemplate, productMetafields] = await Promise.all([
+  const [customTheme, nav, assignedTemplate, productMetafields, paymentMethods] = await Promise.all([
     getPublicThemeDocument(store.slug),
     listPublicNav(store.id),
     getPublicAssignment(store.slug, "product", product.id),
     getPublicMetafields(store.slug, "product", product.id),
+    getPublicPaymentMethods(store),
   ]);
 
   const labels = t.storefront;
@@ -215,6 +217,7 @@ export default async function ProductPage({
         collections,
         metafields: { product: productMetafields },
         appEmbeds: customTheme.appEmbeds,
+        paymentMethods,
       });
 
       context.product = priced;
