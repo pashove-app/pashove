@@ -15,7 +15,15 @@ export default defineConfig({
     screenshot: "only-on-failure",
   },
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    {
+      name: "chromium",
+      use: {
+        ...devices["Desktop Chrome"],
+        // macOS 12 n'est plus supporté par Chromium Playwright : on peut
+        // réutiliser Chrome installé avec PLAYWRIGHT_CHANNEL=chrome.
+        channel: process.env.PLAYWRIGHT_CHANNEL,
+      },
+    },
     { name: "mobile", use: { ...devices["Pixel 5"] } },
   ],
   webServer: process.env.PLAYWRIGHT_BASE_URL
