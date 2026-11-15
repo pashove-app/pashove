@@ -8,6 +8,9 @@ import type { NextConfig } from "next";
 const publicMediaUrl = process.env.R2_PUBLIC_URL;
 
 const nextConfig: NextConfig = {
+  // Le badge de développement recouvrait la barre flottante de l'éditeur mobile.
+  devIndicators: false,
+
   experimental: {
     agentUpgrade: "security",
     serverActions: {

@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
   type DragEvent,
+  type ReactNode,
 } from "react";
 import { ThemeDocumentRenderer } from "@/components/theme-renderer/theme-document";
 import type { ThemeRenderContext } from "@/components/theme-renderer/context";
@@ -166,7 +167,9 @@ export function ThemeEditor(props: ThemeEditorProps) {
   const [device, setDevice] = useState<Device>("desktop");
   const [inspect, setInspect] = useState(true);
   const [market, setMarket] = useState("all");
-  const [mobilePane, setMobilePane] = useState<"structure" | "preview" | "settings">("preview");
+  const [mobileSheet, setMobileSheet] = useState<
+    null | "structure" | "settings" | "templates" | "menu"
+  >(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [libraryArea, setLibraryArea] = useState<SectionArea>("template");
   const [templateModal, setTemplateModal] = useState(false);
@@ -208,12 +211,15 @@ export function ThemeEditor(props: ThemeEditorProps) {
     documentRef.current = document;
   }, [document]);
 
-  // Sur téléphone, l'éditeur s'ouvre directement sur l'aperçu mobile.
+  // Sur téléphone, l'éditeur s'ouvre et reste sur l'aperçu mobile.
   useEffect(() => {
-    if (window.matchMedia("(max-width: 1023px)").matches) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setDevice("mobile");
-    }
+    const query = window.matchMedia("(max-width: 1023px)");
+    const apply = () => {
+      setDevice(query.matches ? "mobile" : "desktop");
+    };
+    apply();
+    query.addEventListener("change", apply);
+    return () => query.removeEventListener("change", apply);
   }, []);
 
   useEffect(() => {
@@ -385,7 +391,7 @@ export function ThemeEditor(props: ThemeEditorProps) {
       if (!raw) return;
       const parsed = JSON.parse(raw) as { document?: ThemeDocument };
       if (parsed.document) {
-        commit(parsed.document, `restore-${Date.now()}`);
+        commit(parsed.document, makeId("restore"));
         setLocalBackup(null);
         setToast("Copie locale restaurée.");
       }
@@ -440,7 +446,7 @@ export function ThemeEditor(props: ThemeEditorProps) {
   const resetTheme = () => {
     if (!window.confirm("Réinitialiser le thème sur le modèle Pashove Dawn ? Les modifications du brouillon seront perdues.")) return;
     const fresh = createThemeDocument("dawn");
-    commit(fresh, `reset-${Date.now()}`);
+    commit(fresh, makeId("reset"));
     setSelectedTemplateId(fresh.templates[0].id);
     setSelection(null);
     setToast("Thème réinitialisé. Enregistre pour conserver.");
@@ -629,7 +635,7 @@ export function ThemeEditor(props: ThemeEditorProps) {
         next.splice(target, 0, item);
         return next;
       }),
-      `move-${sectionId}-${Date.now()}`,
+      makeId(`move-${sectionId}`),
     );
   };
 
@@ -638,7 +644,7 @@ export function ThemeEditor(props: ThemeEditorProps) {
     copy.name = `${section.name} (copie)`;
     commit(
       mapArea(document, area, templateId, (sections) => [...sections, copy]),
-      `dup-${section.id}-${Date.now()}`,
+      makeId(`dup-${section.id}`),
     );
     setSelection({ kind: "section", area, sectionId: copy.id, templateId });
   };
@@ -647,7 +653,7 @@ export function ThemeEditor(props: ThemeEditorProps) {
     if (!window.confirm("Supprimer cette section ?")) return;
     commit(
       mapArea(document, area, templateId, (sections) => sections.filter((section) => section.id !== sectionId)),
-      `del-${sectionId}-${Date.now()}`,
+      makeId(`del-${sectionId}`),
     );
     setSelection(null);
   };
@@ -657,7 +663,7 @@ export function ThemeEditor(props: ThemeEditorProps) {
       mapArea(document, area, templateId, (sections) =>
         sections.map((entry) => (entry.id === section.id ? { ...entry, name: nextName.slice(0, 80) } : entry)),
       ),
-      `rename-${section.id}-${Date.now()}`,
+      makeId(`rename-${section.id}`),
     );
   };
 
@@ -709,7 +715,7 @@ export function ThemeEditor(props: ThemeEditorProps) {
         next.splice(target, 0, item);
         return next;
       },
-      `move-block-${blockId}-${Date.now()}`,
+      makeId(`move-block-${blockId}`),
     );
   };
 
@@ -739,7 +745,7 @@ export function ThemeEditor(props: ThemeEditorProps) {
         next.splice(index < 0 ? next.length : index + 1, 0, copy);
         return next;
       },
-      `dup-block-${block.id}-${Date.now()}`,
+      makeId(`dup-block-${block.id}`),
     );
     setSelection({ kind: "block", area, sectionId: section.id, blockId: copy.id, templateId });
   };
@@ -775,7 +781,7 @@ export function ThemeEditor(props: ThemeEditorProps) {
         blocks.map((entry) =>
           entry.id === block.id ? { ...entry, name: name.trim().slice(0, 80) || undefined } : entry,
         ),
-      `rename-block-${block.id}-${Date.now()}`,
+      makeId(`rename-block-${block.id}`),
     );
   };
 
@@ -790,7 +796,7 @@ export function ThemeEditor(props: ThemeEditorProps) {
       templateId,
       sectionId,
       (blocks) => blocks.filter((entry) => entry.id !== blockId),
-      `del-block-${blockId}-${Date.now()}`,
+      makeId(`del-block-${blockId}`),
     );
     setSelection({ kind: "section", area, sectionId, templateId });
   };
@@ -830,7 +836,7 @@ export function ThemeEditor(props: ThemeEditorProps) {
           return section;
         }),
       ),
-      `move-block-section-${blockId}-${Date.now()}`,
+      makeId(`move-block-section-${blockId}`),
     );
     setSelection({ kind: "block", area, sectionId: toSectionId, blockId, templateId });
     setToast(`Bloc déplacé vers « ${to.name} ».`);
@@ -852,7 +858,7 @@ export function ThemeEditor(props: ThemeEditorProps) {
               : template,
           ),
         },
-        `add-${Date.now()}`,
+        makeId("add-section"),
       );
       setSelection({ kind: "section", area, sectionId: section.id, templateId: currentTemplate.id });
     } else {
@@ -860,7 +866,7 @@ export function ThemeEditor(props: ThemeEditorProps) {
         area === "header"
           ? { ...document, header: [...document.header, section] }
           : { ...document, footer: [...document.footer, section] },
-        `add-${Date.now()}`,
+        makeId("add-section"),
       );
       setSelection({ kind: "section", area, sectionId: section.id });
     }
@@ -916,7 +922,7 @@ export function ThemeEditor(props: ThemeEditorProps) {
     template.type = type;
     commit(
       { ...document, templates: [...document.templates, template] },
-      `template-${Date.now()}`,
+      makeId("template"),
     );
     setSelectedTemplateId(template.id);
     setSelection({ kind: "template", templateId: template.id });
@@ -932,7 +938,7 @@ export function ThemeEditor(props: ThemeEditorProps) {
     }
     if (!window.confirm(`Supprimer le modèle « ${template.name} » ?`)) return;
     const templates = document.templates.filter((entry) => entry.id !== templateId);
-    commit({ ...document, templates }, `del-template-${Date.now()}`);
+    commit({ ...document, templates }, makeId("del-template"));
     setSelectedTemplateId(templates[0]?.id ?? "index");
     setSelection(null);
   };
@@ -963,8 +969,228 @@ export function ThemeEditor(props: ThemeEditorProps) {
 
   const assignedResources = assignmentList.filter((entry) => entry.templateKey === currentTemplate?.id);
 
+  const leftPanelProps = {
+    document,
+    panel,
+    setPanel,
+    themeCategory,
+    setThemeCategory,
+    currentTemplate,
+    selection,
+    setSelection,
+    onMoveSection: moveSection,
+    onDuplicateSection: duplicateSection,
+    onDeleteSection: deleteSection,
+    onToggleSection: toggleSection,
+    onAddSection: addSection,
+    onAddBlock: addBlock,
+    onRenameSection: renameSection,
+    onMoveBlock: moveBlock,
+    onDuplicateBlock: duplicateBlock,
+    onToggleBlock: toggleBlock,
+    onRenameBlock: renameBlock,
+    onDeleteBlock: deleteBlock,
+    onMoveBlockToSection: moveBlockToSection,
+    onOpenLibrary: (area: SectionArea) => {
+      setLibraryArea(area);
+      setLibraryOpen(true);
+    },
+    appList,
+    appBlockList,
+    onToggleApp: toggleApp,
+    onAddApp: addApp,
+    assignedResources,
+    products,
+    onAssign: () => setAssignModal(true),
+  } as const;
+
+  /** Contenu du panneau de droite, réutilisé tel quel dans le tiroir mobile. */
+  const renderInspector = (mobile = false) => {
+    if (panel === "theme") {
+      return (
+        <div className="grid gap-3">
+          {mobile ? (
+            <select
+              aria-label="Catégorie de paramètres"
+              className="h-11 w-full rounded-xl border border-border bg-bg-soft px-3 text-[0.8rem] text-fg"
+              value={themeCategory}
+              onChange={(event) => setThemeCategory(event.target.value as ThemeSettingsCategory)}
+            >
+              {THEME_CATEGORIES.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.icon} {category.label}
+                </option>
+              ))}
+            </select>
+          ) : null}
+          <ThemeSettingsPanel
+            category={themeCategory}
+            settings={document.settings}
+            context={fieldContext}
+            onChange={(patch) =>
+              commit(
+                { ...document, settings: { ...document.settings, ...patch } },
+                `theme-${themeCategory}`,
+              )
+            }
+            onDeletePalette={(id) =>
+              commit({
+                ...document,
+                settings: {
+                  ...document.settings,
+                  palettes: document.settings.palettes.filter((palette) => palette.id !== id),
+                  activePaletteId:
+                    document.settings.activePaletteId === id
+                      ? document.settings.palettes.find((palette) => palette.id !== id)?.id ?? ""
+                      : document.settings.activePaletteId,
+                },
+              }, `palette-del-${id}`)
+            }
+            onDuplicatePalette={(id) => {
+              const palette = document.settings.palettes.find((entry) => entry.id === id);
+              if (!palette) return;
+              commit({
+                ...document,
+                settings: {
+                  ...document.settings,
+                  palettes: [
+                    ...document.settings.palettes,
+                    { ...palette, id: makeId("palette"), name: `${palette.name} (copie)` },
+                  ],
+                },
+              }, `palette-dup-${id}`);
+            }}
+          />
+        </div>
+      );
+    }
+
+    if (panel === "apps") {
+      return (
+        <div className="grid gap-3">
+          <h2 className="text-sm font-semibold text-fg">Intégrations d’applications</h2>
+          <p className="text-[0.72rem] leading-relaxed text-subtle">
+            Les app embeds s’ajoutent à toutes les pages. Les app blocks s’ajoutent dans une section compatible.
+          </p>
+          {appBlockList.length > 0 ? (
+            <div className="grid gap-1">
+              <p className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-faint">Blocs disponibles</p>
+              {appBlockList.map((block) => (
+                <div key={block.id} className="flex items-center justify-between gap-2 rounded-xl border border-border bg-bg-soft px-3 py-2 text-[0.72rem]">
+                  <span className="min-w-0 truncate">
+                    {block.name} · {block.blockType}
+                  </span>
+                  <button
+                    type="button"
+                    className="h-8 shrink-0 rounded-lg border border-border px-2 text-[0.65rem] font-medium text-fg hover:border-brand-500"
+                    onClick={() => addAppBlockSection(block)}
+                  >
+                    + Ajouter à la page
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : null}
+          <p className="rounded-xl border border-dashed border-border p-3 text-[0.7rem] text-subtle">
+            Ajoute une application depuis le panneau de gauche. Une application sans embed ni bloc n’a aucun effet sur la vitrine.
+          </p>
+        </div>
+      );
+    }
+
+    if (selection?.kind === "template") {
+      return (
+        <div className="grid gap-4">
+          <div>
+            <p className="text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-faint">Modèle</p>
+            <h2 className="mt-1 text-lg font-semibold">{currentTemplate?.name}</h2>
+            <p className="text-[0.72rem] text-subtle">{templateLabel(currentTemplate?.type ?? "index")} · {currentTemplate?.sections.length ?? 0} sections</p>
+          </div>
+          <label className="grid gap-1">
+            <span className="text-[0.6875rem] font-semibold text-subtle">Nom du modèle</span>
+            <input
+              className="h-10 rounded-xl border border-border bg-bg-soft px-3 text-[0.8rem] text-fg"
+              value={currentTemplate?.name ?? ""}
+              onChange={(event) => {
+                if (!currentTemplate) return;
+                commit({
+                  ...document,
+                  templates: document.templates.map((template) =>
+                    template.id === currentTemplate.id ? { ...template, name: event.target.value } : template,
+                  ),
+                }, `template-name-${currentTemplate.id}`);
+              }}
+            />
+          </label>
+          {resourceType ? (
+            <button
+              type="button"
+              className="h-10 rounded-xl border border-border text-[0.72rem] font-medium text-fg hover:border-brand-500"
+              onClick={() => setAssignModal(true)}
+            >
+              Appliquer ce modèle à un {resourceType === "product" ? "produit" : "collection"} ({assignedResources.length})
+            </button>
+          ) : (
+            <p className="rounded-xl border border-dashed border-border p-3 text-[0.7rem] text-subtle">
+              Les modèles de pages, blog et articles s’appliquent automatiquement à leur type de contenu.
+            </p>
+          )}
+          <p className="text-[0.7rem] leading-relaxed text-subtle">
+            Le modèle par défaut s’applique aux produits qui n’ont pas d’affectation spécifique. Tu peux créer un modèle « produit premium » et l’appliquer à un seul produit.
+          </p>
+        </div>
+      );
+    }
+
+    if (selectedSection && selectedBlock) {
+      return (
+        <BlockSettingsPanel
+          block={selectedBlock}
+          context={fieldContext}
+          onChange={updateBlock}
+          onDelete={() => {
+            if (!selection || selection.kind !== "block") return;
+            updateSection({
+              ...selectedSection,
+              blocks: selectedSection.blocks.filter((block) => block.id !== selectedBlock.id),
+            });
+            setSelection({ kind: "section", area: selection.area, sectionId: selectedSection.id, templateId: selection.templateId });
+          }}
+        />
+      );
+    }
+
+    if (selectedSection) {
+      return (
+        <SectionSettingsPanel
+          section={selectedSection}
+          context={fieldContext}
+          onChange={updateSection}
+          onDelete={() => {
+            if (!selection) return;
+            deleteSection(selection.area, selection.templateId, selectedSection.id);
+          }}
+          onDuplicate={() => {
+            if (!selection) return;
+            duplicateSection(selection.area, selection.templateId, selectedSection);
+          }}
+        />
+      );
+    }
+
+    return (
+      <div className="grid gap-3 text-[0.75rem] leading-relaxed text-subtle">
+        <p className="text-sm font-semibold text-fg">Construis ta boutique</p>
+        <p>Sélectionne une section dans la colonne de gauche ou clique directement dans l’aperçu.</p>
+        <button type="button" className="h-10 rounded-xl border border-brand-500/40 bg-brand-500/10 text-[0.72rem] font-semibold text-brand-300" onClick={() => setLibraryOpen(true)}>
+          + Ajouter une section
+        </button>
+      </div>
+    );
+  };
+
   return (
-    <div className="pashove-editor min-h-dvh bg-bg pb-16 text-fg lg:pb-0">
+    <div className="pashove-editor min-h-dvh bg-bg text-fg">
       <style>{`@media (max-width: 1023px) { .pashove-editor button, .pashove-editor select { min-height: 44px; } }`}</style>
       {toast ? (
         <div className="fixed bottom-24 left-1/2 z-[90] -translate-x-1/2 rounded-full bg-ink-950 px-5 py-2.5 text-[0.8rem] font-medium text-white shadow-2xl">
@@ -982,6 +1208,7 @@ export function ThemeEditor(props: ThemeEditorProps) {
         </div>
       ) : null}
 
+      <div className="hidden lg:block">
       <TopBar
         {...{
           name,
@@ -1025,48 +1252,23 @@ export function ThemeEditor(props: ThemeEditorProps) {
           onDeleteTemplate: deleteTemplate,
         }}
       />
+      </div>
+
+      <MobileTopBar
+        locale={locale}
+        templateName={currentTemplate?.name ?? "Page"}
+        active={status.active}
+        saveState={saveState}
+        onMenu={() => setMobileSheet("menu")}
+        onSave={() => void save(false, true)}
+      />
 
       <div className="grid min-h-[calc(100dvh-57px)] lg:grid-cols-[280px_minmax(0,1fr)_350px]">
-        <aside
-          className={cn(
-            "border-b border-border bg-surface/40 lg:border-b-0 lg:border-r",
-            mobilePane !== "structure" && "hidden lg:block",
-          )}
-        >
-          <LeftPanel
-            document={document}
-            panel={panel}
-            setPanel={setPanel}
-            themeCategory={themeCategory}
-            setThemeCategory={setThemeCategory}
-            currentTemplate={currentTemplate}
-            selection={selection}
-            setSelection={setSelection}
-            onMoveSection={moveSection}
-            onDuplicateSection={duplicateSection}
-            onDeleteSection={deleteSection}
-            onToggleSection={toggleSection}
-            onAddSection={addSection}
-            onAddBlock={addBlock}
-            onRenameSection={renameSection}
-            onMoveBlock={moveBlock}
-            onDuplicateBlock={duplicateBlock}
-            onToggleBlock={toggleBlock}
-            onRenameBlock={renameBlock}
-            onDeleteBlock={deleteBlock}
-            onMoveBlockToSection={moveBlockToSection}
-            onOpenLibrary={(area) => { setLibraryArea(area); setLibraryOpen(true); }}
-            appList={appList}
-            appBlockList={appBlockList}
-            onToggleApp={toggleApp}
-            onAddApp={addApp}
-            assignedResources={assignedResources}
-            products={products}
-            onAssign={() => setAssignModal(true)}
-          />
+        <aside className="hidden border-b border-border bg-surface/40 lg:block lg:border-b-0 lg:border-r">
+          <LeftPanel {...leftPanelProps} />
         </aside>
 
-        <section className={cn("min-w-0 bg-bg-soft/40 p-3 sm:p-4", mobilePane !== "preview" && "hidden lg:block")}>
+        <section className="min-w-0 bg-bg-soft/40 p-3 pb-28 sm:p-4 lg:pb-4">
           <PreviewPane
             document={document}
             context={previewContext}
@@ -1078,186 +1280,181 @@ export function ThemeEditor(props: ThemeEditorProps) {
             onSelectSection={(sectionId) => {
               setSelection({ kind: "section", area: "template", sectionId, templateId: currentTemplate?.id });
               setPanel("sections");
+              setMobileSheet("settings");
             }}
             onSelectBlock={(sectionId, blockId) => {
               setSelection({ kind: "block", area: "template", sectionId, blockId, templateId: currentTemplate?.id });
               setPanel("sections");
+              setMobileSheet("settings");
             }}
           />
         </section>
 
-        <aside
-          className={cn(
-            "border-t border-border bg-surface/40 lg:border-l lg:border-t-0",
-            mobilePane !== "settings" && "hidden lg:block",
-          )}
-        >
+        <aside className="hidden border-t border-border bg-surface/40 lg:block lg:border-l lg:border-t-0">
           <div className="max-h-[calc(100dvh-57px)] overflow-y-auto p-4">
-            {panel === "theme" ? (
-              <ThemeSettingsPanel
-                category={themeCategory}
-                settings={document.settings}
-                context={fieldContext}
-                onChange={(patch) =>
-                  commit(
-                    { ...document, settings: { ...document.settings, ...patch } },
-                    `theme-${themeCategory}`,
-                  )
-                }
-                onDeletePalette={(id) =>
-                  commit({
-                    ...document,
-                    settings: {
-                      ...document.settings,
-                      palettes: document.settings.palettes.filter((palette) => palette.id !== id),
-                      activePaletteId:
-                        document.settings.activePaletteId === id
-                          ? document.settings.palettes.find((palette) => palette.id !== id)?.id ?? ""
-                          : document.settings.activePaletteId,
-                    },
-                  }, `palette-del-${id}`)
-                }
-                onDuplicatePalette={(id) => {
-                  const palette = document.settings.palettes.find((entry) => entry.id === id);
-                  if (!palette) return;
-                  commit({
-                    ...document,
-                    settings: {
-                      ...document.settings,
-                      palettes: [
-                        ...document.settings.palettes,
-                        { ...palette, id: `palette-${Date.now().toString(36)}`, name: `${palette.name} (copie)` },
-                      ],
-                    },
-                  }, `palette-dup-${id}`);
-                }}
-              />
-            ) : panel === "apps" ? (
-              <div className="grid gap-3">
-                <h2 className="text-sm font-semibold text-fg">Intégrations d’applications</h2>
-                <p className="text-[0.72rem] leading-relaxed text-subtle">
-                  Les app embeds s’ajoutent à toutes les pages. Les app blocks s’ajoutent dans une section compatible.
-                </p>
-                {appBlockList.length > 0 ? (
-                  <div className="grid gap-1">
-                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-faint">Blocs disponibles</p>
-                    {appBlockList.map((block) => (
-                      <div key={block.id} className="flex items-center justify-between gap-2 rounded-xl border border-border bg-bg-soft px-3 py-2 text-[0.72rem]">
-                        <span className="min-w-0 truncate">
-                          {block.name} · {block.blockType}
-                        </span>
-                        <button
-                          type="button"
-                          className="h-8 shrink-0 rounded-lg border border-border px-2 text-[0.65rem] font-medium text-fg hover:border-brand-500"
-                          onClick={() => addAppBlockSection(block)}
-                        >
-                          + Ajouter à la page
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-                <p className="rounded-xl border border-dashed border-border p-3 text-[0.7rem] text-subtle">
-                  Ajoute une application depuis le panneau de gauche. Une application sans embed ni bloc n’a aucun effet sur la vitrine.
-                </p>
-              </div>
-            ) : selection?.kind === "template" ? (
-              <div className="grid gap-4">
-                <div>
-                  <p className="text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-faint">Modèle</p>
-                  <h2 className="mt-1 text-lg font-semibold">{currentTemplate?.name}</h2>
-                  <p className="text-[0.72rem] text-subtle">{templateLabel(currentTemplate?.type ?? "index")} · {currentTemplate?.sections.length ?? 0} sections</p>
-                </div>
-                <label className="grid gap-1">
-                  <span className="text-[0.6875rem] font-semibold text-subtle">Nom du modèle</span>
-                  <input
-                    className="h-10 rounded-xl border border-border bg-bg-soft px-3 text-[0.8rem] text-fg"
-                    value={currentTemplate?.name ?? ""}
-                    onChange={(event) => {
-                      if (!currentTemplate) return;
-                      commit({
-                        ...document,
-                        templates: document.templates.map((template) =>
-                          template.id === currentTemplate.id ? { ...template, name: event.target.value } : template,
-                        ),
-                      }, `template-name-${currentTemplate.id}`);
-                    }}
-                  />
-                </label>
-                {resourceType ? (
-                  <button
-                    type="button"
-                    className="h-10 rounded-xl border border-border text-[0.72rem] font-medium text-fg hover:border-brand-500"
-                    onClick={() => setAssignModal(true)}
-                  >
-                    Appliquer ce modèle à un {resourceType === "product" ? "produit" : "collection"} ({assignedResources.length})
-                  </button>
-                ) : (
-                  <p className="rounded-xl border border-dashed border-border p-3 text-[0.7rem] text-subtle">
-                    Les modèles de pages, blog et articles s’appliquent automatiquement à leur type de contenu.
-                  </p>
-                )}
-                <p className="text-[0.7rem] leading-relaxed text-subtle">
-                  Le modèle par défaut s’applique aux produits qui n’ont pas d’affectation spécifique. Tu peux créer un modèle « produit premium » et l’appliquer à un seul produit.
-                </p>
-              </div>
-            ) : selectedSection && selectedBlock ? (
-              <BlockSettingsPanel
-                block={selectedBlock}
-                context={fieldContext}
-                onChange={updateBlock}
-                onDelete={() => {
-                  if (!selection || selection.kind !== "block") return;
-                  updateSection({
-                    ...selectedSection,
-                    blocks: selectedSection.blocks.filter((block) => block.id !== selectedBlock.id),
-                  });
-                  setSelection({ kind: "section", area: selection.area, sectionId: selectedSection.id, templateId: selection.templateId });
-                }}
-              />
-            ) : selectedSection ? (
-              <SectionSettingsPanel
-                section={selectedSection}
-                context={fieldContext}
-                onChange={updateSection}
-                onDelete={() => {
-                  if (!selection) return;
-                  deleteSection(selection.area, selection.templateId, selectedSection.id);
-                }}
-                onDuplicate={() => {
-                  if (!selection) return;
-                  duplicateSection(selection.area, selection.templateId, selectedSection);
-                }}
-              />
-            ) : (
-              <div className="grid gap-3 text-[0.75rem] leading-relaxed text-subtle">
-                <p className="text-sm font-semibold text-fg">Construis ta boutique</p>
-                <p>Sélectionne une section dans la colonne de gauche ou clique directement dans l’aperçu.</p>
-                <button type="button" className="h-10 rounded-xl border border-brand-500/40 bg-brand-500/10 text-[0.72rem] font-semibold text-brand-300" onClick={() => setLibraryOpen(true)}>
-                  + Ajouter une section
-                </button>
-              </div>
-            )}
+            {renderInspector(false)}
           </div>
         </aside>
       </div>
 
-      {/* Barre mobile */}
-      <nav className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-3 border-t border-border bg-surface/95 backdrop-blur lg:hidden">
-        {(["structure", "preview", "settings"] as const).map((pane) => (
-          <button
-            key={pane}
-            type="button"
-            onClick={() => setMobilePane(pane)}
-            className={cn(
-              "flex min-h-12 items-center justify-center text-[0.7rem] font-semibold",
-              mobilePane === pane ? "text-brand-300" : "text-subtle",
-            )}
-          >
-            {pane === "structure" ? "Structure" : pane === "preview" ? "Aperçu" : "Paramètres"}
-          </button>
-        ))}
+      {/* Barre flottante mobile : Modifier · Page · Terminé */}
+      <nav className="fixed inset-x-3 bottom-3 z-50 flex items-center gap-1 rounded-2xl border border-border bg-surface/95 p-1.5 shadow-2xl backdrop-blur lg:hidden">
+        <button
+          type="button"
+          onClick={() => setMobileSheet("structure")}
+          className="h-11 rounded-xl px-3 text-[0.72rem] font-semibold text-fg hover:bg-hairline"
+        >
+          Modifier
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileSheet("templates")}
+          className="h-11 min-w-0 flex-1 truncate rounded-xl px-2 text-[0.75rem] font-semibold text-fg hover:bg-hairline"
+        >
+          {currentTemplate?.name ?? "Page d’accueil"}
+        </button>
+        <Link
+          href={`/${locale}/app/themes`}
+          className="flex h-11 items-center rounded-xl px-3 text-[0.72rem] font-semibold text-brand-300"
+        >
+          Terminé
+        </Link>
       </nav>
+
+      {mobileSheet === "structure" ? (
+        <BottomSheet title="Modifier" onClose={() => setMobileSheet(null)}>
+          <LeftPanel
+            {...leftPanelProps}
+            panel="sections"
+            onOpenInspector={() => setMobileSheet("settings")}
+          />
+        </BottomSheet>
+      ) : null}
+
+      {mobileSheet === "templates" ? (
+        <BottomSheet title="Choisir une page" onClose={() => setMobileSheet(null)}>
+          <div className="grid gap-1">
+            {document.templates.map((template) => (
+              <button
+                key={template.id}
+                type="button"
+                className={cn(
+                  "flex min-h-12 items-center justify-between gap-2 rounded-xl px-3 text-left text-[0.8rem]",
+                  template.id === currentTemplate?.id ? "bg-brand-500/10 text-brand-200" : "text-fg hover:bg-hairline",
+                )}
+                onClick={() => {
+                  setSelectedTemplateId(template.id);
+                  setSelection({ kind: "template", templateId: template.id });
+                  setMobileSheet(null);
+                }}
+              >
+                <span className="truncate">{template.name}</span>
+                <span className="shrink-0 text-[0.62rem] text-subtle">{templateLabel(template.type)}</span>
+              </button>
+            ))}
+            <button
+              type="button"
+              className="mt-1 h-11 rounded-xl border border-dashed border-border text-[0.72rem] font-semibold text-brand-300"
+              onClick={() => {
+                setTemplateModal(true);
+                setMobileSheet(null);
+              }}
+            >
+              + Créer un modèle
+            </button>
+          </div>
+        </BottomSheet>
+      ) : null}
+
+      {mobileSheet === "settings" ? (
+        <BottomSheet
+          title={
+            panel === "theme"
+              ? "Paramètres du thème"
+              : panel === "apps"
+                ? "Intégrations d’applis"
+                : selectedBlock
+                  ? getBlockSchema(selectedBlock.type)?.label ?? "Bloc"
+                  : selectedSection
+                    ? selectedSection.name
+                    : "Paramètres"
+          }
+          onClose={() => setMobileSheet(null)}
+        >
+          {renderInspector(true)}
+        </BottomSheet>
+      ) : null}
+
+      {mobileSheet === "menu" ? (
+        <BottomSheet title="Menu" onClose={() => setMobileSheet(null)}>
+          <div className="grid gap-1">
+            <button
+              type="button"
+              className="min-h-12 rounded-xl px-3 text-left text-[0.8rem] text-fg hover:bg-hairline"
+              onClick={() => {
+                setInspect(!inspect);
+                setMobileSheet(null);
+              }}
+            >
+              {inspect ? "Désactiver l’inspecteur" : "Activer l’inspecteur"}
+            </button>
+            <button
+              type="button"
+              disabled={historyCount.past === 0}
+              className="min-h-12 rounded-xl px-3 text-left text-[0.8rem] text-fg hover:bg-hairline disabled:opacity-40"
+              onClick={() => {
+                undo();
+                setMobileSheet(null);
+              }}
+            >
+              Annuler
+            </button>
+            <button
+              type="button"
+              disabled={historyCount.future === 0}
+              className="min-h-12 rounded-xl px-3 text-left text-[0.8rem] text-fg hover:bg-hairline disabled:opacity-40"
+              onClick={() => {
+                redo();
+                setMobileSheet(null);
+              }}
+            >
+              Rétablir
+            </button>
+            <div className="my-1 h-px bg-border" />
+            <button
+              type="button"
+              className="min-h-12 rounded-xl px-3 text-left text-[0.8rem] text-fg hover:bg-hairline"
+              onClick={() => {
+                void save(false, true);
+                setMobileSheet(null);
+              }}
+            >
+              Enregistrer les modifications
+            </button>
+            <button
+              type="button"
+              className="min-h-12 rounded-xl px-3 text-left text-[0.8rem] text-fg hover:bg-hairline"
+              onClick={() => {
+                setPanel("theme");
+                setThemeCategory("logo");
+                setMobileSheet("settings");
+              }}
+            >
+              Paramètres du thème
+            </button>
+            <button
+              type="button"
+              className="min-h-12 rounded-xl px-3 text-left text-[0.8rem] text-fg hover:bg-hairline"
+              onClick={() => {
+                setPanel("apps");
+                setMobileSheet("settings");
+              }}
+            >
+              Intégrations d’applis
+            </button>
+          </div>
+        </BottomSheet>
+      ) : null}
 
       {libraryOpen ? (
         <SectionLibraryModal
@@ -1517,6 +1714,131 @@ function TopBar(props: {
 }
 
 /* ------------------------------------------------------------------ *
+ *  Barre supérieure et tiroirs mobiles
+ * ------------------------------------------------------------------ */
+
+function MobileTopBar({
+  locale,
+  templateName,
+  active,
+  saveState,
+  onMenu,
+  onSave,
+}: {
+  locale: Locale;
+  templateName: string;
+  active: boolean;
+  saveState: "idle" | "saving" | "saved" | "error";
+  onMenu: () => void;
+  onSave: () => void;
+}) {
+  return (
+    <header className="sticky top-0 z-40 flex items-center gap-2 border-b border-border bg-bg/95 px-3 py-2 backdrop-blur lg:hidden">
+      <Link
+        href={`/${locale}/app/themes`}
+        aria-label="Retour aux thèmes"
+        className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-subtle"
+      >
+        ‹
+      </Link>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[0.85rem] font-semibold text-fg">{templateName}</p>
+        <p className="flex items-center gap-1.5 text-[0.62rem] text-subtle">
+          <span className={cn("h-1.5 w-1.5 rounded-full", active ? "bg-emerald-400" : "bg-amber-400")} />
+          {active ? "En ligne" : "Brouillon"}
+          {saveState === "saving" ? " · Enregistrement…" : saveState === "error" ? " · Erreur" : ""}
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={onMenu}
+        aria-label="Menu"
+        className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-fg"
+      >
+        ⋮
+      </button>
+      <button
+        type="button"
+        onClick={onSave}
+        className="h-10 rounded-full bg-fg px-3 text-[0.72rem] font-semibold text-bg"
+      >
+        Enregistrer
+      </button>
+    </header>
+  );
+}
+
+/** Tiroir mobile : glisse depuis le bas, se ferme au glissement vers le bas. */
+function BottomSheet({
+  title,
+  onClose,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  const [dragY, setDragY] = useState(0);
+  const startRef = useRef<number | null>(null);
+
+  return (
+    <div className="fixed inset-0 z-[75] lg:hidden">
+      <button
+        type="button"
+        aria-label="Fermer"
+        className="absolute inset-0 bg-black/50"
+        onClick={onClose}
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className="absolute inset-x-0 bottom-0 flex max-h-[88dvh] flex-col rounded-t-3xl border-t border-border bg-surface shadow-2xl"
+        style={{ transform: `translateY(${dragY}px)`, transition: "transform 140ms ease" }}
+      >
+        <div
+          className="shrink-0 cursor-grab px-4 pt-2"
+          style={{ touchAction: "none" }}
+          onPointerDown={(event) => {
+            startRef.current = event.clientY;
+            event.currentTarget.setPointerCapture(event.pointerId);
+          }}
+          onPointerMove={(event) => {
+            if (startRef.current !== null) {
+              setDragY(Math.max(0, event.clientY - startRef.current));
+            }
+          }}
+          onPointerUp={() => {
+            const shouldClose = dragY > 90;
+            startRef.current = null;
+            setDragY(0);
+            if (shouldClose) onClose();
+          }}
+          onPointerCancel={() => {
+            startRef.current = null;
+            setDragY(0);
+          }}
+        >
+          <span className="mx-auto block h-1.5 w-10 rounded-full bg-border" />
+        </div>
+        <div className="flex items-center justify-between gap-2 px-4 py-2">
+          <h2 className="min-w-0 truncate text-[0.9rem] font-semibold text-fg">{title}</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fermer"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-subtle"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-8">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ *
  *  Panneau gauche
  * ------------------------------------------------------------------ */
 
@@ -1550,6 +1872,8 @@ function LeftPanel(props: {
   assignedResources: ThemeAssignment[];
   products: ThemeProductCard[];
   onAssign: () => void;
+  /** Mobile : ouvrir le tiroir de paramètres après la sélection. */
+  onOpenInspector?: () => void;
 }) {
   type DragItem =
     | { kind: "section"; area: SectionArea; id: string; templateId?: string }
@@ -1735,7 +2059,10 @@ function LeftPanel(props: {
               <button
                 type="button"
                 className="min-w-0 flex-1 truncate py-1.5 text-left text-[0.72rem] font-medium text-fg"
-                onClick={() => props.setSelection({ kind: "section", area, sectionId: section.id, templateId })}
+                onClick={() => {
+                  props.setSelection({ kind: "section", area, sectionId: section.id, templateId });
+                  props.onOpenInspector?.();
+                }}
               >
                 {section.name}
               </button>
@@ -1799,7 +2126,10 @@ function LeftPanel(props: {
                         setTouchDrag({ kind: "block", area, id: block.id, sectionId: section.id, templateId });
                       }}
                     >⠿</span>
-                    <button type="button" className="min-w-0 flex-1 truncate py-1 text-left text-[0.66rem] text-subtle" onClick={() => props.setSelection({ kind: "block", area, sectionId: section.id, blockId: block.id, templateId })}>
+                    <button type="button" className="min-w-0 flex-1 truncate py-1 text-left text-[0.66rem] text-subtle" onClick={() => {
+                      props.setSelection({ kind: "block", area, sectionId: section.id, blockId: block.id, templateId });
+                      props.onOpenInspector?.();
+                    }}>
                       {block.name || getBlockSchema(block.type)?.label || block.type}
                       {!block.visible ? " · masqué" : ""}
                     </button>

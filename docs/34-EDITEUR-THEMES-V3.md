@@ -45,8 +45,17 @@ lit que le document **publié**.
   éléments visuels, réseaux sociaux, recherche, devise, panier, CSS, style,
   traductions).
 
-Sur téléphone, les trois zones s’empilent (barre inférieure
-Structure / Aperçu / Paramètres) et les boutons font au moins 44 px.
+Sur téléphone, l’éditeur est **100 % aperçu** avec des tiroirs (bottom sheets) :
+
+- barre supérieure minimale : retour, nom de la page, menu ⋮, Enregistrer ;
+- barre flottante basse : **Modifier · Page d’accueil · Terminé** ;
+- « Modifier » ouvre la structure (en-tête, modèle, sections, blocs) dans un
+  tiroir refermable en glissant vers le bas ;
+- toucher une section dans l’aperçu ou dans la structure ouvre ses paramètres
+  dans un tiroir avec le nom de la section et un bouton ✕ ;
+- menu ⋮ : inspecteur, annuler, rétablir, enregistrer, paramètres du thème,
+  intégrations d’applis ;
+- glisser-déposer tactile dans le tiroir de structure.
 
 ## Fonctionnalités
 
@@ -110,7 +119,8 @@ Fonctions principales : `theme_editor_load`, `theme_create`, `theme_duplicate`,
   boutique → thème → section → titre → enregistrement → publication réelle
   vérifiée sur la vitrine. **Exécuté le 15/11/2026 : 1 passed**, captures
   `editor-desktop.png`, `editor-section.png`, `editor-mobile.png` (viewport
-  390×844) et `storefront-publie.png` (page entière).
+  390×844), `editor-mobile-structure.png`, `editor-mobile-settings.png` et
+  `storefront-publie.png` (page entière).
 
 ## Limites connues
 

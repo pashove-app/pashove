@@ -51,9 +51,25 @@ async function selectStore(page: Page, slug: string) {
     );
   }
 
+  const before = await select.inputValue();
   await select.selectOption({ label: wanted });
-  // Le changement passe par une server action et recharge le dashboard.
-  await page.waitForTimeout(1500);
+  // Le changement passe par une server action : attendre le rechargement et
+  // vérifier que la boutique active a réellement changé avant de continuer.
+  await expect
+    .poll(
+      async () => {
+        try {
+          return await page
+            .getByLabel(/Boutique active|Active store/)
+            .first()
+            .inputValue();
+        } catch {
+          return before;
+        }
+      },
+      { timeout: 20_000 },
+    )
+    .not.toBe(before);
 }
 
 async function openEditor(page: Page) {
@@ -126,10 +142,25 @@ test.describe("éditeur de thèmes", () => {
 
     await page.screenshot({ path: testInfo.outputPath("editor-section.png"), fullPage: false });
 
-    // Vrai viewport téléphone : panneaux empilés et barre de navigation basse.
+    // Vrai viewport téléphone : aperçu plein écran + barre flottante.
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.waitForTimeout(800);
+    // Laisse le toast d'enregistrement disparaître pour des captures propres.
+    await page.waitForTimeout(3600);
     await page.screenshot({ path: testInfo.outputPath("editor-mobile.png"), fullPage: false });
+
+    // Tiroir « Modifier » : structure du modèle.
+    await page.getByRole("button", { name: "Modifier", exact: true }).click();
+    const structureSheet = page.getByRole("dialog", { name: "Modifier" });
+    await expect(structureSheet).toBeVisible();
+    await page.screenshot({ path: testInfo.outputPath("editor-mobile-structure.png"), fullPage: false });
+
+    // Toucher une section ouvre ses paramètres dans le même tiroir.
+    await structureSheet.getByRole("button", { name: /Bannière d.image/ }).last().click();
+    const settingsSheet = page.getByRole("dialog", { name: /Bannière d.image/ });
+    await expect(settingsSheet).toBeVisible();
+    await page.screenshot({ path: testInfo.outputPath("editor-mobile-settings.png"), fullPage: false });
+    await settingsSheet.getByRole("button", { name: "Fermer" }).click();
+
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.waitForTimeout(500);
 
