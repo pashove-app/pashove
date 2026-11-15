@@ -90,7 +90,18 @@ export function ThemeDocumentRenderer({
   flags?: ThemeRenderFlags;
 }) {
   const settings = document.settings;
-  const device = flags.device ?? "desktop";
+  const [viewportDevice, setViewportDevice] = useState<"desktop" | "mobile">("desktop");
+
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 767px)");
+    const apply = () => setViewportDevice(query.matches ? "mobile" : "desktop");
+    apply();
+    query.addEventListener("change", apply);
+    return () => query.removeEventListener("change", apply);
+  }, []);
+
+  const device = flags.device ?? viewportDevice;
+  const renderFlags: ThemeRenderFlags = { ...flags, device };
   const template =
     document.templates.find((entry) => entry.id === templateId) ??
     document.templates.find((entry) => entry.type === templateId) ??
@@ -102,7 +113,7 @@ export function ThemeDocumentRenderer({
       (section) =>
         !sectionHidden(section, device) &&
         marketMatches(section, flags.market) &&
-        passesAudience(section, flags),
+        passesAudience(section, renderFlags),
     );
 
   const style: CSSProperties = {
@@ -118,7 +129,7 @@ export function ThemeDocumentRenderer({
         <div data-chrome="header">
           {visible(document.header).map((section) => (
             <RevealWrapper key={section.id} section={section} editable={flags.editable}>
-              <SectionRenderer section={section} settings={settings} context={context} flags={flags} />
+              <SectionRenderer section={section} settings={settings} context={context} flags={renderFlags} />
             </RevealWrapper>
           ))}
         </div>
@@ -128,7 +139,7 @@ export function ThemeDocumentRenderer({
         {visible(template?.sections ?? []).map((section) => (
           <div key={section.id} className="relative" data-theme-section={section.id}>
             <RevealWrapper section={section} editable={flags.editable}>
-              <SectionRenderer section={section} settings={settings} context={context} flags={flags} />
+              <SectionRenderer section={section} settings={settings} context={context} flags={renderFlags} />
             </RevealWrapper>
             {flags.editable && flags.onAddSection ? (
               <button
@@ -148,7 +159,7 @@ export function ThemeDocumentRenderer({
         <footer data-chrome="footer" style={{ borderTop: "1px solid var(--t-border)" }}>
           {visible(document.footer).map((section) => (
             <RevealWrapper key={section.id} section={section} editable={flags.editable}>
-              <SectionRenderer section={section} settings={settings} context={context} flags={flags} />
+              <SectionRenderer section={section} settings={settings} context={context} flags={renderFlags} />
             </RevealWrapper>
           ))}
         </footer>

@@ -10,6 +10,9 @@ import {
 } from "@/lib/theme-editor/normalize";
 import { getSectionSchema } from "@/lib/theme-editor/schema";
 import { paymentMethodLabels } from "@/lib/theme-editor/render-context";
+import { previewMarketConfig } from "@/lib/theme-editor/markets";
+import { placeholderProducts } from "@/lib/theme-editor/placeholders";
+import { SECTION_SCHEMAS } from "@/lib/theme-editor/schema";
 
 describe("document de thème", () => {
   it("crée un document avec tous les modèles par défaut", () => {
@@ -177,6 +180,50 @@ describe("moyens de paiement de la vitrine", () => {
 
   it("retourne une liste vide si aucun moyen n’est configuré", () => {
     expect(paymentMethodLabels([])).toEqual([]);
+  });
+});
+
+
+describe("catalogue et placeholders", () => {
+  it("accepte tous les types de sections du catalogue", () => {
+    const document = createThemeDocument("dawn");
+    const sections = SECTION_SCHEMAS.map((schema) => newSection(schema.type));
+    const extraTemplates = [0, 1].map((index) => ({
+      id: `page-showcase-${index}`,
+      type: "page" as const,
+      name: `Vitrine ${index + 1}`,
+      sections: sections.slice(index * 23, index * 23 + 23),
+    }));
+
+    const normalized = normalizeDocument({
+      ...document,
+      templates: [...document.templates, ...extraTemplates],
+    });
+    expect(normalized).not.toBeNull();
+
+    const types = new Set(
+      normalized!.templates.flatMap((template) => template.sections.map((section) => section.type)),
+    );
+    for (const schema of SECTION_SCHEMAS) {
+      expect(types.has(schema.type)).toBe(true);
+    }
+  });
+
+  it("fournit des produits de démonstration avec images et prix", () => {
+    const products = placeholderProducts("fr-FR", "XOF");
+    expect(products.length).toBeGreaterThanOrEqual(6);
+    for (const product of products) {
+      expect(product.imageUrl).toMatch(/^https:\/\//);
+      expect(product.priceLabel).not.toBe("");
+      expect(product.badge).toBeTruthy();
+    }
+  });
+
+  it("convertit l'aperçu selon le marché", () => {
+    expect(previewMarketConfig("all")).toBeNull();
+    expect(previewMarketConfig("GH")?.currency).toBe("GHS");
+    expect(previewMarketConfig("FR")?.currency).toBe("EUR");
+    expect(previewMarketConfig("ML")?.currency).toBe("XOF");
   });
 });
 

@@ -136,6 +136,27 @@ Fonctions principales : `theme_editor_load`, `theme_create`, `theme_duplicate`,
   `editor-mobile-menu.png`, `editor-mobile-pages.png` et
   `storefront-publie.png` (page entière).
 
+## Polish professionnel — 15/11/2026
+
+- **Icônes** : tous les glyphes et emojis de l’éditeur et de la vitrine sont
+  remplacés par les icônes SVG du jeu Pashove (`src/components/ui/primitives`) :
+  chevrons, œil, poignée, menu, appareils, catégories de pages, paramètres.
+- **Thème par défaut vivant** : les boutiques sans produits affichent des
+  produits et collections de démonstration (images Unsplash, badge « Démo »)
+  au lieu de sections vides.
+- **Thème Pashove Premium** : preset éditorial sombre et doré, avec hero,
+  collage, collection en vedette, image + texte, multicolonnes, citation,
+  témoignages et newsletter. Publié sur la boutique `demo`.
+- **Aperçu par marché** : Ghana affiche les prix en GHS, France en EUR,
+  international en USD ; les moyens de paiement suivent le pays. Les taux sont
+  réservés à l’aperçu, jamais aux transactions.
+- **En-tête de vitrine** : logo sans doublon, navigation sans retour à la ligne,
+  icônes recherche/compte/panier, menu mobile fonctionnel.
+- **Grilles mobiles** : les grilles produit passent à 1-2 colonnes selon le
+  device d’aperçu et la largeur réelle de la vitrine.
+- **Tests** : 22 tests Jest, dont la normalisation de tous les types de sections,
+  les placeholders et les marchés.
+
 ## Limites connues
 
 - L’éditeur est intégré au tableau de bord ; sur téléphone, sa barre de

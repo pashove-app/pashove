@@ -608,6 +608,111 @@ export const icons = {
       <path d="M3.5 12h17" />
     </>
   ),
+  tablet: (
+    <>
+      <rect x="5" y="3" width="14" height="18" rx="2.2" />
+      <path d="M11 18h2" />
+    </>
+  ),
+  more: (
+    <>
+      <circle cx="12" cy="5.5" r="1.2" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="18.5" r="1.2" fill="currentColor" stroke="none" />
+    </>
+  ),
+  chevronRight: <path d="m9.5 6 6 6-6 6" />,
+  chevronLeft: <path d="m14.5 6-6 6 6 6" />,
+  grip: (
+    <>
+      <circle cx="9" cy="6" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="6" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="9" cy="12" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="12" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="9" cy="18" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="18" r="1.1" fill="currentColor" stroke="none" />
+    </>
+  ),
+  undo: (
+    <>
+      <path d="M9 7 4.5 11.5 9 16" />
+      <path d="M5 11.5h8.5a5 5 0 0 1 0 10H11" />
+    </>
+  ),
+  redo: (
+    <>
+      <path d="m15 7 4.5 4.5L15 16" />
+      <path d="M19 11.5h-8.5a5 5 0 0 0 0 10H13" />
+    </>
+  ),
+  warning: (
+    <>
+      <path d="M12 4 3.5 19h17L12 4Z" />
+      <path d="M12 10v4M12 16.5h.01" />
+    </>
+  ),
+  image: (
+    <>
+      <rect x="3.5" y="4.5" width="17" height="15" rx="2.4" />
+      <circle cx="8.5" cy="9.5" r="1.6" />
+      <path d="m4 17 4.5-4.5 3 3 3-3L20 17" />
+    </>
+  ),
+  text: (
+    <>
+      <path d="M5 6h14M5 12h10M5 18h7" />
+    </>
+  ),
+  cart: (
+    <>
+      <path d="M3.5 5h2l1.6 10.2a1.6 1.6 0 0 0 1.6 1.3h8.4a1.6 1.6 0 0 0 1.6-1.3L20 8H6" />
+      <circle cx="9" cy="20" r="1.2" />
+      <circle cx="18" cy="20" r="1.2" />
+    </>
+  ),
+  external: (
+    <>
+      <path d="M14 4h6v6" />
+      <path d="m20 4-9 9" />
+      <path d="M19 14v4.5a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 4 18.5v-12A1.5 1.5 0 0 1 5.5 5H10" />
+    </>
+  ),
+  gallery: (
+    <>
+      <rect x="3.5" y="3.5" width="7.5" height="7.5" rx="1.6" />
+      <rect x="13" y="3.5" width="7.5" height="7.5" rx="1.6" />
+      <rect x="3.5" y="13" width="7.5" height="7.5" rx="1.6" />
+      <rect x="13" y="13" width="7.5" height="7.5" rx="1.6" />
+    </>
+  ),
+  video: (
+    <>
+      <rect x="3" y="5.5" width="13" height="13" rx="2.2" />
+      <path d="m16 10 5-3v10l-5-3" />
+    </>
+  ),
+  columns: (
+    <>
+      <rect x="3.5" y="4.5" width="17" height="15" rx="2.2" />
+      <path d="M9.5 4.5v15M14.5 4.5v15" />
+    </>
+  ),
+  star: (
+    <path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9L12 3.5Z" />
+  ),
+  link: (
+    <>
+      <path d="M10 13.5a3.5 3.5 0 0 0 5 0l3-3a3.5 3.5 0 0 0-5-5l-1.5 1.5" />
+      <path d="M14 10.5a3.5 3.5 0 0 0-5 0l-3 3a3.5 3.5 0 0 0 5 5l1.5-1.5" />
+    </>
+  ),
+  sliders: (
+    <>
+      <path d="M4 7h10M18 7h2M4 17h2M10 17h10" />
+      <circle cx="16" cy="7" r="2" />
+      <circle cx="8" cy="17" r="2" />
+    </>
+  ),
 } as const;
 
 export type IconKey = keyof typeof icons;

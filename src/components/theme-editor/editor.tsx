@@ -22,6 +22,10 @@ import {
 } from "@/components/theme-editor/fields";
 import type { ThemeMetafieldOption, ThemeCollectionCard, ThemeProductCard } from "@/components/theme-editor/types";
 import { cn } from "@/lib/cn";
+import { formatMoney } from "@/lib/money";
+import { paymentMethodsForCountry } from "@/lib/theme-editor/render-context";
+import { PREVIEW_MARKETS, previewMarketConfig } from "@/lib/theme-editor/markets";
+import { Icon, icons, type IconKey } from "@/components/ui/primitives";
 import type { Locale } from "@/i18n/config";
 import type {
   ThemeAssignment,
@@ -86,24 +90,24 @@ export type ThemeEditorProps = {
 };
 
 /** Petite icône de structure, par catégorie de section. */
-function sectionIcon(category: string): string {
+function sectionIcon(category: string): IconKey {
   switch (category) {
     case "header":
-      return "☰";
+      return "menu";
     case "banner":
-      return "▣";
+      return "image";
     case "content":
-      return "¶";
+      return "text";
     case "commerce":
-      return "◈";
+      return "tag";
     case "marketing":
-      return "✦";
+      return "sparkle";
     case "footer":
-      return "▤";
+      return "columns";
     case "advanced":
-      return "⚙";
+      return "settings";
     default:
-      return "▢";
+      return "layers";
   }
 }
 
@@ -597,24 +601,48 @@ export function ThemeEditor(props: ThemeEditorProps) {
   );
 
   const previewContext: ThemeRenderContext = useMemo(() => {
-    if (currentTemplate?.type === "product") {
-      return {
-        ...previewBase,
-        metafields: {
-          ...previewBase.metafields,
-          product: {
-            ...(previewBase.metafields?.product ?? {}),
-            ...Object.fromEntries(
-              metafieldList
-                .filter((entry) => entry.owner === "product")
-                .map((entry) => [`${entry.namespace}.${entry.key}`, entry.value]),
-            ),
-          },
-        },
-      };
-    }
-    return previewBase;
-  }, [previewBase, currentTemplate?.type, metafieldList]);
+    const base: ThemeRenderContext =
+      currentTemplate?.type === "product"
+        ? {
+            ...previewBase,
+            metafields: {
+              ...previewBase.metafields,
+              product: {
+                ...(previewBase.metafields?.product ?? {}),
+                ...Object.fromEntries(
+                  metafieldList
+                    .filter((entry) => entry.owner === "product")
+                    .map((entry) => [`${entry.namespace}.${entry.key}`, entry.value]),
+                ),
+              },
+            },
+          }
+        : previewBase;
+
+    const marketInfo = previewMarketConfig(market);
+    if (!marketInfo) return base;
+
+    const price = (amount: number) =>
+      formatMoney(Math.round(amount * marketInfo.rate), marketInfo.currency, base.localeTag);
+
+    return {
+      ...base,
+      currency: marketInfo.currency,
+      country: marketInfo.country,
+      paymentMethods: paymentMethodsForCountry(marketInfo.country, base.codEnabled),
+      products: base.products.map((product) => ({
+        ...product,
+        priceLabel:
+          typeof product.priceAmount === "number"
+            ? price(product.priceAmount)
+            : product.priceLabel,
+        compareAtLabel:
+          typeof product.compareAtAmount === "number"
+            ? price(product.compareAtAmount)
+            : product.compareAtLabel,
+      })),
+    };
+  }, [previewBase, currentTemplate?.type, metafieldList, market]);
 
   const selectedSection =
     selection?.kind === "section"
@@ -1049,7 +1077,7 @@ export function ThemeEditor(props: ThemeEditorProps) {
             >
               {THEME_CATEGORIES.map((category) => (
                 <option key={category.id} value={category.id}>
-                  {category.icon} {category.label}
+                  {category.label}
                 </option>
               ))}
             </select>
@@ -1596,7 +1624,7 @@ function TopBar(props: {
       <div className="flex flex-wrap items-center gap-2 px-3 py-2 sm:px-4">
         <div className="flex items-center gap-1">
           <Link href={`/${props.locale}/app/themes`} className="flex h-10 w-10 items-center justify-center rounded-xl text-subtle hover:bg-hairline hover:text-fg" aria-label="Retour aux thèmes">
-            ‹
+            <Icon path={icons.chevronLeft} className="h-4 w-4" />
           </Link>
           <div className="hidden items-center gap-1 md:flex">
             <button type="button" onClick={() => props.setPanel("sections")} className={cn("h-9 rounded-full px-3 text-[0.72rem] font-medium", props.panel === "sections" ? "bg-hairline text-fg" : "text-subtle hover:text-fg")}>Sections</button>
@@ -1645,18 +1673,17 @@ function TopBar(props: {
             onChange={(event) => props.setMarket(event.target.value)}
             title="Marché d’aperçu"
           >
-            <option value="all">Tous les marchés</option>
-            <option value="ML">Mali</option>
-            <option value="SN">Sénégal</option>
-            <option value="CI">Côte d’Ivoire</option>
-            <option value="GH">Ghana</option>
-            <option value="FR">France</option>
-            <option value="INT">International</option>
+            {PREVIEW_MARKETS.map((entry) => (
+              <option key={entry.id} value={entry.id}>
+                {entry.label}
+              </option>
+            ))}
           </select>
 
           <div className="relative">
             <button type="button" className="h-9 max-w-[160px] truncate rounded-lg border border-border bg-bg-soft px-2 text-[0.68rem] text-fg" onClick={() => setTemplateMenu((open) => !open)}>
-              {props.currentTemplate?.name ?? "Modèle"} ▾
+              {props.currentTemplate?.name ?? "Modèle"}
+              <Icon path={icons.chevronDown} className="ms-1 inline h-3.5 w-3.5" />
             </button>
             {templateMenu ? (
               <div className="absolute right-0 top-11 z-50 max-h-[75vh] w-[22rem] overflow-y-auto rounded-xl border border-border bg-surface p-2 shadow-2xl">
@@ -1684,20 +1711,20 @@ function TopBar(props: {
         </div>
 
         <div className="flex items-center gap-1">
-          <button type="button" onClick={props.undo} disabled={!props.canUndo} className="hidden h-9 w-9 rounded-lg text-subtle hover:bg-hairline hover:text-fg disabled:opacity-30 sm:block" title="Annuler (Ctrl+Z)">↶</button>
-          <button type="button" onClick={props.redo} disabled={!props.canRedo} className="hidden h-9 w-9 rounded-lg text-subtle hover:bg-hairline hover:text-fg disabled:opacity-30 sm:block" title="Rétablir (Ctrl+Y)">↷</button>
+          <button type="button" onClick={props.undo} disabled={!props.canUndo} className="hidden h-9 w-9 rounded-lg text-subtle hover:bg-hairline hover:text-fg disabled:opacity-30 sm:block" title="Annuler (Ctrl+Z)"><Icon path={icons.undo} className="h-4 w-4" /></button>
+          <button type="button" onClick={props.redo} disabled={!props.canRedo} className="hidden h-9 w-9 rounded-lg text-subtle hover:bg-hairline hover:text-fg disabled:opacity-30 sm:block" title="Rétablir (Ctrl+Y)"><Icon path={icons.redo} className="h-4 w-4" /></button>
           <button type="button" onClick={() => props.setInspect(!props.inspect)} className={cn("hidden h-9 rounded-lg px-2 text-[0.65rem] font-semibold sm:block", props.inspect ? "bg-brand-500/15 text-brand-300" : "text-subtle hover:text-fg")} title="Inspecteur">Inspecter</button>
           <div className="hidden items-center gap-0.5 rounded-lg border border-border p-0.5 sm:flex">
             {(["desktop", "tablet", "mobile"] as const).map((entry) => (
               <button key={entry} type="button" onClick={() => props.setDevice(entry)} className={cn("h-8 rounded-md px-2 text-[0.62rem]", props.device === entry ? "bg-hairline text-fg" : "text-subtle")} title={entry === "desktop" ? "Ordinateur" : entry === "tablet" ? "Tablette" : "Mobile"}>
-                {entry === "desktop" ? "🖥" : entry === "tablet" ? "▭" : "▯"}
+                <Icon path={entry === "desktop" ? icons.monitor : entry === "tablet" ? icons.tablet : icons.phone} className="h-4 w-4" />
               </button>
             ))}
           </div>
           <button type="button" onClick={props.openPreview} className="hidden h-9 rounded-lg border border-border px-2.5 text-[0.65rem] font-medium text-subtle hover:text-fg md:block">Aperçu</button>
           <button type="button" onClick={() => props.save(false, true)} className="h-9 rounded-lg border border-border px-2.5 text-[0.65rem] font-semibold text-fg">Enregistrer</button>
           <button type="button" onClick={props.publish} className="h-9 rounded-lg bg-brand-500 px-2.5 text-[0.65rem] font-semibold text-white hover:bg-brand-600">Publier</button>
-          <button type="button" className="flex h-9 w-9 items-center justify-center rounded-lg text-subtle md:hidden" onClick={() => setMobileMenu((open) => !open)}>☰</button>
+          <button type="button" className="flex h-9 w-9 items-center justify-center rounded-lg text-subtle md:hidden" onClick={() => setMobileMenu((open) => !open)}><Icon path={icons.menu} className="h-4 w-4" /></button>
         </div>
       </div>
 
@@ -1751,7 +1778,7 @@ function MobileTopBar({
         aria-label="Retour aux thèmes"
         className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-subtle"
       >
-        ‹
+        <Icon path={icons.chevronLeft} className="h-4 w-4" />
       </Link>
       <div className="min-w-0 flex-1">
         <p className="truncate text-[0.85rem] font-semibold text-fg">{templateName}</p>
@@ -1767,7 +1794,7 @@ function MobileTopBar({
         aria-label="Menu de l’éditeur"
         className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-fg"
       >
-        ⋮
+        <Icon path={icons.more} className="h-4 w-4" />
       </button>
       <button
         type="button"
@@ -1783,19 +1810,19 @@ function MobileTopBar({
 const TEMPLATE_PICKER_GROUPS: {
   type: ThemeTemplateType;
   label: string;
-  icon: string;
+  icon: IconKey;
 }[] = [
-  { type: "index", label: "Page d’accueil", icon: "⌂" },
-  { type: "product", label: "Produits", icon: "◇" },
-  { type: "collection", label: "Collections", icon: "▤" },
-  { type: "list-collections", label: "Liste de collections", icon: "▦" },
-  { type: "cart", label: "Panier", icon: "◫" },
-  { type: "page", label: "Pages", icon: "▭" },
-  { type: "blog", label: "Blogs", icon: "✎" },
-  { type: "article", label: "Articles de blog", icon: "☰" },
-  { type: "search", label: "Recherche", icon: "⌕" },
-  { type: "password", label: "Mot de passe", icon: "⚿" },
-  { type: "404", label: "Page 404", icon: "⚠" },
+  { type: "index", label: "Page d’accueil", icon: "home" },
+  { type: "product", label: "Produits", icon: "tag" },
+  { type: "collection", label: "Collections", icon: "layers" },
+  { type: "list-collections", label: "Liste de collections", icon: "list" },
+  { type: "cart", label: "Panier", icon: "cart" },
+  { type: "page", label: "Pages", icon: "file" },
+  { type: "blog", label: "Blogs", icon: "pencil" },
+  { type: "article", label: "Articles de blog", icon: "text" },
+  { type: "search", label: "Recherche", icon: "search" },
+  { type: "password", label: "Mot de passe", icon: "lock" },
+  { type: "404", label: "Page 404", icon: "warning" },
 ];
 
 /** Sélecteur de page : recherche, catégories, modèles et pied de thème. */
@@ -1846,7 +1873,7 @@ function TemplatePicker({
 
       {groups.map((group) => {
         const isOpen = expanded === group.type;
-        const single = group.templates.length === 1;
+        const expandable = group.type !== "index";
         return (
           <div key={group.type}>
             <button
@@ -1858,16 +1885,18 @@ function TemplatePicker({
                   : "text-fg",
               )}
               onClick={() => {
-                if (single) {
+                if (!expandable) {
                   onPick(group.templates[0].id);
                 } else {
                   setExpanded(isOpen ? null : group.type);
                 }
               }}
             >
-              <span className="w-5 shrink-0 text-center text-[0.95rem] text-subtle">{group.icon}</span>
+              <span className="flex w-5 shrink-0 justify-center text-subtle">
+                <Icon path={icons[group.icon]} className="h-4 w-4" />
+              </span>
               <span className="min-w-0 flex-1 truncate">{group.label}</span>
-              {!single ? <span className="text-[0.7rem] text-faint">{isOpen ? "▾" : "›"}</span> : null}
+              {expandable ? <Icon path={isOpen ? icons.chevronDown : icons.chevronRight} className="h-3.5 w-3.5 text-faint" /> : null}
             </button>
             {isOpen ? (
               <div className="ml-8 grid gap-0.5 border-l border-border pl-2">
@@ -1927,7 +1956,7 @@ function BottomSheet({
   title,
   onClose,
   children,
-  closeLabel = "✕",
+  closeLabel,
 }: {
   title: string;
   onClose: () => void;
@@ -1985,7 +2014,7 @@ function BottomSheet({
             aria-label="Fermer"
             className="absolute end-3 top-1/2 -translate-y-1/2 rounded-full px-2 py-1 text-[0.75rem] font-medium text-subtle"
           >
-            {closeLabel}
+            {closeLabel ?? <Icon path={icons.close} className="h-4 w-4" />}
           </button>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-8">{children}</div>
@@ -2129,7 +2158,9 @@ function LeftPanel(props: {
               onClick={() => props.setThemeCategory(category.id)}
               className={cn("flex min-h-10 items-center gap-2 rounded-xl px-2.5 text-left text-[0.75rem]", props.themeCategory === category.id ? "bg-brand-500/15 text-brand-200" : "text-subtle hover:bg-hairline hover:text-fg")}
             >
-              <span>{category.icon}</span>
+              <span className="text-subtle">
+                <Icon path={icons[category.icon]} className="h-4 w-4" />
+              </span>
               {category.label}
             </button>
           ))}
@@ -2179,7 +2210,9 @@ function LeftPanel(props: {
             setCollapsedGroups((current) => ({ ...current, [area]: !collapsed }))
           }
         >
-          <span className="w-4 text-[0.7rem] text-faint">{collapsed ? "›" : "⌄"}</span>
+          <span className="flex w-4 justify-center text-faint">
+            <Icon path={collapsed ? icons.chevronRight : icons.chevronDown} className="h-3.5 w-3.5" />
+          </span>
           <span className="text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-subtle">
             {label}
           </span>
@@ -2237,9 +2270,14 @@ function LeftPanel(props: {
                         })
                       }
                     >
-                      {expanded ? "⌄" : "›"}
+                      <Icon
+                        path={expanded ? icons.chevronDown : icons.chevronRight}
+                        className="h-3.5 w-3.5"
+                      />
                     </button>
-                    <span className="w-4 shrink-0 text-center text-[0.72rem] text-subtle">{icon}</span>
+                    <span className="flex w-4 shrink-0 justify-center text-subtle">
+                      <Icon path={icons[icon]} className="h-4 w-4" />
+                    </span>
                     <button
                       type="button"
                       className="min-w-0 flex-1 truncate py-1.5 text-left text-[0.75rem] font-medium text-fg"
@@ -2260,7 +2298,7 @@ function LeftPanel(props: {
                         setTouchDrag({ kind: "section", area, id: section.id, templateId });
                       }}
                     >
-                      ⠿
+                      <Icon path={icons.grip} className="h-3.5 w-3.5" />
                     </span>
                     <button
                       type="button"
@@ -2271,7 +2309,7 @@ function LeftPanel(props: {
                       title={section.visible ? "Masquer" : "Afficher"}
                       onClick={() => props.onToggleSection(area, templateId, section)}
                     >
-                      {section.visible ? "👁" : "—"}
+                      <Icon path={section.visible ? icons.eye : icons.eyeOff} className="h-3.5 w-3.5" />
                     </button>
                     <SectionMenu
                       onUp={() => props.onMoveSection(area, templateId, section.id, -1)}
@@ -2330,7 +2368,7 @@ function LeftPanel(props: {
                               setTouchDrag({ kind: "block", area, id: block.id, sectionId: section.id, templateId });
                             }}
                           >
-                            ⠿
+                            <Icon path={icons.grip} className="h-3.5 w-3.5" />
                           </span>
                           <button
                             type="button"
@@ -2349,7 +2387,7 @@ function LeftPanel(props: {
                             title={block.visible ? "Masquer le bloc" : "Afficher le bloc"}
                             onClick={() => props.onToggleBlock(area, templateId, section.id, block)}
                           >
-                            {block.visible ? "👁" : "—"}
+                            <Icon path={block.visible ? icons.eye : icons.eyeOff} className="h-3.5 w-3.5" />
                           </button>
                           <BlockMenu
                             onUp={() => props.onMoveBlock(area, templateId, section.id, block.id, -1)}
@@ -2435,7 +2473,7 @@ function SectionMenu({
   const [open, setOpen] = useState(false);
   return (
     <div className="relative">
-      <button type="button" className="h-7 w-6 text-[0.7rem] text-faint" onClick={() => setOpen((value) => !value)} title="Menu">⋮</button>
+      <button type="button" className="h-7 w-6 text-[0.7rem] text-faint" onClick={() => setOpen((value) => !value)} title="Menu"><Icon path={icons.more} className="h-3.5 w-3.5" /></button>
       {open ? (
         <div className="absolute right-0 top-7 z-50 w-44 rounded-xl border border-border bg-surface p-1 shadow-2xl">
           {[
@@ -2470,7 +2508,7 @@ function BlockMenu({
   const [open, setOpen] = useState(false);
   return (
     <div className="relative">
-      <button type="button" className="h-6 w-5 text-[0.65rem] text-faint" onClick={() => setOpen((value) => !value)} title="Menu du bloc">⋮</button>
+      <button type="button" className="h-6 w-5 text-[0.65rem] text-faint" onClick={() => setOpen((value) => !value)} title="Menu du bloc"><Icon path={icons.more} className="h-3.5 w-3.5" /></button>
       {open ? (
         <div className="absolute right-0 top-6 z-50 w-44 rounded-xl border border-border bg-surface p-1 shadow-2xl">
           {[
@@ -2551,6 +2589,7 @@ function PreviewPane({
       <div className="flex items-center justify-between px-1">
         <p className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-faint">
           Aperçu · {device === "desktop" ? "1440 px" : device === "tablet" ? "768 px" : "390 px"}
+          {previewMarketConfig(market) ? ` · ${previewMarketConfig(market)?.label}` : ""}
         </p>
         <p className="text-[0.62rem] text-faint">{inspect ? "Clique pour sélectionner" : "Navigation libre"}</p>
       </div>
@@ -2627,7 +2666,7 @@ function SectionLibraryModal({
       >
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-sm font-semibold text-fg">Ajouter une section</h2>
-          <button type="button" className="h-9 w-9 rounded-lg border border-border text-subtle" onClick={onClose}>✕</button>
+          <button type="button" className="h-9 w-9 rounded-lg border border-border text-subtle" onClick={onClose}><Icon path={icons.close} className="h-4 w-4" /></button>
         </div>
         <input className="mt-3 h-10 w-full rounded-xl border border-border bg-bg-soft px-3 text-[0.8rem] text-fg" placeholder="Rechercher une section…" value={query} onChange={(event) => setQuery(event.target.value)} />
         <div className="mt-2 flex flex-wrap gap-1">

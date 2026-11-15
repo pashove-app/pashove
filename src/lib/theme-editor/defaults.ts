@@ -14,6 +14,7 @@ import {
   getBlockSchema,
   getSectionSchema,
 } from "@/lib/theme-editor/schema";
+import { PLACEHOLDER_IMAGES } from "@/lib/theme-editor/placeholders";
 
 let sequence = 0;
 
@@ -309,6 +310,7 @@ function defaultHomeSections(options?: {
         heading: options?.collectionHeading ?? "Les dernières arrivées",
         subheading: "Les pièces disponibles tout de suite, prêtes à partir.",
         productLimit: 8,
+        columnsMobile: 2,
         showViewAll: true,
         buttonLabel: "Voir la collection",
         buttonLink: "/collections",
@@ -414,14 +416,14 @@ function defaultTemplates(home: ThemeSectionInstance[]): ThemeTemplate[] {
         section("product-gallery", { galleryLayout: "thumbnails-left" }),
         section("product-info", {}),
         section("product-tabs", {}),
-        section("product-related", { heading: "Tu aimeras aussi" }),
+        section("product-related", { heading: "Tu aimeras aussi", columnsMobile: 2 }),
       ],
     },
     {
       id: "collection",
       type: "collection",
       name: "Collection par défaut",
-      sections: [section("collection-banner", {}), section("collection-grid", {})],
+      sections: [section("collection-banner", {}), section("collection-grid", { columnsMobile: 2 })],
     },
     {
       id: "list-collections",
@@ -493,7 +495,8 @@ export type ThemePresetId =
   | "electronique"
   | "alimentation"
   | "createur"
-  | "services";
+  | "services"
+  | "premium";
 
 export type ThemePresetMeta = {
   id: ThemePresetId;
@@ -544,6 +547,12 @@ export const THEME_LIBRARY: ThemePresetMeta[] = [
     name: "Services",
     description: "Ardoise et orange, pensé pour les rendez-vous et prestations.",
     swatches: ["#0F172A", "#F97316", "#F8FAFC"],
+  },
+  {
+    id: "premium",
+    name: "Pashove Premium",
+    description: "Éditorial sombre, accents dorés et mises en page magazine.",
+    swatches: ["#0B0F17", "#C8A96A", "#F7F3EA"],
   },
 ];
 
@@ -702,6 +711,32 @@ const PRESET_THEMES: Record<ThemePresetId, PresetTheme> = {
     announce: "Téléchargement immédiat après paiement",
     stylePreset: "modern",
   },
+  premium: {
+    palette: palette("palette-premium", "Premium", {
+      background: "#0B0F17",
+      text: "#F7F3EA",
+      muted: "#A8A29A",
+      accent: "#C8A96A",
+      buttonBg: "#C8A96A",
+      buttonText: "#0B0F17",
+      border: "#232A36",
+      badgePromo: "#C8A96A",
+      badgeSoldOut: "#6B7280",
+      badgeNew: "#8FB996",
+    }),
+    headingFont: "serif",
+    bodyFont: "sans",
+    image: PLACEHOLDER_IMAGES.hero,
+    heading: "L’essentiel, sans compromis.",
+    subheading:
+      "Une sélection éditoriale d’objets, de soins et d’accessoires pensés pour durer.",
+    collectionHeading: "La sélection du moment",
+    introHeading: "Le beau qui sert",
+    introText:
+      "Chaque pièce est choisie pour sa matière, sa main et son usage. Peu de références, aucune concession.",
+    announce: "Livraison offerte dès 50 000 FCFA · Retours sous 14 jours",
+    stylePreset: "elegant",
+  },
   services: {
     palette: palette("palette-services", "Ardoise", {
       background: "#0F172A",
@@ -729,6 +764,49 @@ const PRESET_THEMES: Record<ThemePresetId, PresetTheme> = {
   },
 };
 
+/** Accueil enrichi du thème Premium : collage et citation en plus. */
+function premiumHomeSections(options: Parameters<typeof defaultHomeSections>[0]): ThemeSectionInstance[] {
+  const base = defaultHomeSections(options);
+  const collage = section("collage", {
+    heading: "La maison Pashove",
+    subheading: "Des objets choisis pour leur matière, leur main et leur usage.",
+    collageLayout: "3",
+    paddingTop: 72,
+    paddingBottom: 72,
+  }, [
+    newBlock("image", {
+      settings: { imageUrl: PLACEHOLDER_IMAGES.lifestyle, alt: "Intérieur éditorial" },
+    }),
+    newBlock("image", {
+      settings: { imageUrl: PLACEHOLDER_IMAGES.editorial, alt: "Sélection de saison" },
+    }),
+    newBlock("image", {
+      settings: { imageUrl: PLACEHOLDER_IMAGES.hero, alt: "Boutique Pashove" },
+    }),
+  ]);
+
+  const quote = section("quote", {
+    text: "« Le luxe, c’est ce qui dure. »",
+    author: "Ibrahim Sidibé",
+    role: "Fondateur de Pashove",
+    style: "centered",
+    imageUrl: PLACEHOLDER_IMAGES.lifestyle,
+    paddingTop: 56,
+    paddingBottom: 56,
+  });
+
+  return [
+    base[0],
+    collage,
+    base[1],
+    base[2],
+    base[3],
+    quote,
+    base[4],
+    base[5],
+  ];
+}
+
 export function createThemeDocument(presetId: ThemePresetId = "dawn"): ThemeDocument {
   const preset = PRESET_THEMES[presetId] ?? PRESET_THEMES.dawn;
   const settings = defaultSettings({
@@ -745,7 +823,7 @@ export function createThemeDocument(presetId: ThemePresetId = "dawn"): ThemeDocu
     header: headerSections(preset.announce),
     footer: footerSections(),
     templates: defaultTemplates(
-      defaultHomeSections({
+      (presetId === "premium" ? premiumHomeSections : defaultHomeSections)({
         heading: preset.heading,
         subheading: preset.subheading,
         collectionHeading: preset.collectionHeading,

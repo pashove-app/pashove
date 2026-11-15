@@ -53,6 +53,18 @@ async function selectStore(page: Page, slug: string) {
 
   const before = await select.inputValue();
   await select.selectOption({ label: wanted });
+  // Fixe aussi le cookie de boutique active : évite une course entre la
+  // server action et la navigation suivante.
+  const storeId = await select
+    .locator("option")
+    .filter({ hasText: wanted })
+    .first()
+    .getAttribute("value");
+  if (storeId) {
+    await page.context().addCookies([
+      { name: "pashove_store", value: storeId, url: "http://localhost:3000" },
+    ]);
+  }
   // Le changement passe par une server action : attendre le rechargement et
   // vérifier que la boutique active a réellement changé avant de continuer.
   await expect

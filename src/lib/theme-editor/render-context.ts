@@ -11,6 +11,10 @@ import type {
   ThemeRenderContext,
 } from "@/components/theme-renderer/context";
 import type { PricedStoreProduct } from "@/lib/storefront/products";
+import {
+  placeholderCollections,
+  placeholderProducts,
+} from "@/lib/theme-editor/placeholders";
 
 const FALLBACK_NAV: { key: string; href: string; labels: Record<string, string> }[] = [
   { key: "home", href: "", labels: { fr: "Accueil", en: "Home" } },
@@ -78,6 +82,8 @@ export function productCard(
       product.compare_at_amount && product.compare_at_amount > product.price_amount
         ? formatMoney(product.compare_at_amount, store.currency, localeTag)
         : null,
+    priceAmount: product.price_amount,
+    compareAtAmount: product.compare_at_amount,
     imageUrl: firstImage,
     vendor: product.partner_store?.name ?? null,
     badge: product.product_type === "digital" ? "Numérique" : product.product_type === "service" ? "Service" : null,
@@ -143,8 +149,14 @@ export function buildStoreRenderContext(input: {
         : `Livraison : ${formatMoney(store.shipping_flat_amount, store.currency, localeTag)}`,
     paymentMethods: input.paymentMethods ?? paymentMethods(store.country, store.cod_enabled),
     nav: navItems,
-    products: products.map((product) => productCard(product, store, locale)),
-    collections: collections.map((collection) => collectionCard(collection)),
+    products:
+      products.length > 0
+        ? products.map((product) => productCard(product, store, locale))
+        : placeholderProducts(localeTag, store.currency),
+    collections:
+      collections.length > 0
+        ? collections.map((collection) => collectionCard(collection))
+        : placeholderCollections(),
     metafields: input.metafields,
     appEmbeds: input.appEmbeds,
   };

@@ -13,6 +13,9 @@ export type ThemeProductCard = {
   slug: string;
   priceLabel: string;
   compareAtLabel: string | null;
+  /** Montant brut, utile à l'aperçu par marché. */
+  priceAmount?: number;
+  compareAtAmount?: number | null;
   imageUrl: string | null;
   vendor?: string | null;
   badge?: string | null;

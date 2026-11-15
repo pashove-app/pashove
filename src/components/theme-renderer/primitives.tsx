@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import type { ThemeSettings } from "@/lib/theme-editor/types";
 import { cn } from "@/lib/cn";
+import { Icon, icons } from "@/components/ui/primitives";
 import { cardStyle, fontFamily, settingBoolean, settingNumber, settingString } from "@/components/theme-renderer/style";
 import type {
   ThemeCollectionCard,
@@ -419,8 +420,8 @@ export function RatingStars({ rating }: { rating: number }) {
   return (
     <div style={{ display: "flex", gap: 2, color: "var(--s-accent, var(--t-accent))" }} aria-label={`${rating} sur 5`}>
       {Array.from({ length: 5 }).map((_, index) => (
-        <span key={index} style={{ opacity: index < rating ? 1 : 0.25, fontSize: "0.9rem" }}>
-          ★
+        <span key={index} style={{ opacity: index < rating ? 1 : 0.25, display: "inline-flex" }}>
+          <Icon path={icons.star} className="h-3.5 w-3.5" />
         </span>
       ))}
     </div>

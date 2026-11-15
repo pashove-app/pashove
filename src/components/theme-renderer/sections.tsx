@@ -6,6 +6,7 @@ import { ProductGallery } from "@/components/storefront/product-gallery";
 import { MarkdownBody } from "@/components/storefront/markdown-body";
 import { ServiceBookingBox } from "@/components/storefront/service-booking-box";
 import { cn } from "@/lib/cn";
+import { Icon, icons } from "@/components/ui/primitives";
 import type {
   ThemeBlockInstance,
   ThemeSectionInstance,
@@ -68,7 +69,14 @@ function bool(section: ThemeSectionInstance, key: string, fallback = false): boo
   return settingBoolean(section.settings, key, fallback);
 }
 
-function columns(section: ThemeSectionInstance, fallback = 3): number {
+function columns(
+  section: ThemeSectionInstance,
+  fallback = 3,
+  flags?: ThemeRenderFlags,
+): number {
+  if (flags?.device === "mobile") {
+    return Math.max(1, Math.min(3, num(section, "columnsMobile", 1)));
+  }
   return Math.max(1, Math.min(6, num(section, "columnsDesktop", fallback)));
 }
 
@@ -127,6 +135,162 @@ function BlockSlot({
             flags.onSelectBlock?.(section.id, block.id);
           }}
         />
+      ) : null}
+    </div>
+  );
+}
+
+/** En-tête de la vitrine : logo, navigation desktop, icônes, menu mobile. */
+function HeaderSection({ section, settings, context, flags }: SectionProps) {
+  const [open, setOpen] = useState(false);
+  const mobile = flags.device === "mobile";
+  const logo = settings.logoUrl || context.logoUrl;
+  const nav = context.nav.slice(0, 6);
+  const cartLabel = translate(settings, "viewCart", "Panier");
+
+  return (
+    <div style={{ width: "100%", position: "relative" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 18 }}>
+        <a
+          href={context.homePath}
+          style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", color: "inherit", minWidth: 0 }}
+        >
+          {logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logo}
+              alt=""
+              style={{ height: settings.logoWidth, width: "auto", borderRadius: 10, objectFit: "contain" }}
+            />
+          ) : (
+            <>
+              <span
+                style={{
+                  display: "grid",
+                  placeItems: "center",
+                  height: settings.logoWidth,
+                  width: settings.logoWidth,
+                  borderRadius: 12,
+                  background: "var(--t-accent)",
+                  color: "#fff",
+                  fontWeight: 800,
+                  flexShrink: 0,
+                }}
+              >
+                {context.storeName.slice(0, 1).toUpperCase()}
+              </span>
+              <span style={{ fontSize: "1rem", fontWeight: 650, letterSpacing: "-0.02em", whiteSpace: "nowrap" }}>
+                {context.storeName}
+              </span>
+            </>
+          )}
+        </a>
+
+        <nav
+          className="hidden items-center lg:flex"
+          aria-label="Navigation principale"
+          style={{ gap: 22, minWidth: 0, display: mobile ? "none" : undefined }}
+        >
+          {nav.map((item) => (
+            <a
+              key={item.href + item.label}
+              href={resolveHref(item.href, context)}
+              style={{
+                fontSize: "0.78rem",
+                fontWeight: 600,
+                color: "var(--s-muted, var(--t-muted))",
+                textDecoration: "none",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {item.label}
+            </a>
+          ))}
+        </nav>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+          {bool(section, "showSearch", true) ? (
+            <a
+              href={`${context.homePath}/search`}
+              aria-label={translate(settings, "searchTitle", "Rechercher")}
+              style={{ display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: 12, color: "inherit" }}
+            >
+              <Icon path={icons.search} className="h-[18px] w-[18px]" />
+            </a>
+          ) : null}
+          {bool(section, "showAccount", true) ? (
+            <a
+              href={`${context.homePath}/account`}
+              aria-label={translate(settings, "navAccount", "Mon compte")}
+              style={{ display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: 12, color: "inherit" }}
+            >
+              <Icon path={icons.user} className="h-[18px] w-[18px]" />
+            </a>
+          ) : null}
+          {bool(section, "showCart", true) ? (
+            <a
+              href={`${context.homePath}/cart`}
+              aria-label={cartLabel}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                minWidth: 40,
+                height: 40,
+                borderRadius: 12,
+                border: "1px solid var(--s-border, var(--t-border))",
+                color: "inherit",
+                textDecoration: "none",
+                padding: "0 0.7rem",
+                fontSize: "0.75rem",
+                fontWeight: 700,
+                whiteSpace: "nowrap",
+              }}
+            >
+              <Icon path={icons.cart} className="h-[17px] w-[17px]" />
+              {context.cart?.count ? <span>{context.cart.count}</span> : null}
+            </a>
+          ) : null}
+          <button
+            type="button"
+            aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
+            aria-expanded={open}
+            onClick={() => setOpen((value) => !value)}
+            className="grid place-items-center lg:hidden"
+            style={{ width: 40, height: 40, borderRadius: 12, border: "none", background: "transparent", color: "inherit", display: mobile ? "grid" : undefined }}
+          >
+            <Icon path={open ? icons.close : icons.menu} className="h-[20px] w-[20px]" />
+          </button>
+        </div>
+      </div>
+
+      {open ? (
+        <div
+          className="grid gap-0.5 lg:hidden"
+          style={{
+            position: "absolute",
+            insetInline: 0,
+            top: "calc(100% + 8px)",
+            zIndex: 40,
+            display: open ? "grid" : "none",
+            padding: 10,
+            borderRadius: 16,
+            background: "var(--t-background)",
+            border: "1px solid var(--t-border)",
+            boxShadow: "0 18px 40px rgb(0 0 0 / 0.18)",
+          }}
+        >
+          {nav.map((item) => (
+            <a
+              key={item.href + item.label}
+              href={resolveHref(item.href, context)}
+              onClick={() => setOpen(false)}
+              style={{ padding: "10px 12px", borderRadius: 10, color: "inherit", textDecoration: "none", fontSize: "0.85rem", fontWeight: 600 }}
+            >
+              {item.label}
+            </a>
+          ))}
+        </div>
       ) : null}
     </div>
   );
@@ -244,7 +408,7 @@ function Card({
  *  Composants interactifs
  * ------------------------------------------------------------------ */
 
-function Slideshow({ section, settings, context, flags }: SectionProps) {
+function Slideshow({ section, context, flags }: SectionProps) {
   const slides = visibleBlocks(section);
   const [index, setIndex] = useState(0);
   const autoplay = bool(section, "autoplay", true);
@@ -374,12 +538,12 @@ function Countdown({ section }: { section: ThemeSectionInstance }) {
   );
 }
 
-function Gallery({ section, settings, context, flags }: SectionProps) {
+function Gallery({ section, flags }: SectionProps) {
   const images = visibleBlocks(section);
   const [lightbox, setLightbox] = useState<string | null>(null);
   return (
     <>
-      <div style={grid(columns(section, settings.productCard.imageRatio === "square" ? 3 : 3), num(section, "columnGap", 12))}>
+      <div style={grid(columns(section, 3, flags), num(section, "columnGap", 12))}>
         {images.map((block) => (
           <BlockSlot key={block.id} section={section} block={block} flags={flags}>
             <button
@@ -437,7 +601,7 @@ function Popup({ section, context }: { section: ThemeSectionInstance; context: T
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-5" role="dialog" aria-modal="true">
       <div className="relative w-full max-w-md overflow-hidden rounded-3xl" style={{ background: "var(--t-bg)", color: "var(--t-text)", border: "1px solid var(--t-border)" }}>
-        <button type="button" className="absolute right-3 top-3 z-10 rounded-full bg-black/20 px-2 py-1 text-sm text-white" onClick={() => setOpen(false)} aria-label="Fermer">✕</button>
+        <button type="button" className="absolute right-3 top-3 z-10 rounded-full bg-black/20 px-2 py-1 text-sm text-white" onClick={() => setOpen(false)} aria-label="Fermer"><Icon path={icons.close} className="h-4 w-4" /></button>
         {imageOf(section, context) ? <SmartImage src={imageOf(section, context)} alt={text(section, "heading", context)} ratio="16:9" radius={0} /> : null}
         <div className="p-6">
           <SectionHeading eyebrow={text(section, "eyebrow", context)} heading={text(section, "heading", context)} subheading={text(section, "subheading", context) || text(section, "text", context)} />
@@ -667,7 +831,7 @@ function PaymentFooter({ settings, context }: { settings: ThemeSettings; context
 
 function collectionCards(section: ThemeSectionInstance, context: ThemeRenderContext, settings: ThemeSettings, flags: ThemeRenderFlags) {
   const blocks = visibleBlocks(section);
-  const cols = columns(section, 3);
+  const cols = columns(section, 3, flags);
 
   if (blocks.length > 0) {
     return (
@@ -731,44 +895,7 @@ function renderBody({ section, settings, context, flags }: SectionProps): ReactN
     case "navigation-menu":
     case "mega-menu":
     case "mobile-nav": {
-      const logo = settings.logoUrl || context.logoUrl;
-      return (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, width: "100%" }}>
-          <a href={context.homePath} style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", color: "inherit" }}>
-            {logo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={logo} alt={settings.logoAlt || context.storeName} style={{ height: settings.logoWidth, width: "auto", borderRadius: 10, objectFit: "contain" }} />
-            ) : (
-              <span style={{ display: "grid", placeItems: "center", height: settings.logoWidth, width: settings.logoWidth, borderRadius: 12, background: "var(--t-accent)", color: "#fff", fontWeight: 800 }}>
-                {context.storeName.slice(0, 1).toUpperCase()}
-              </span>
-            )}
-            <span style={{ fontSize: "1rem", fontWeight: 650, letterSpacing: "-0.02em" }}>{context.storeName}</span>
-          </a>
-
-          <nav className="hidden items-center gap-5 md:flex" aria-label="Navigation principale">
-            {context.nav.slice(0, 8).map((item) => (
-              <a key={item.href + item.label} href={resolveHref(item.href, context)} style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--s-muted, var(--t-muted))", textDecoration: "none" }}>
-                {item.label}
-              </a>
-            ))}
-          </nav>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            {bool(section, "showSearch", true) ? (
-              <a href={`${context.homePath}/search`} aria-label={translate(settings, "searchTitle", "Rechercher")} style={{ display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: 12, color: "inherit", textDecoration: "none" }}>⌕</a>
-            ) : null}
-            {bool(section, "showAccount", true) ? (
-              <a href={`${context.homePath}/account`} aria-label={translate(settings, "navAccount", "Mon compte")} style={{ display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: 12, color: "inherit", textDecoration: "none" }}>◯</a>
-            ) : null}
-            {bool(section, "showCart", true) ? (
-              <a href={`${context.homePath}/cart`} aria-label={translate(settings, "viewCart", "Panier")} style={{ display: "grid", placeItems: "center", minWidth: 40, height: 40, borderRadius: 12, border: "1px solid var(--s-border, var(--t-border))", color: "inherit", textDecoration: "none", padding: "0 0.6rem", fontSize: "0.75rem", fontWeight: 700 }}>
-                {translate(settings, "viewCart", "Panier")}{context.cart?.count ? ` · ${context.cart.count}` : ""}
-              </a>
-            ) : null}
-          </div>
-        </div>
-      );
+      return <HeaderSection section={section} settings={settings} context={context} flags={flags} />;
     }
 
     case "image-banner": {
@@ -888,7 +1015,7 @@ function renderBody({ section, settings, context, flags }: SectionProps): ReactN
     }
 
     case "multicolumn": {
-      const cols = columns(section, 3);
+      const cols = columns(section, 3, flags);
       return (
         <div style={{ width: "100%" }}>
           {headingBlock}
@@ -919,7 +1046,7 @@ function renderBody({ section, settings, context, flags }: SectionProps): ReactN
     }
 
     case "testimonials": {
-      const cols = columns(section, 3);
+      const cols = columns(section, 3, flags);
       return (
         <div style={{ width: "100%" }}>
           {headingBlock}
@@ -971,7 +1098,7 @@ function renderBody({ section, settings, context, flags }: SectionProps): ReactN
     }
 
     case "team": {
-      const cols = columns(section, 3);
+      const cols = columns(section, 3, flags);
       return (
         <div style={{ width: "100%" }}>
           {headingBlock}
@@ -1030,7 +1157,7 @@ function renderBody({ section, settings, context, flags }: SectionProps): ReactN
     case "promotions":
     case "complementary-products":
     case "product-related": {
-      const cols = columns(section, 4);
+      const cols = columns(section, 4, flags);
       const limit = Math.max(2, num(section, "productLimit", 8));
       let products = featuredProducts(section, context);
 
@@ -1135,7 +1262,7 @@ function renderBody({ section, settings, context, flags }: SectionProps): ReactN
     }
 
     case "trust-badges": {
-      const cols = columns(section, 4);
+      const cols = columns(section, 4, flags);
       return (
         <div style={{ width: "100%" }}>
           {headingBlock}
@@ -1262,6 +1389,9 @@ function renderBody({ section, settings, context, flags }: SectionProps): ReactN
       );
 
     case "custom-liquid":
+      // Pas de moteur Liquid côté vitrine : on n'expose jamais le code brut
+      // aux visiteurs. L'éditeur l'affiche pour permettre la saisie.
+      if (!flags.editable) return null;
       return (
         <div style={{ width: "100%" }}>
           {headingBlock}
@@ -1317,7 +1447,7 @@ function renderBody({ section, settings, context, flags }: SectionProps): ReactN
 
     case "collection-grid": {
       const products = context.collection?.products ?? context.products;
-      const cols = columns(section, 3);
+      const cols = columns(section, 3, flags);
       return (
         <div style={{ width: "100%" }}>
           {bool(section, "showFilters", true) || bool(section, "showSort", true) ? (
@@ -1359,7 +1489,7 @@ function renderBody({ section, settings, context, flags }: SectionProps): ReactN
       return (
         <div style={{ width: "100%" }}>
           {headingBlock}
-          <div style={{ ...grid(columns(section, 3), settings.gridGapX), marginTop: 22 }}>
+          <div style={{ ...grid(columns(section, 3, flags), settings.gridGapX), marginTop: 22 }}>
             {posts.map((post) => (
               <PostCardView key={post.id} post={post} context={context} settings={settings} />
             ))}
@@ -1410,7 +1540,7 @@ function renderBody({ section, settings, context, flags }: SectionProps): ReactN
               Rechercher
             </button>
           </form>
-          <div style={{ ...grid(columns(section, 3), settings.gridGapX), marginTop: 22 }}>
+          <div style={{ ...grid(columns(section, 3, flags), settings.gridGapX), marginTop: 22 }}>
             {(search?.results ?? context.products).map((product) => (
               <ProductCardView key={product.id} product={product} context={context} settings={settings} />
             ))}

@@ -19,6 +19,7 @@ import {
 } from "@/lib/theme-editor/defaults";
 import type { ThemeProductCard, ThemeCollectionCard, ThemeMetafieldOption } from "@/components/theme-editor/types";
 import { cn } from "@/lib/cn";
+import { Icon, icons, type IconKey } from "@/components/ui/primitives";
 
 export type EditorFieldContext = {
   storeId: string;
@@ -127,7 +128,7 @@ export function FieldControl({
             onClick={() => setShowMeta((open) => !open)}
             title="Connecter une source dynamique"
           >
-            ⚡ Source
+            <Icon path={icons.bolt} className="inline h-3 w-3" /> Source
           </button>
         ) : null}
         {isMetafield ? (
@@ -137,7 +138,7 @@ export function FieldControl({
             onClick={() => onChange(field.defaultValue ?? "")}
             title="Déconnecter la source"
           >
-            🔗 Connecté · retirer
+            <Icon path={icons.link} className="h-3.5 w-3.5" /> Connecté · retirer
           </button>
         ) : null}
       </div>
@@ -465,7 +466,7 @@ export function BlockSettingsPanel({
           <p className="text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-faint">Bloc</p>
           <p className="mt-1 text-[0.9rem] font-semibold text-fg">{schema?.label ?? block.type}</p>
         </div>
-        <button type="button" className="h-9 w-9 rounded-lg border border-red-500/30 text-[11px] text-red-400" title="Supprimer le bloc" onClick={onDelete}>✕</button>
+        <button type="button" className="h-9 w-9 rounded-lg border border-red-500/30 text-[11px] text-red-400" title="Supprimer le bloc" onClick={onDelete}><Icon path={icons.close} className="h-4 w-4" /></button>
       </div>
 
       <button
@@ -474,7 +475,7 @@ export function BlockSettingsPanel({
         onClick={() => onChange({ ...block, visible: !block.visible })}
       >
         <span>{block.visible ? "Bloc visible" : "Bloc masqué"}</span>
-        <span>{block.visible ? "👁" : "—"}</span>
+        <Icon path={block.visible ? icons.eye : icons.eyeOff} className="h-4 w-4" />
       </button>
 
       <div className="grid gap-3">
@@ -526,7 +527,7 @@ export function SectionSettingsPanel({
         </div>
         <div className="flex shrink-0 gap-1">
           <button type="button" className="h-9 w-9 rounded-lg border border-border text-[11px] text-subtle" title="Dupliquer" onClick={onDuplicate}>⧉</button>
-          <button type="button" className="h-9 w-9 rounded-lg border border-red-500/30 text-[11px] text-red-400" title="Supprimer" onClick={onDelete}>✕</button>
+          <button type="button" className="h-9 w-9 rounded-lg border border-red-500/30 text-[11px] text-red-400" title="Supprimer" onClick={onDelete}><Icon path={icons.close} className="h-4 w-4" /></button>
         </div>
       </div>
 
@@ -536,7 +537,7 @@ export function SectionSettingsPanel({
         onClick={() => onChange({ ...section, visible: !section.visible })}
       >
         <span>{section.visible ? "Section visible" : "Section masquée"}</span>
-        <span>{section.visible ? "👁" : "—"}</span>
+        <Icon path={section.visible ? icons.eye : icons.eyeOff} className="h-4 w-4" />
       </button>
 
       <div className="flex flex-wrap gap-1 border-b border-border pb-2">
@@ -676,8 +677,8 @@ function BlockEditorRow({
         </button>
         <button type="button" className="h-7 w-7 text-[10px] text-faint" onClick={() => onMove(-1)} title="Monter">↑</button>
         <button type="button" className="h-7 w-7 text-[10px] text-faint" onClick={() => onMove(1)} title="Descendre">↓</button>
-        <button type="button" className="h-7 w-7 text-[10px] text-faint" onClick={() => onChange({ ...block, visible: !block.visible })} title="Masquer">👁</button>
-        <button type="button" className="h-7 w-7 text-[10px] text-red-400" onClick={onDelete} title="Supprimer">✕</button>
+        <button type="button" className="h-7 w-7 text-[10px] text-faint" onClick={() => onChange({ ...block, visible: !block.visible })} title="Masquer"><Icon path={icons.eye} className="h-3.5 w-3.5" /></button>
+        <button type="button" className="h-7 w-7 text-[10px] text-red-400" onClick={onDelete} title="Supprimer"><Icon path={icons.close} className="h-3.5 w-3.5" /></button>
       </div>
       {open ? (
         <div className="grid gap-3 border-t border-border p-2.5">
@@ -719,21 +720,25 @@ export type ThemeSettingsCategory =
   | "style"
   | "translations";
 
-export const THEME_CATEGORIES: { id: ThemeSettingsCategory; label: string; icon: string }[] = [
-  { id: "logo", label: "Logo", icon: "🖼" },
-  { id: "favicon", label: "Favicon", icon: "🔖" },
-  { id: "colors", label: "Couleurs", icon: "🎨" },
-  { id: "typography", label: "Typographie", icon: "🔤" },
-  { id: "layout", label: "Mise en page", icon: "📐" },
-  { id: "animations", label: "Animations", icon: "✨" },
-  { id: "visual", label: "Éléments visuels", icon: "🃏" },
-  { id: "social", label: "Réseaux sociaux", icon: "📱" },
-  { id: "search", label: "Recherche", icon: "🔍" },
-  { id: "currency", label: "Devise", icon: "💰" },
-  { id: "cart", label: "Panier", icon: "🛒" },
-  { id: "custom-css", label: "CSS personnalisé", icon: "💻" },
-  { id: "style", label: "Style du thème", icon: "🎭" },
-  { id: "translations", label: "Contenu du thème", icon: "📝" },
+export const THEME_CATEGORIES: {
+  id: ThemeSettingsCategory;
+  label: string;
+  icon: IconKey;
+}[] = [
+  { id: "logo", label: "Logo", icon: "image" },
+  { id: "favicon", label: "Favicon", icon: "star" },
+  { id: "colors", label: "Couleurs", icon: "palette" },
+  { id: "typography", label: "Typographie", icon: "text" },
+  { id: "layout", label: "Mise en page", icon: "columns" },
+  { id: "animations", label: "Animations", icon: "sparkle" },
+  { id: "visual", label: "Éléments visuels", icon: "gallery" },
+  { id: "social", label: "Réseaux sociaux", icon: "globe" },
+  { id: "search", label: "Recherche", icon: "search" },
+  { id: "currency", label: "Devise", icon: "wallet" },
+  { id: "cart", label: "Panier", icon: "cart" },
+  { id: "custom-css", label: "CSS personnalisé", icon: "code" },
+  { id: "style", label: "Style du thème", icon: "sliders" },
+  { id: "translations", label: "Contenu du thème", icon: "file" },
 ];
 
 export function ThemeSettingsPanel({
@@ -807,7 +812,7 @@ export function ThemeSettingsPanel({
                   </button>
                   <button type="button" className="text-[10px] text-subtle" onClick={() => onDuplicatePalette(palette.id)}>⧉</button>
                   {settings.palettes.length > 1 ? (
-                    <button type="button" className="text-[10px] text-red-400" onClick={() => onDeletePalette(palette.id)}>✕</button>
+                    <button type="button" className="text-[10px] text-red-400" onClick={() => onDeletePalette(palette.id)}><Icon path={icons.close} className="h-3.5 w-3.5" /></button>
                   ) : null}
                 </div>
                 <PaletteEditor
