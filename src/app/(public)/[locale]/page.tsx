@@ -18,6 +18,7 @@ import {
 } from "@/components/marketing/ui";
 import { PublicMediaShowcase } from "@/components/marketing/media-showcase";
 import { cn } from "@/lib/cn";
+import { publicUrl } from "@/lib/r2/media";
 import { resolveLocale } from "@/i18n/config";
 import { getSiteContent } from "@/lib/marketing/content";
 import { getAboutContent } from "@/lib/marketing/about";
@@ -71,6 +72,10 @@ export default async function PublicHomePage({
   const about = getAboutContent(locale);
   const topMerchants = await getTopMerchantsOfMonth();
   const miniIcons = [icons.globe, icons.wallet, icons.box, icons.store];
+  // Vidéo de démonstration servie par R2 ; repli local si R2 n'est pas configuré.
+  const demoVideo = process.env.R2_PUBLIC_URL
+    ? publicUrl("marketing/home-demo-20261115.mp4")
+    : "/marketing/demo.mp4";
 
   return (
     <>
@@ -164,7 +169,7 @@ export default async function PublicHomePage({
               <MarketingParallax>
                 <PublicMediaShowcase
                   poster="/marketing/storefront.png"
-                  video="/marketing/demo.mp4"
+                  video={demoVideo}
                   domain={c.hero.mock.store}
                   title={c.hero.videoTitle}
                   caption={c.hero.videoCaption}
