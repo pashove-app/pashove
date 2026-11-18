@@ -33,7 +33,7 @@ const COPY = {
       },
       {
         q: "Quels moyens de paiement sont disponibles ?",
-        a: "Mobile money dans 22 pays et 64 réseaux via SasPay, et carte bancaire à partir de 25 000 FCFA de panier. Le paiement à la livraison reste disponible si tu l’actives.",
+        a: "Mobile Money en Côte d’Ivoire, au Sénégal, au Mali, au Burkina Faso, au Bénin et au Togo (Orange Money, Wave, MTN MoMo, Moov Money et Free Money selon le pays), et carte bancaire à partir de 25 000 FCFA de panier. Le paiement à la livraison reste disponible si tu l’actives.",
       },
       {
         q: "Combien coûte Pashove ?",
@@ -45,7 +45,7 @@ const COPY = {
       },
       {
         q: "Puis-je vendre dans plusieurs pays ?",
-        a: "Oui : active les pays dans Réglages → Pays de vente. Le client choisit son pays au checkout et les moyens de paiement s’adaptent. La conversion de devise est en préparation.",
+        a: "Oui : active les pays dans Réglages → Pays de vente. Le client choisit son pays au checkout, avec la devise et les moyens de paiement disponibles pour ce marché.",
       },
       {
         q: "Mes fichiers numériques sont-ils protégés ?",
@@ -57,7 +57,7 @@ const COPY = {
       },
       {
         q: "La livraison Pashove est-elle disponible ?",
-        a: "Pas encore. Le réseau de livreurs moto est en préparation. La page Devenir livreur explique le fonctionnement prévu.",
+        a: "Oui. Pashove Delivery s’appuie sur un réseau de livreurs partenaires. Active la livraison dans les réglages de ta boutique : les livreurs partenaires prennent les courses et le suivi reste dans ton dashboard.",
       },
     ],
     contactTitle: "Tu n’as pas trouvé ?",
@@ -85,7 +85,7 @@ const COPY = {
       },
       {
         q: "Which payment methods are available?",
-        a: "Mobile money in 22 countries and 64 networks via SasPay, and card from 25,000 FCFA carts. Cash on delivery remains available if you enable it.",
+        a: "Mobile Money in Côte d’Ivoire, Senegal, Mali, Burkina Faso, Benin and Togo (Orange Money, Wave, MTN MoMo, Moov Money and Free Money depending on the country), and card from 25,000 FCFA carts. Cash on delivery remains available if you enable it.",
       },
       {
         q: "How much does Pashove cost?",
@@ -97,7 +97,7 @@ const COPY = {
       },
       {
         q: "Can I sell in several countries?",
-        a: "Yes: enable countries in Settings → Sales countries. Customers pick their country at checkout and payment methods adapt. Currency conversion is in preparation.",
+        a: "Yes: enable countries in Settings → Sales countries. Customers pick their country at checkout, with the currency and payment methods available for that market.",
       },
       {
         q: "Are my digital files protected?",
@@ -109,7 +109,7 @@ const COPY = {
       },
       {
         q: "Is Pashove Delivery available?",
-        a: "Not yet. The moto courier network is in preparation. The Become a courier page explains how it will work.",
+        a: "Yes. Pashove Delivery relies on a partner courier network. Enable delivery in your store settings: partner couriers take the jobs and tracking stays in your dashboard.",
       },
     ],
     contactTitle: "Didn’t find it?",

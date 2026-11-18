@@ -22,7 +22,7 @@ const COPY = {
     titleA: "Deviens livreur.",
     titleB: "Chaque course compte.",
     description:
-      "Le réseau de livraison moto de Pashove arrive. Dépose ton dossier dès maintenant : l’équipe vérifie ton identité avant d’activer ton compte.",
+      "Le réseau de livraison moto de Pashove est ouvert. Dépose ton dossier dès maintenant : l’équipe vérifie ton identité avant d’activer ton compte.",
     primary: "S’inscrire maintenant",
     secondary: "Comment ça marche",
     benefitsTitleA: "Ton temps,",
@@ -70,7 +70,7 @@ const COPY = {
     titleA: "Become a courier.",
     titleB: "Every ride counts.",
     description:
-      "Pashove’s moto delivery network is coming. Submit your application now: the team verifies your identity before activating your account.",
+      "Pashove’s moto delivery network is open. Submit your application now: the team verifies your identity before activating your account.",
     primary: "Sign up now",
     secondary: "How it works",
     benefitsTitleA: "Your time,",

@@ -15,8 +15,8 @@ const COPY = {
     eyebrow: "Documentation",
     title: "Comprendre Pashove, sans jargon.",
     description:
-      "Guide marchand : boutique, catalogue, paiements, thèmes et partenaires. La documentation développeur (API, webhooks) arrivera avec l’API publique.",
-    note: "L’API publique et les webhooks marchands ne sont pas encore disponibles. Cette page documente le produit tel qu’il fonctionne aujourd’hui.",
+      "Guide marchand : boutique, catalogue, paiements, thèmes, partenaires, domaines et API v1.",
+    note: "Cette page documente les fonctionnalités disponibles aujourd’hui dans la plateforme.",
     sectionsTitle: "Sommaire",
     sections: [
       {
@@ -26,7 +26,7 @@ const COPY = {
           "Un compte, une boutique, un premier produit. Tout tient dans le dashboard.",
         points: [
           "Crée ton compte puis renseigne le nom, le pays et la devise de la boutique.",
-          "Choisis un thème parmi les cinq presets et publie ta vitrine.",
+          "Choisis un thème parmi les huit presets et publie ta vitrine.",
           "Ajoute un produit physique, numérique ou un service, puis partage le lien de ta boutique.",
         ],
       },
@@ -58,8 +58,9 @@ const COPY = {
         intro:
           "SasPay encaisse le mobile money et la carte. Pashove tient le ledger et calcule les commissions côté serveur.",
         points: [
-          "Mobile money dans 22 pays et 64 réseaux ; carte à partir de 25 000 FCFA.",
-          "Chaque marché a sa devise. La conversion FX est en préparation.",
+          "Mobile Money en Côte d’Ivoire, au Sénégal, au Mali, au Burkina Faso, au Bénin et au Togo : Orange Money, Wave, MTN MoMo, Moov Money et Free Money selon le pays.",
+          "La carte bancaire est disponible à partir de 25 000 FCFA de panier.",
+          "Chaque marché utilise sa devise au checkout.",
           "Free : 6 % de commission, frais SasPay payés par le client (ou par toi si tu choisis de les absorber). Standard et Pro : 2 % et 0 %, mêmes règles de frais.",
           "Retraits après KYC et PIN ; seuls les frais SasPay de décaissement s’appliquent.",
         ],
@@ -68,7 +69,7 @@ const COPY = {
         id: "themes",
         title: "Thèmes et checkout",
         intro:
-          "Cinq thèmes, un éditeur, un checkout personnalisable sans toucher au code.",
+          "Huit thèmes, un éditeur, un checkout personnalisable sans toucher au code.",
         points: [
           "Couleurs, police, logo et ordre des sections depuis le thème.",
           "Checkout : modèle compact ou détaillé, ordre des blocs, textes et bouton.",
@@ -90,20 +91,22 @@ const COPY = {
         id: "domaines",
         title: "Domaines",
         intro:
-          "Les sous-domaines pashove.com et les domaines personnalisés arrivent avec le lot B3.",
+          "Chaque boutique dispose d’un sous-domaine pashove.com et peut ajouter son propre domaine.",
         points: [
-          "Aujourd’hui : /store/<slug> sur pashove.com.",
-          "Bientôt : <slug>.pashove.com, puis un domaine personnalisé avec certificat.",
+          "Sous-domaine actif dès la publication : <slug>.pashove.com.",
+          "Domaine personnalisé : vérification DNS et certificat automatique.",
+          "Les liens directs /store/<slug> restent servis par le proxy interne.",
         ],
       },
       {
         id: "api",
         title: "API et webhooks",
         intro:
-          "Pas encore d’API publique. Les intégrations passeront par des clés et des webhooks signés.",
+          "API v1 en lecture et webhooks marchands signés, disponibles depuis le dashboard.",
         points: [
-          "L’API publique est prévue après la stabilisation du checkout et des partenaires.",
-          "Les webhooks marchands seront signés et rejouables.",
+          "Authentification : clé pk_live_ dans l’en-tête Authorization: Bearer.",
+          "Endpoints : /api/v1/store, /api/v1/products et /api/v1/orders.",
+          "Webhooks signés HMAC, avec relances et clés d’idempotence.",
         ],
       },
     ] as Section[],
@@ -112,8 +115,8 @@ const COPY = {
     eyebrow: "Documentation",
     title: "Understand Pashove, without jargon.",
     description:
-      "Merchant guide: store, catalog, payments, themes and partners. Developer docs (API, webhooks) will arrive with the public API.",
-    note: "The public API and merchant webhooks are not available yet. This page documents the product as it works today.",
+      "Merchant guide: store, catalog, payments, themes, partners, domains and the v1 API.",
+    note: "This page documents what is available today in the platform.",
     sectionsTitle: "Contents",
     sections: [
       {
@@ -122,7 +125,7 @@ const COPY = {
         intro: "One account, one store, one first product. Everything lives in the dashboard.",
         points: [
           "Create your account, then set the store name, country and currency.",
-          "Pick one of the five themes and publish your storefront.",
+          "Pick one of the eight themes and publish your storefront.",
           "Add a physical product, a digital file or a service, then share your store link.",
         ],
       },
@@ -152,8 +155,9 @@ const COPY = {
         intro:
           "SasPay collects mobile money and cards. Pashove keeps the ledger and computes commissions server-side.",
         points: [
-          "Mobile money in 22 countries and 64 networks; card from 25,000 FCFA.",
-          "Each market has its currency. FX conversion is in preparation.",
+          "Mobile Money in Côte d’Ivoire, Senegal, Mali, Burkina Faso, Benin and Togo: Orange Money, Wave, MTN MoMo, Moov Money and Free Money depending on the country.",
+          "Card payment is available from 25,000 FCFA carts.",
+          "Each market uses its own currency at checkout.",
           "Free: 6% commission, SasPay fees paid by the customer (or by you if you choose to absorb them). Standard and Pro: 2% and 0%, same fee rules.",
           "Payouts after KYC and PIN; only SasPay disbursement fees apply.",
         ],
@@ -161,7 +165,7 @@ const COPY = {
       {
         id: "themes",
         title: "Themes and checkout",
-        intro: "Five themes, one editor, a customisable checkout without code.",
+        intro: "Eight themes, one editor, a customisable checkout without code.",
         points: [
           "Colours, font, logo and section order from the theme.",
           "Checkout: compact or detailed, block order, texts and pay button.",
@@ -181,19 +185,21 @@ const COPY = {
       {
         id: "domains",
         title: "Domains",
-        intro: "pashove.com subdomains and custom domains arrive with lot B3.",
+        intro: "Every store gets a pashove.com subdomain and can add its own domain.",
         points: [
-          "Today: /store/<slug> on pashove.com.",
-          "Soon: <slug>.pashove.com, then a custom domain with a certificate.",
+          "Subdomain active as soon as you publish: <slug>.pashove.com.",
+          "Custom domain: DNS verification and automatic certificate.",
+          "Direct /store/<slug> links keep working through the internal proxy.",
         ],
       },
       {
         id: "api",
         title: "API and webhooks",
-        intro: "No public API yet. Integrations will use keys and signed webhooks.",
+        intro: "Read-only v1 API and signed merchant webhooks, available from the dashboard.",
         points: [
-          "The public API is planned after checkout and partner flows stabilise.",
-          "Merchant webhooks will be signed and replayable.",
+          "Authentication: pk_live_ key in the Authorization: Bearer header.",
+          "Endpoints: /api/v1/store, /api/v1/products and /api/v1/orders.",
+          "HMAC-signed webhooks with retries and idempotency keys.",
         ],
       },
     ] as Section[],

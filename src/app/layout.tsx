@@ -53,10 +53,10 @@ export const metadata: Metadata = {
   // On déclare un ICO multi-tailles (48/96) et des PNG 96/144/192.
   icons: {
     icon: [
+      { url: "/brand/favicon-144.png", type: "image/png", sizes: "144x144" },
+      { url: "/brand/favicon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/brand/favicon-96.png", type: "image/png", sizes: "96x96" },
       { url: "/favicon.ico", sizes: "any" },
-      { url: "/brand/pashove-mark-96.png", type: "image/png", sizes: "96x96" },
-      { url: "/brand/pashove-mark-144.png", type: "image/png", sizes: "144x144" },
-      { url: "/brand/pashove-mark-192.png", type: "image/png", sizes: "192x192" },
     ],
     shortcut: "/favicon.ico",
     apple: [
@@ -68,7 +68,7 @@ export const metadata: Metadata = {
     ],
   },
   description:
-    "Crée ta boutique, vends tes produits physiques, numériques ou tes services et encaisse en Mobile Money dans 22 pays.",
+    "Crée ta boutique, vends tes produits physiques, numériques ou tes services et encaisse en Mobile Money dans 6 pays d’Afrique de l’Ouest.",
   openGraph: {
     type: "website",
     siteName: "Pashove",
@@ -77,7 +77,7 @@ export const metadata: Metadata = {
     url: "https://pashove.com",
     title: "Pashove — Le commerce en ligne, sans frontières",
     description:
-      "Crée ta boutique, vends tes produits et encaisse en Mobile Money dans 22 pays. Pensé pour les marchands d’Afrique.",
+      "Crée ta boutique, vends tes produits et encaisse en Mobile Money dans 6 pays d’Afrique de l’Ouest. Pensé pour les marchands d’Afrique.",
     images: [
       {
         url: "/brand/og-pashove.png",
@@ -91,7 +91,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Pashove — Le commerce en ligne, sans frontières",
     description:
-      "Crée ta boutique, vends tes produits et encaisse en Mobile Money dans 22 pays.",
+      "Crée ta boutique, vends tes produits et encaisse en Mobile Money dans 6 pays d’Afrique de l’Ouest.",
     images: ["/brand/og-pashove.png"],
   },
 };

@@ -4,13 +4,34 @@ import { useState } from "react";
 import { Icon, icons } from "@/components/ui/primitives";
 import type { SiteContent } from "@/lib/marketing/content";
 
+type State = "idle" | "loading" | "success" | "error";
+
 export function NewsletterForm({
   content,
 }: {
   content: SiteContent["newsletter"];
 }) {
   const [email, setEmail] = useState("");
-  const [done, setDone] = useState(false);
+  const [company, setCompany] = useState("");
+  const [state, setState] = useState<State>("idle");
+
+  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (state === "loading") return;
+    setState("loading");
+    try {
+      const response = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, company, source: "site-public" }),
+      });
+      if (!response.ok) throw new Error("subscribe_failed");
+      setState("success");
+      setEmail("");
+    } catch {
+      setState("error");
+    }
+  };
 
   return (
     <section className="bg-[#FAFAFA] px-3 pb-14 pt-4 sm:px-5 sm:pb-18 sm:pt-6">
@@ -27,13 +48,17 @@ export function NewsletterForm({
           </p>
         </div>
 
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            setDone(true);
-          }}
-          className="w-full"
-        >
+        <form onSubmit={submit} className="w-full">
+          <input
+            type="text"
+            name="company"
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+            value={company}
+            onChange={(event) => setCompany(event.target.value)}
+            className="hidden"
+          />
           <div className="flex flex-col gap-2 sm:flex-row">
             <label htmlFor="newsletter-email" className="sr-only">
               {content.placeholder}
@@ -42,27 +67,39 @@ export function NewsletterForm({
               id="newsletter-email"
               type="email"
               required
+              autoComplete="email"
               value={email}
               onChange={(event) => {
                 setEmail(event.target.value);
-                setDone(false);
+                if (state !== "idle") setState("idle");
               }}
               placeholder={content.placeholder}
               className="h-12 min-w-0 flex-1 rounded-full border border-white/15 bg-white/[0.05] px-5 text-[0.8125rem] text-white placeholder:text-white/30 focus:border-brand-400 focus:outline-none focus:ring-4 focus:ring-brand-500/15"
             />
             <button
               type="submit"
-              className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-brand-500 px-6 text-[0.8125rem] font-semibold text-white shadow-[0_16px_35px_-14px_rgba(47,92,255,0.8)] transition-transform hover:-translate-y-0.5"
+              disabled={state === "loading"}
+              className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-brand-500 px-6 text-[0.8125rem] font-semibold text-white shadow-[0_16px_35px_-14px_rgba(47,92,255,0.8)] transition-transform hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-70"
             >
-              {content.cta}
+              {state === "loading" ? content.loading : content.cta}
               <Icon path={icons.arrowRight} className="h-4 w-4" strokeWidth={2.2} />
             </button>
           </div>
           <p
             aria-live="polite"
-            className="mt-2 min-h-4 text-[0.6875rem] leading-relaxed text-white/35"
+            className={
+              state === "success"
+                ? "mt-2 min-h-4 text-[0.6875rem] font-medium text-emerald-300"
+                : state === "error"
+                  ? "mt-2 min-h-4 text-[0.6875rem] font-medium text-red-300"
+                  : "mt-2 min-h-4 text-[0.6875rem] leading-relaxed text-white/35"
+            }
           >
-            {done ? content.success : content.note}
+            {state === "success"
+              ? content.success
+              : state === "error"
+                ? content.error
+                : content.note}
           </p>
         </form>
       </div>

@@ -26,6 +26,7 @@ import {
   getTopMerchantsOfMonth,
   initialsFor,
 } from "@/lib/marketing/top-merchants";
+import { listPublicTestimonials } from "@/lib/marketing/testimonials";
 
 // Le classement du mois est recalculé côté base ; on rafraîchit la page
 // d'accueil au plus une fois par demi-heure.
@@ -70,10 +71,13 @@ export default async function PublicHomePage({
   const locale = resolveLocale(raw);
   const c = getSiteContent(locale);
   const about = getAboutContent(locale);
-  const topMerchants = await getTopMerchantsOfMonth();
+  const [topMerchants, testimonials] = await Promise.all([
+    getTopMerchantsOfMonth(),
+    listPublicTestimonials(),
+  ]);
   const miniIcons = [icons.globe, icons.wallet, icons.box, icons.store];
-  // Vidéo de démonstration servie par R2 ; repli local si R2 n'est pas configuré.
-  const demoVideo = process.env.R2_PUBLIC_URL
+  // Vidéo de présentation servie par R2 ; repli local si R2 n'est pas configuré.
+  const homeVideo = process.env.R2_PUBLIC_URL
     ? publicUrl("marketing/home-demo-20261115.mp4")
     : "/marketing/demo.mp4";
 
@@ -169,7 +173,7 @@ export default async function PublicHomePage({
               <MarketingParallax>
                 <PublicMediaShowcase
                   poster="/marketing/storefront.png"
-                  video={demoVideo}
+                  video={homeVideo}
                   domain={c.hero.mock.store}
                   title={c.hero.videoTitle}
                   caption={c.hero.videoCaption}
@@ -225,24 +229,6 @@ export default async function PublicHomePage({
                       </Link>
                     </div>
 
-                    <figure className="mt-7 rounded-2xl border border-slate-200 bg-[#FAFAFA] p-4">
-                      <blockquote className="text-[0.8125rem] leading-relaxed text-[#4B5563]">
-                        “{item.quote.text}”
-                      </blockquote>
-                      <figcaption className="mt-3 flex items-center gap-2.5">
-                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-500/10 text-[0.5625rem] font-semibold text-brand-600">
-                          {item.quote.initials}
-                        </span>
-                        <span>
-                          <span className="block text-[0.75rem] font-semibold text-[#0A0E1A]">
-                            {item.quote.name}
-                          </span>
-                          <span className="block text-[0.625rem] text-[#8A93A5]">
-                            {item.quote.role}
-                          </span>
-                        </span>
-                      </figcaption>
-                    </figure>
                   </div>
 
                   <div className={cn(index % 2 === 1 && "lg:order-1")}>
@@ -395,31 +381,53 @@ export default async function PublicHomePage({
             />
           </MarketingReveal>
 
-          <div className="mt-12 grid gap-4 lg:grid-cols-3">
-            {c.testimonials.items.map((testimonial, index) => (
-              <MarketingReveal key={testimonial.name} delay={index * 0.07}>
-                <figure className="flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_20px_60px_-45px_rgba(10,14,26,0.45)] transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-[0_28px_70px_-40px_rgba(10,14,26,0.45)]">
-                  <span className="font-display text-[2.4rem] leading-none text-brand-500">“</span>
-                  <blockquote className="mt-2 text-[0.9375rem] leading-relaxed text-[#394150]">
-                    {testimonial.quote}
-                  </blockquote>
-                  <figcaption className="mt-auto flex items-center gap-3 border-t border-slate-100 pt-5">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-500/10 text-[0.6875rem] font-semibold text-brand-600">
-                      {testimonial.initials}
-                    </span>
-                    <span>
-                      <span className="block text-[0.8125rem] font-semibold text-[#0A0E1A]">
-                        {testimonial.name}
+          {testimonials.length > 0 ? (
+            <div className="mt-12 grid gap-4 lg:grid-cols-3">
+              {testimonials.map((testimonial, index) => (
+                <MarketingReveal key={testimonial.id} delay={index * 0.07}>
+                  <figure className="flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_20px_60px_-45px_rgba(10,14,26,0.45)] transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-[0_28px_70px_-40px_rgba(10,14,26,0.45)]">
+                    <div className="flex gap-0.5 text-brand-500" aria-label={`${testimonial.rating} sur 5`}>
+                      {Array.from({ length: testimonial.rating }).map((_, star) => (
+                        <Icon key={star} path={icons.star} className="h-3.5 w-3.5" />
+                      ))}
+                    </div>
+                    <blockquote className="mt-3 text-[0.9375rem] leading-relaxed text-[#394150]">
+                      {testimonial.quote}
+                    </blockquote>
+                    <figcaption className="mt-auto flex items-center gap-3 border-t border-slate-100 pt-5">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-500/10 text-[0.6875rem] font-semibold text-brand-600">
+                        {initialsFor(testimonial.name)}
                       </span>
-                      <span className="block text-[0.6875rem] text-[#7B8496]">
-                        {testimonial.store}
+                      <span>
+                        <span className="block text-[0.8125rem] font-semibold text-[#0A0E1A]">
+                          {testimonial.name}
+                        </span>
+                        {testimonial.role ? (
+                          <span className="block text-[0.6875rem] text-[#7B8496]">
+                            {testimonial.role}
+                          </span>
+                        ) : null}
                       </span>
-                    </span>
-                  </figcaption>
-                </figure>
-              </MarketingReveal>
-            ))}
-          </div>
+                    </figcaption>
+                  </figure>
+                </MarketingReveal>
+              ))}
+            </div>
+          ) : (
+            <MarketingReveal>
+              <div className="mx-auto mt-12 max-w-2xl rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-[0_20px_60px_-45px_rgba(10,14,26,0.35)]">
+                <p className="text-[0.9375rem] leading-relaxed text-[#5B6475]">
+                  {c.testimonials.empty}
+                </p>
+                <PrimaryLink
+                  href={publicHref(locale, "/auth/register")}
+                  className="mt-6"
+                >
+                  {c.testimonials.emptyCta}
+                </PrimaryLink>
+              </div>
+            </MarketingReveal>
+          )}
         </MarketingContainer>
       </section>
 

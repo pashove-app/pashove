@@ -19,6 +19,7 @@ export async function generateMetadata({
   return {
     title: `${document.title} · Pashove`,
     description: document.intro.slice(0, 160),
+    alternates: { canonical: `/legal/${page}` },
   };
 }
 
